@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roots to Blooms - Houseplants</title>
+
+<style>
+/* ===== COPY YOUR EXISTING CSS HERE ===== */
+:root{
+  --brand-green:#4EA337;
+  --brand-brown:#4A2300;
+  --accent:#c6e3d2;
+  --dark:#254D32;
+}
+/* ... rest of your CSS from the <style> block ... */
+</style>
+</head>
+<body>
+
+<div class="shop-container">
+  <div id="loadingNotice" style="text-align:center;padding:40px 12px;font-weight:800;color:#555">
+    🌱 Loading products… please wait
+  </div>
+
+  <div id="filterRow" class="filter-bar">
+    <button class="filter-btn active" data-filter="all" onclick="applyFilter('all')">All</button>
+  </div>
+
+  <div id="productGrid" class="product-grid"></div>
+</div>
+
+<div id="floating-cart" title="View cart" onclick="toggleDrawer()">
+  🛒 Cart
+  <div class="badge" id="floatBadge">0</div>
+</div>
+
+<div id="cart-drawer">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h3 style="margin:0">Your Cart</h3>
+    <div>
+      <button class="small-btn" onclick="clearCart()">Clear</button>
+      <button class="small-btn" onclick="toggleDrawer()">Close</button>
+    </div>
+  </div>
+  <div id="cartItemsWrap" class="cart-items"></div>
+  <div class="drawer-footer">
+    <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
+    <div class="totals"><div>Subtotal</div><div id="cartSubtotal">$0.00</div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
+      <button class="small-btn" onclick="openCheckoutForm()">Checkout</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirmation-overlay">
+  <div class="confirmation-card">
+    <h2>Order Received</h2>
+    <p id="confirmation-text"></p>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+      <button class="small-btn" onclick="closeConfirmation()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== COPY YOUR EXISTING JS HERE ===== */
+const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
+const STORAGE_KEY="plant_shop_cart_v6";
+const PAGE_CATEGORY="houseplants";
+
+let RAW=[];
+let GROUPED=[];
+let cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
+let hideSold=false;
+let activeFilter="all";
+
+/* ================== ALL YOUR FUNCTIONS FROM BEFORE ================== */
+/* fetchProducts(), buildGroups(), renderFilters(), renderProducts(), etc. */
+fetchProducts();
+setInterval(fetchProducts,300000);
+</script>
+
+</body>
+</html>
