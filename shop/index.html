@@ -1,99 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Roots to Blooms — Home</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roots to Blooms — Shop</title>
 
-  <!-- Global CSS -->
-  <link rel="stylesheet" href="/style.css">
+<style>
+:root{
+  --green:#4EA337;
+  --dark:#254D32;
+}
 
-  <style>
-    /* Green shop buttons */
-    .shop-button {
-      display: inline-block;
-      background: #4EA337; /* brand green */
-      color: white;
-      padding: 14px 24px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 18px;
-      margin: 10px 5px;
-      transition: background 0.2s;
-    }
-    .shop-button:hover {
-      background: #3b8025;
-    }
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#fafafa;
+}
 
-    /* Center buttons container */
-    .shop-buttons-container {
-      text-align: center;
-      margin: 40px 0;
-    }
+/* NAV */
+.topnav{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:14px;
+  background:#2e5d3b;
+  padding:12px 0;
+}
+.topnav a{
+  color:white;
+  text-decoration:none;
+  font-weight:700;
+  padding:8px 16px;
+  border-radius:6px;
+}
+.topnav a:hover{
+  background:var(--green);
+}
 
-    /* Top navigation bar */
-    .topnav {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 14px;
-      background: #2e5d3b; /* dark green */
-      padding: 12px 0;
-    }
-    .topnav .nav-link {
-      color: white;
-      text-decoration: none;
-      font-weight: 700;
-      padding: 8px 16px;
-      border-radius: 6px;
-      transition: background 0.2s;
-    }
-    .topnav .nav-link:hover {
-      background: #4EA337; /* brand green hover */
-    }
-    @media (max-width: 600px) {
-      .topnav {
-        flex-direction: column;
-        align-items: center;
-      }
-    }
+/* HERO */
+.hero{
+  height:240px;
+  background:url("https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?q=80&w=1600") center/cover;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  font-size:46px;
+  font-weight:800;
+}
 
-    /* Hero section */
-    .hero {
-      height: 220px;
-      background: url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=1974') center/cover;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 42px;
-      font-weight: 700;
-    }
-  </style>
+/* BUTTONS */
+.buttons{
+  text-align:center;
+  padding:40px;
+}
+.shop-button{
+  display:inline-block;
+  background:var(--green);
+  color:white;
+  padding:14px 24px;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:700;
+  margin:10px;
+}
+.shop-button:hover{
+  background:#3b8025;
+}
+</style>
 </head>
 
 <body>
 
-  <!-- Top Navigation -->
-  <nav class="topnav">
-    <a href="/" class="nav-link">Home</a>
-    <a href="/shop/" class="nav-link">Shop</a>
-    <a href="/shop/houseplants/" class="nav-link">Houseplants</a>
-    <a href="/shop/annuals/" class="nav-link">Annuals</a>
-    <a href="/shop/vegetable-starters/" class="nav-link">Vegetable Starters</a>
-  </nav>
+<nav class="topnav">
+  <a href="/">Home</a>
+  <a href="/shop/">Shop</a>
+  <a href="/shop/houseplants/">Houseplants</a>
+  <a href="/shop/annuals/">Annuals</a>
+  <a href="/shop/vegetable-starters/">Vegetable Starters</a>
+</nav>
 
-  <!-- Hero section -->
-  <div class="hero">Roots to Blooms</div>
+<div class="hero">Shop Plants</div>
 
-  <!-- Shop buttons -->
-  <div class="shop-buttons-container">
-    <a href="/shop/" class="shop-button">Shop All</a>
-    <a href="/shop/houseplants/" class="shop-button">Shop Houseplants</a>
-    <a href="/shop/annuals/" class="shop-button">Shop Annuals</a>
-    <a href="/shop/vegetable-starters/" class="shop-button">Shop Vegetable Starters</a>
-  </div>
+<div class="buttons">
+  <a class="shop-button" href="/shop/houseplants/">Shop Houseplants</a>
+  <a class="shop-button" href="/shop/annuals/">Shop Annuals</a>
+  <a class="shop-button" href="/shop/vegetable-starters/">Shop Vegetable Starters</a>
+</div>
 
 </body>
 </html>
