@@ -1,6 +1,228 @@
-<body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial,sans-serif;background:#f9f9f9;">
-  <div style="text-align:center; padding:20px; border:2px solid #4EA337; border-radius:12px; background:#fff; box-shadow:0 8px 24px rgba(0,0,0,0.1);">
-    <h1 style="color:#4EA337;">🌱 We are moving!</h1>
-    <p style="font-size:18px; color:#333;">The site will be back up soon.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Roots to Blooms</title>
+
+<style>
+:root{
+  --green:#4EA337;
+  --dark:#254D32;
+  --accent:#c6e3d2;
+}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  color:#222;
+  background:#fafafa;
+}
+
+/* ---------- NAVBAR ---------- */
+nav{
+  position:sticky;
+  top:0;
+  background:white;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 8%;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+  z-index:999;
+}
+
+nav .logo{
+  font-weight:800;
+  font-size:20px;
+  color:var(--dark);
+}
+
+nav a{
+  text-decoration:none;
+  margin-left:20px;
+  font-weight:700;
+  color:var(--dark);
+}
+
+/* ---------- HERO ---------- */
+.hero{
+  height:420px;
+  background:url("https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?q=80&w=1600") center/cover;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:white;
+}
+
+.hero h1{
+  font-size:56px;
+  margin:0;
+  text-shadow:0 4px 12px rgba(0,0,0,.6);
+}
+
+.hero button{
+  margin-top:20px;
+  padding:14px 28px;
+  font-size:18px;
+  background:var(--green);
+  border:none;
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:700;
+  transition:.2s;
+}
+
+.hero button:hover{
+  transform:scale(1.05);
+}
+
+/* ---------- SECTIONS ---------- */
+.section{
+  padding:60px 8%;
+  text-align:center;
+}
+
+.section h2{
+  color:var(--dark);
+  font-size:32px;
+}
+
+.section img{
+  width:100%;
+  max-width:800px;
+  border-radius:12px;
+  margin:20px 0;
+}
+
+/* ---------- CARD ---------- */
+.card{
+  background:white;
+  padding:24px;
+  border-radius:12px;
+  max-width:700px;
+  margin:auto;
+  box-shadow:0 6px 16px rgba(0,0,0,.08);
+}
+
+/* ---------- NEWSLETTER ---------- */
+.newsletter{
+  background:#f1f6f3;
+  padding:40px;
+  border-radius:12px;
+}
+
+/* ---------- FOOTER ---------- */
+footer{
+  background:var(--dark);
+  color:white;
+  text-align:center;
+  padding:30px;
+}
+
+.social a{
+  margin:0 10px;
+  font-size:22px;
+  text-decoration:none;
+}
+
+/* ---------- MOBILE ---------- */
+@media(max-width:700px){
+  .hero h1{
+    font-size:38px;
+  }
+}
+</style>
+</head>
+
+
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">Roots to Blooms</div>
+  <div>
+    <a href="#">Home</a>
+    <a href="#">Shop</a>
+    <a href="#">FAQ</a>
   </div>
+</nav>
+
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <h1>Roots to Blooms</h1>
+    <button onclick="location.href='shop.html'">
+      Shop Houseplants
+    </button>
+  </div>
+</section>
+
+
+<!-- MISSION -->
+<section class="section">
+  <img src="https://images.unsplash.com/photo-1592150621744-aca64f48394a?q=80&w=1200">
+  <h2>What is our mission?</h2>
+
+  <div class="card">
+    We strive to produce high-quality houseplants through propagation,
+    growing plants from cuttings taken from healthy parent stock.
+    Our goal is to provide strong, vibrant plants while helping others
+    discover the joy of growing.
+  </div>
+</section>
+
+
+<!-- HOW TO BUY -->
+<section class="section">
+  <h2>How do I purchase plants?</h2>
+
+  <div class="card">
+    Visit the shop page and add plants to your cart.  
+    When you're ready, checkout and complete the order form.
+    We'll contact you shortly after submission.
+
+    <br><br>
+    We currently accept cash and Interac e-Transfer.
+  </div>
+</section>
+
+
+<!-- FAQ -->
+<section class="section">
+  <h2>I have so many questions!</h2>
+
+  <div class="card">
+    No worries — visit our FAQ page to learn more.
+  </div>
+</section>
+
+
+<!-- NEWSLETTER -->
+<section class="section">
+  <div class="newsletter">
+    <h2>Roots to Blooms Newsletter</h2>
+
+    <!-- PASTE BREVO EMBED HERE LATER -->
+
+    Newsletter signup coming soon 🙂
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+  Connect with us on social media
+  <div class="social">
+    <a href="#">🔵</a>
+    <a href="#">📸</a>
+    <a href="#">🟢</a>
+  </div>
+</footer>
+
 </body>
+</html>
