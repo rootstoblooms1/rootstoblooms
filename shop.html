@@ -24,9 +24,7 @@
   top:0;
   z-index:1000;
 }
-.topnav .logo img{
-  height:48px;
-}
+.topnav .logo img{height:48px;}
 .nav-links a{
   color:white;
   text-decoration:none;
@@ -36,9 +34,7 @@
   border-radius:6px;
   transition:0.2s;
 }
-.nav-links a:hover{
-  background:var(--brand-green);
-}
+.nav-links a:hover{background:var(--brand-green);}
 
 /* ================= PAGE & SHOP LAYOUT ================= */
 body{
@@ -254,9 +250,7 @@ body{
   width:100%;
   box-sizing:border-box;
 }
-.customer-section label{
-  font-weight:700;
-}
+.customer-section label{font-weight:700;}
 .delivery-address{display:none; flex-direction:column; gap:6px; margin-top:6px;}
 .delivery-address input{width:100%;}
 .pickup-time{margin-top:6px;}
@@ -351,9 +345,12 @@ body{
     <div class="delivery-address" id="deliveryAddress">
       <input type="text" placeholder="Address Line 1" id="addr1">
       <input type="text" placeholder="Address Line 2" id="addr2">
-      <input type="text" placeholder="City" id="city">
-      <input type="text" placeholder="Postal Code" id="postal">
+      <input type="text" placeholder="City" id="city" oninput="calculateDeliveryFee()">
+      <input type="text" placeholder="Postal Code" id="postal" oninput="calculateDeliveryFee()">
     </div>
+
+    <label for="custDate">Pickup / Delivery Date</label>
+    <input type="date" id="custDate" onchange="validateDate(); generateTimeSlots();">
 
     <label for="custTime">Pickup / Delivery Time</label>
     <select id="custTime" class="pickup-time"></select>
@@ -393,14 +390,14 @@ body{
 </div>
 
 <script>
-/* ================= SHOP LOGIC ================= */
+/* ================= SHOP & CART LOGIC ================= */
 const productGrid = document.getElementById("productGrid");
 const floatBadge = document.getElementById("floatBadge");
 const cartCountEl = document.getElementById("cartCount");
 const cartSubtotalEl = document.getElementById("cartSubtotal");
 
 const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
-const STORAGE_KEY="plant_shop_cart_v7";
+const STORAGE_KEY="plant_shop_cart_v8";
 const PAGE_CATEGORY="houseplants";
 
 let RAW=[], GROUPED=[], cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
@@ -464,17 +461,49 @@ const openHours={
 };
 
 function generateTimeSlots(){
-  custTime.innerHTML="";
-  const now = new Date();
-  const today = now.getDay();
-  const dayMap=["sun","mon","tue","wed","thu","fri","sat"];
-  const hours=openHours[dayMap[today]];
-  if(!hours || hours.length===0){ custTime.innerHTML="<option>No slots available today</option>"; return; }
-  for(let h=hours[0];h<hours[1];h++){
-    for(let m=0;m<60;m+=30){
+  custTime.innerHTML = "";
+  const dateInput = document.getElementById("custDate").value;
+  if(!dateInput){ 
+    custTime.innerHTML = "<option>Please select a date first</option>";
+    return;
+  }
+
+  const selectedDate = new Date(dateInput);
+  const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
+  const dayName = dayMap[selectedDate.getDay()];
+  const hours = openHours[dayName];
+  
+  if(!hours || hours.length===0){ 
+    custTime.innerHTML = "<option>No slots available</option>"; 
+    return; 
+  }
+
+  for(let h = hours[0]; h < hours[1]; h++){
+    for(let m = 0; m < 60; m += 30){
       const slot = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
       custTime.innerHTML += `<option>${slot}</option>`;
     }
+  }
+}
+
+/* ================= DATE VALIDATION ================= */
+const custDate = document.getElementById("custDate");
+const closedDays = ["thu"]; 
+const today = new Date();
+custDate.min = today.toISOString().split("T")[0];
+
+function validateDate(){
+  const dateStr = custDate.value;
+  if(!dateStr) return;
+
+  const selectedDate = new Date(dateStr);
+  const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
+  const dayName = dayMap[selectedDate.getDay()];
+
+  if(closedDays.includes(dayName)){
+    alert("Sorry, we are closed on Thursdays. Please choose another date.");
+    custDate.value = "";
+    custTime.innerHTML = "<option>Please select a valid date</option>";
   }
 }
 
