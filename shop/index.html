@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roots to Blooms — Shop</title>
 
+<!-- Cart engine -->
+<script src="/shop/cart.js"></script>
+
 <style>
 :root{
   --green:#4EA337;
@@ -17,13 +20,13 @@ body{
   background:#fafafa;
 }
 
-/* NAV */
+/* NAVIGATION */
 .topnav{
   display:flex;
   justify-content:center;
   flex-wrap:wrap;
   gap:14px;
-  background:#2e5d3b;
+  background:var(--dark);
   padding:12px 0;
 }
 .topnav a{
@@ -47,12 +50,13 @@ body{
   color:white;
   font-size:46px;
   font-weight:800;
+  text-align:center;
 }
 
-/* BUTTONS */
+/* CATEGORY JUMP BUTTONS */
 .buttons{
   text-align:center;
-  padding:40px;
+  margin:30px 0;
 }
 .shop-button{
   display:inline-block;
@@ -62,31 +66,254 @@ body{
   border-radius:8px;
   text-decoration:none;
   font-weight:700;
-  margin:10px;
+  margin:5px;
+  cursor:pointer;
+  border:none;
+  transition:0.2s;
 }
 .shop-button:hover{
   background:#3b8025;
+}
+
+/* CATEGORY FILTER BUTTONS */
+.filters{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+  margin:30px 0;
+}
+.filters button{
+  border:none;
+  padding:8px 16px;
+  border-radius:20px;
+  background:#d6e9da;
+  cursor:pointer;
+  font-weight:700;
+  transition:0.2s;
+}
+.filters button.active{
+  background:var(--dark);
+  color:white;
+}
+
+/* PRODUCT GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:18px;
+  max-width:1200px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:white;
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.card img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+}
+
+.body{
+  padding:12px;
+}
+
+.name{font-weight:700;}
+.latin{font-size:12px;color:#666;}
+.price{margin:6px 0;}
+
+.swatches{
+  display:flex;
+  gap:6px;
+  margin:6px 0;
+}
+
+.swatch{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  border:2px solid #ccc;
+  cursor:pointer;
+}
+
+.addBtn{
+  width:100%;
+  padding:10px;
+  border:none;
+  background:var(--dark);
+  color:white;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.qty{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+}
+
+/* CART FLOATING */
+.cartFloating{
+  position:fixed;
+  bottom:18px;
+  right:18px;
+  background:var(--dark);
+  color:white;
+  padding:12px 18px;
+  border-radius:30px;
+  font-weight:700;
+  z-index:999;
 }
 </style>
 </head>
 
 <body>
 
+<!-- Navigation -->
 <nav class="topnav">
   <a href="/">Home</a>
   <a href="/shop/">Shop</a>
-  <a href="/shop/category.html?cat=houseplants">
-<a href="/shop/category.html?cat=annuals">
-<a href="/shop/category.html?cat=vegetable starters">
 </nav>
 
+<!-- Hero -->
 <div class="hero">Shop Plants</div>
 
+<!-- Category Jump Buttons -->
 <div class="buttons">
-  <a class="shop-button" href="/shop/houseplants/">Shop Houseplants</a>
-  <a class="shop-button" href="/shop/annuals/">Shop Annuals</a>
-  <a class="shop-button" href="/shop/vegetable-starters/">Shop Vegetable Starters</a>
+  <button class="shop-button" onclick="setFilter('houseplants')">Houseplants</button>
+  <button class="shop-button" onclick="setFilter('annuals')">Annuals</button>
+  <button class="shop-button" onclick="setFilter('vegetable starters')">Vegetable Starters</button>
+  <button class="shop-button" onclick="setFilter('all')">All Plants</button>
 </div>
+
+<!-- Category Filters -->
+<div class="filters" id="filters"></div>
+
+<!-- Product Grid -->
+<div id="grid" class="grid"></div>
+
+<!-- Cart -->
+<div class="cartFloating">
+🛒 Cart <span id="cartCount">0</span>
+</div>
+
+<script>
+const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
+
+let RAW = [];
+let GROUPS = [];
+let filter = "all";
+let hideSold = false;
+
+// ===== Fetch products =====
+async function load(){
+  const res = await fetch(SHEET_ENDPOINT);
+  RAW = await res.json();
+
+  GROUPS = buildGroups();
+  renderFilters();
+  render();
+}
+
+function buildGroups(){
+  const map = {};
+  RAW.forEach(p => {
+    if(!map[p.group]) map[p.group] = {base:p, vars:[]};
+    map[p.group].vars.push(p);
+  });
+  return Object.values(map);
+}
+
+// ===== Filters =====
+function renderFilters(){
+  const tags = new Set();
+  GROUPS.forEach(g => {
+    g.base.categories.forEach(c => tags.add(c));
+  });
+
+  let html = `<button onclick="setFilter('all')" class="active">All</button>`;
+  tags.forEach(t=>{
+    html+=`<button onclick="setFilter('${t}')">${t}</button>`;
+  });
+  html+=`<button onclick="toggleSold()">Hide Sold</button>`;
+  document.getElementById("filters").innerHTML = html;
+}
+
+function setFilter(f){
+  filter = f;
+  render();
+}
+
+function toggleSold(){
+  hideSold = !hideSold;
+  render();
+}
+
+// ===== Render products =====
+function render(){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  GROUPS.forEach(g=>{
+    // filter by category
+    if(filter!=="all" && !g.base.categories.includes(filter)) return;
+    if(hideSold && g.vars[0].stock===0) return;
+
+    const selected = g.vars[0];
+    const id = selected.id;
+    const qty = getQty(id);
+
+    // swatches
+    const swatches = g.vars.map(v=>`
+      <div class="swatch" style="background:${v.swatch}" onclick="selectVariant('${g.base.group}','${v.id}')"></div>
+    `).join("");
+
+    // stock / add button
+    const btnHTML = selected.stock==0
+      ? `<div style="color:red">Sold Out</div>`
+      : qty==0
+      ? `<button class="addBtn" onclick="add('${id}')">Add</button>`
+      : `<div class="qty">
+          <button onclick="dec('${id}')">−</button>
+          ${qty}
+          <button onclick="add('${id}')">+</button>
+        </div>`;
+
+    grid.innerHTML += `
+      <div class="card">
+        <img src="${selected.photo}">
+        <div class="body">
+          <div class="name">${selected.name}</div>
+          <div class="latin">${selected.latin}</div>
+          <div class="price">$${selected.price.toFixed(2)}</div>
+          <div class="swatches">${swatches}</div>
+          ${btnHTML}
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById("cartCount").innerText = cartCount();
+}
+
+// ===== Variant selection =====
+function selectVariant(group, id){
+  addToCart(id);
+  render();
+}
+
+// Cart helpers
+function add(id){ addToCart(id); render(); }
+function dec(id){ removeFromCart(id); render(); }
+
+load();
+</script>
 
 </body>
 </html>
