@@ -325,7 +325,6 @@ body{
 const productGrid = document.getElementById("productGrid");
 const floatBadge = document.getElementById("floatBadge");
 const cartCountEl = document.getElementById("cartCount");
-const cartDrawer = document.getElementById("cart-drawer");
 
 const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
 const STORAGE_KEY="plant_shop_cart_v6";
@@ -334,10 +333,10 @@ const PAGE_CATEGORY="houseplants";
 let RAW=[], GROUPED=[], cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
 let hideSold=false, activeFilter="all";
 
-/* ================= FETCH & RENDER PRODUCTS ================= */
+/* ================= FETCH PRODUCTS ================= */
 async function fetchProducts(){
-  const res = await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
-  RAW = await res.json();
+  const res=await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
+  RAW=await res.json();
   RAW.forEach(p=>{
     p.stock=Number(p.stock);
     p.price=Number(p.price);
@@ -363,6 +362,7 @@ function buildGroups(){
   GROUPED=Object.values(map);
 }
 
+/* ================= FILTERS ================= */
 function renderFilters(){
   const row=document.getElementById("filterRow");
   const cats=new Set();
@@ -382,9 +382,7 @@ function renderFilters(){
 function toggleSold(){ hideSold=!hideSold; renderProducts(); }
 function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
 
-function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
-function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
-
+/* ================= PRODUCTS ================= */
 function renderProducts(){
   productGrid.innerHTML="";
   GROUPED.forEach(group=>{
@@ -431,33 +429,46 @@ ${addArea}
   updateBadges();
 }
 
-/* ================= CART ================= */
-function toggleDrawer(){ cartDrawer.classList.toggle('open'); }
-function clearCart(){ cart={}; saveCart(); renderProducts(); }
-function continueShopping(){ toggleDrawer(); }
-function openCheckoutForm(){ alert("Checkout form goes here."); }
+function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
+function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
 
+/* ================= CART LOGIC ================= */
 function getProductById(id){return RAW.find(p=>p.id===id);}
-function saveCart(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); updateBadges(); }
-function firstAdd(id){ const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts(); }
-function updateQty(id,c){ const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts(); }
+function saveCart(){localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateBadges();}
+function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
+function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
 function updateBadges(){
-  let totalQty = 0;
-  let subtotal = 0;
-
-  for (let id in cart){
-    const qty = cart[id];
-    const product = getProductById(id);
-    if(!product) continue;
-    totalQty += qty;
-    subtotal += qty * product.price;
-  }
-
-  floatBadge.textContent = totalQty;
-  cartCountEl.textContent = totalQty;
-  document.getElementById("cartSubtotal").textContent = "$" + subtotal.toFixed(2);
+  const total=Object.values(cart).reduce((s,q)=>s+q,0);
+  floatBadge.textContent=total; 
+  cartCountEl.textContent=total;
+  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+    const p = getProductById(id);
+    return sum + (p ? p.price*qty : 0);
+  },0);
+  document.getElementById("cartSubtotal").textContent = `$${subtotal.toFixed(2)}`;
 }
-  
+
+/* ================= CHECKOUT ================= */
+function openCheckoutForm(){
+  const items = Object.entries(cart).map(([id, qty])=>{
+    const p=getProductById(id);
+    return p ? `${p.name} x${qty}` : '';
+  }).filter(Boolean).join(", ");
+
+  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+    const p=getProductById(id);
+    return sum + (p ? p.price*qty : 0);
+  },0);
+
+  // Replace these with your Google Form entry IDs
+  const formBase = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/viewform?usp=pp_url";
+  const itemsField = "entry.1046011819";    // field for items
+  const subtotalField = "entry.1046011819"; // field for subtotal
+
+  const prefillURL = `${formBase}&${itemsField}=${encodeURIComponent(items)}&${subtotalField}=${encodeURIComponent("$"+subtotal.toFixed(2))}`;
+  window.open(prefillURL, "_blank");
+}
+
 /* ================= INIT ================= */
 fetchProducts();
 setInterval(fetchProducts,300000);
