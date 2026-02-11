@@ -507,6 +507,42 @@ function validateDate(){
   }
 }
 
+function disableClosedDays() {
+  const today = new Date();
+  const minDate = today.toISOString().split("T")[0];
+  const maxDaysAhead = 30; // show 30 days ahead
+  const closedDaysSet = new Set(closedDays); // e.g., ["thu"]
+
+  custDate.min = minDate;
+
+  custDate.addEventListener("input", () => {
+    const selected = new Date(custDate.value);
+    const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
+    const dayName = dayMap[selected.getDay()];
+    if(closedDaysSet.has(dayName)) {
+      alert("Sorry, we are closed on Thursdays. Please select another date.");
+      custDate.value = "";
+      custTime.innerHTML = "<option>Please select a valid date</option>";
+    }
+  });
+
+  // Optional: mark disabled days visually
+  custDate.addEventListener("mouseover", () => {
+    const dates = [];
+    for(let i=0;i<=maxDaysAhead;i++){
+      const d = new Date();
+      d.setDate(today.getDate()+i);
+      const dayName = ["sun","mon","tue","wed","thu","fri","sat"][d.getDay()];
+      if(closedDaysSet.has(dayName)) {
+        dates.push(d.toISOString().split("T")[0]);
+      }
+    }
+    custDate.setAttribute("data-disabled", dates.join(","));
+  });
+}
+disableClosedDays();
+
+
 /* ================= FETCH PRODUCTS ================= */
 async function fetchProducts(){
   const res=await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
