@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roots to Blooms</title>
+<title>Roots to Blooms — Shop</title>
 
 <style>
 :root{
@@ -325,6 +325,7 @@ body{
 const productGrid = document.getElementById("productGrid");
 const floatBadge = document.getElementById("floatBadge");
 const cartCountEl = document.getElementById("cartCount");
+const cartDrawer = document.getElementById("cart-drawer");
 
 const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
 const STORAGE_KEY="plant_shop_cart_v6";
@@ -333,10 +334,10 @@ const PAGE_CATEGORY="houseplants";
 let RAW=[], GROUPED=[], cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
 let hideSold=false, activeFilter="all";
 
-/* ================= FETCH PRODUCTS ================= */
+/* ================= FETCH & RENDER PRODUCTS ================= */
 async function fetchProducts(){
-  const res=await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
-  RAW=await res.json();
+  const res = await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
+  RAW = await res.json();
   RAW.forEach(p=>{
     p.stock=Number(p.stock);
     p.price=Number(p.price);
@@ -362,7 +363,6 @@ function buildGroups(){
   GROUPED=Object.values(map);
 }
 
-/* ================= FILTERS ================= */
 function renderFilters(){
   const row=document.getElementById("filterRow");
   const cats=new Set();
@@ -382,7 +382,9 @@ function renderFilters(){
 function toggleSold(){ hideSold=!hideSold; renderProducts(); }
 function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
 
-/* ================= PRODUCTS ================= */
+function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
+function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
+
 function renderProducts(){
   productGrid.innerHTML="";
   GROUPED.forEach(group=>{
@@ -429,15 +431,17 @@ ${addArea}
   updateBadges();
 }
 
-function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
-function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
+/* ================= CART ================= */
+function toggleDrawer(){ cartDrawer.classList.toggle('open'); }
+function clearCart(){ cart={}; saveCart(); renderProducts(); }
+function continueShopping(){ toggleDrawer(); }
+function openCheckoutForm(){ alert("Checkout form goes here."); }
 
-/* ================= CART LOGIC ================= */
 function getProductById(id){return RAW.find(p=>p.id===id);}
-function saveCart(){localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateBadges();}
-function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
-function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
-function updateBadges(){const total=Object.values(cart).reduce((s,q)=>s+q,0); floatBadge.textContent=total; cartCountEl.textContent=total;}
+function saveCart(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); updateBadges(); }
+function firstAdd(id){ const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts(); }
+function updateQty(id,c){ const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts(); }
+function updateBadges(){ const total=Object.values(cart).reduce((s,q)=>s+q,0); floatBadge.textContent=total; cartCountEl.textContent=total; }
 
 /* ================= INIT ================= */
 fetchProducts();
