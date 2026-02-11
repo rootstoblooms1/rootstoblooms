@@ -548,6 +548,10 @@ async function fetchProducts(){
   });
   buildGroups();
   renderFilters();
+document.getElementById("filterRow").style.display = "flex"; // show filters now
+renderProducts();
+document.getElementById("loadingNotice")?.remove();
+productGrid.style.display="grid";
   renderProducts();
   document.getElementById("loadingNotice")?.remove();
   productGrid.style.display="grid";
