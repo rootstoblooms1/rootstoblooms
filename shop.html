@@ -370,8 +370,22 @@ body{
   </div>
 
   <div class="drawer-footer">
-    <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
-    <div class="totals"><div>Subtotal</div><div id="cartSubtotal">$0.00</div></div>
+  <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
+
+  <div class="totals">
+    <div>Products</div>
+    <div id="cartProducts">$0.00</div>
+  </div>
+
+  <div class="totals" id="deliveryRow" style="display:none;">
+    <div>Delivery</div>
+    <div id="cartDelivery">$0.00</div>
+  </div>
+
+  <div class="totals">
+    <div><strong>Total</strong></div>
+    <div id="cartSubtotal"><strong>$0.00</strong></div>
+  </div>
     <div style="display:flex;gap:8px;">
       <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
       <button class="small-btn" onclick="openCheckoutForm()">Checkout</button>
@@ -395,6 +409,9 @@ const productGrid = document.getElementById("productGrid");
 const floatBadge = document.getElementById("floatBadge");
 const cartCountEl = document.getElementById("cartCount");
 const cartSubtotalEl = document.getElementById("cartSubtotal");
+const cartProductsEl = document.getElementById("cartProducts");
+const cartDeliveryEl = document.getElementById("cartDelivery");
+const deliveryRowEl = document.getElementById("deliveryRow"); 
 
 const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
 const STORAGE_KEY="plant_shop_cart_v8";
@@ -410,21 +427,34 @@ function saveCart(){localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); upda
 function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
 function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
 function updateBadges(){
-  const total=Object.values(cart).reduce((s,q)=>s+q,0);
-  floatBadge.textContent=total; 
-  cartCountEl.textContent=total;
-  let subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
-    const p = getProductById(id);
-    return sum + (p ? p.price*qty : 0);
-  },0);
-  subtotal += deliveryFee;
-  cartSubtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-}
 
+  const itemCount = Object.values(cart).reduce((s,q)=>s+q,0);
+  floatBadge.textContent = itemCount;
+  cartCountEl.textContent = itemCount;
+
+  const productTotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+    const p = getProductById(id);
+    return sum + (p ? p.price * qty : 0);
+  },0);
+
+  const grandTotal = productTotal + deliveryFee;
+
+  cartProductsEl.textContent = `$${productTotal.toFixed(2)}`;
+  cartSubtotalEl.textContent = `$${grandTotal.toFixed(2)}`;
+
+  if(deliveryFee > 0){
+    deliveryRowEl.style.display = "flex";
+    cartDeliveryEl.textContent = `$${deliveryFee.toFixed(2)}`;
+  } else {
+    deliveryRowEl.style.display = "none";
+  }
+
+}
+  
 /* ================= CART DRAWER ================= */
 const cartDrawer = document.getElementById("cart-drawer");
 function toggleDrawer(){cartDrawer.classList.toggle("open");}
-function clearCart(){cart={}; deliveryFee=0; saveCart(); renderProducts();}
+function clearCart(){cart={}; deliveryFee=0; saveCart(); updateBadges(); renderProducts();}
 function continueShopping(){toggleDrawer();}
 function closeConfirmation(){document.getElementById("confirmation-overlay").style.display = "none";}
 
@@ -496,8 +526,13 @@ function generateTimeSlots() {
 
   for(let h = hours[0]; h < hours[1]; h++){
     for(let m = 0; m < 60; m += 30){
-      const slot = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-      custTime.innerHTML += `<option>${slot}</option>`;
+const raw = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+
+let hour12 = h % 12 || 12;
+let ampm = h < 12 ? "AM" : "PM";
+const pretty = `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
+
+custTime.innerHTML += `<option value="${raw}">${pretty}</option>`;
     }
   }
 }
@@ -546,7 +581,7 @@ function renderFilters(){
     });
     if(usable) cats.add(c);
   }));
-  row.innerHTML=`<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')" data-filter="all">all</button>`+
+  row.innerHTML=`<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')" data-filter="all">All</button>`+
     [...cats].sort().map(c=>`<button class="filter-btn" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`).join("")+
     `<button class="filter-btn" onclick="toggleSold()" data-filter="sold">hide sold out</button>`;
 }
@@ -604,6 +639,14 @@ function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); 
 
 /* ================= CHECKOUT ================= */
 function openCheckoutForm(){
+  if(Object.keys(cart).length === 0){
+    alert("Your cart is empty.");
+    return;
+  }
+  if(!custName.value || !custPhone.value || !custDate.value || !custTime.value){
+  alert("Please complete name, phone, date, and time.");
+  return;
+}
   const items = Object.entries(cart).map(([id, qty])=>{
     const p=getProductById(id);
     return p ? `${p.name} x${qty}` : '';
