@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roots to Blooms — Shop</title>
+<title>Roots to Blooms</title>
 
 <style>
 :root{
@@ -24,11 +24,9 @@
   top:0;
   z-index:1000;
 }
-
 .topnav .logo img{
-  height:48px; /* same as homepage */
+  height:48px;
 }
-
 .nav-links a{
   color:white;
   text-decoration:none;
@@ -38,7 +36,6 @@
   border-radius:6px;
   transition:0.2s;
 }
-
 .nav-links a:hover{
   background:var(--brand-green);
 }
@@ -162,6 +159,10 @@ body{
   font-weight:800;
   margin-top:auto;
 }
+.add-btn:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
 .qty-row{
   display:flex;
   align-items:center;
@@ -174,6 +175,10 @@ body{
   padding:6px 10px;
   border-radius:6px;
   cursor:pointer;
+}
+.qty-btn:disabled{
+  opacity:0.4;
+  cursor:not-allowed;
 }
 .qty-num{
   min-width:28px;
@@ -317,9 +322,10 @@ body{
 </div>
 
 <script>
-  const productGrid = document.getElementById("productGrid");
+const productGrid = document.getElementById("productGrid");
 const floatBadge = document.getElementById("floatBadge");
-/* ================= CONFIG ================= */
+const cartCountEl = document.getElementById("cartCount");
+
 const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
 const STORAGE_KEY="plant_shop_cart_v6";
 const PAGE_CATEGORY="houseplants";
@@ -327,6 +333,7 @@ const PAGE_CATEGORY="houseplants";
 let RAW=[], GROUPED=[], cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
 let hideSold=false, activeFilter="all";
 
+/* ================= FETCH PRODUCTS ================= */
 async function fetchProducts(){
   const res=await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
   RAW=await res.json();
@@ -355,6 +362,7 @@ function buildGroups(){
   GROUPED=Object.values(map);
 }
 
+/* ================= FILTERS ================= */
 function renderFilters(){
   const row=document.getElementById("filterRow");
   const cats=new Set();
@@ -374,9 +382,9 @@ function renderFilters(){
 function toggleSold(){ hideSold=!hideSold; renderProducts(); }
 function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
 
+/* ================= PRODUCTS ================= */
 function renderProducts(){
-  const grid=document.getElementById("productGrid");
-  grid.innerHTML="";
+  productGrid.innerHTML="";
   GROUPED.forEach(group=>{
     if(activeFilter!=="all" && !group.categories.has(activeFilter)) return;
     let variants=group.variants;
@@ -385,9 +393,19 @@ function renderProducts(){
     if(!variants.length) return;
     const selected=variants[0], id=selected.id, qty=cart[id]||0;
     const swatches=[...new Map(group.variants.map(v=>[v.swatch,v])).values()];
-    let addArea=qty>0?`<div class="qty-row"><button class="qty-btn" onclick="updateQty('${id}',-1)">-</button><div class="qty-num">${qty}</div><button class="qty-btn" onclick="updateQty('${id}',1)">+</button></div>`:
-      `<button class="add-btn" onclick="firstAdd('${id}')" ${(selected.soldOut||selected.comingSoon)?'disabled':''}>Add</button>`;
-    grid.innerHTML+=`
+
+    let addArea;
+    if(qty>0){
+      addArea=`<div class="qty-row">
+        <button class="qty-btn" onclick="updateQty('${id}',-1)">-</button>
+        <div class="qty-num">${qty}</div>
+        <button class="qty-btn" onclick="updateQty('${id}',1)" ${qty>=selected.stock?'disabled':''}>+</button>
+      </div>`;
+    } else {
+      addArea=`<button class="add-btn" onclick="firstAdd('${id}')" ${selected.soldOut||selected.comingSoon?'disabled':''}>Add</button>`;
+    }
+
+    productGrid.innerHTML+=`
 <div class="product-card ${selected.soldOut?'sold-out':''} ${selected.comingSoon?'coming-soon':''}">
 <div class="product-image-wrap">
 <img class="product-image" src="${selected.photo}">
@@ -398,24 +416,28 @@ ${selected.comingSoon?overlay("COMING SOON","#777"):""}
 <div class="product-title">${selected.name}</div>
 <div class="product-latin">${selected.latin||""}</div>
 <div class="product-price">$${selected.price.toFixed(2)}</div>
-<div class="swatches">${swatches.map(v=>{
+<div class="swatches">
+${group.variants.filter(v=>v.swatch && v.swatch.trim()!=="").map(v=>{
   let color=v.swatch.trim(); if(!color.startsWith("#") && !color.startsWith("rgb") && !color.startsWith("hsl")) color="#"+color;
   return `<div class="swatch ${v.id===selected.id?'selected':''}" style="background-color:${color}" onclick="selectVariant('${group.base.group}','${v.id}')"></div>`;
-}).join("")}</div></div>${addArea}</div>`;
+}).join("")}
+</div>
+</div>
+${addArea}
+</div>`;
   });
   updateBadges();
-  paintSwatches();
 }
 
 function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
 function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
 
+/* ================= CART LOGIC ================= */
 function getProductById(id){return RAW.find(p=>p.id===id);}
 function saveCart(){localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateBadges();}
 function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
-function updateQty(id,c){if(!cart[id]) return; cart[id]+=c; if(cart[id]<=0) delete cart[id]; saveCart(); renderProducts();}
-function updateBadges(){const total=Object.values(cart).reduce((s,q)=>s+q,0); floatBadge.textContent=total; cartCount.textContent=total;}
-function paintSwatches(){document.querySelectorAll(".swatch").forEach(s=>{const color=s.dataset.color;if(color){s.style.backgroundColor=color.startsWith("#")||color.startsWith("rgb")?color:"#"+color;}});}
+function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
+function updateBadges(){const total=Object.values(cart).reduce((s,q)=>s+q,0); floatBadge.textContent=total; cartCountEl.textContent=total;}
 
 /* ================= INIT ================= */
 fetchProducts();
