@@ -305,9 +305,9 @@ body{
     <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
     <div class="totals"><div>Subtotal</div><div id="cartSubtotal">$0.00</div></div>
     <div style="display:flex;gap:8px;">
-      <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/viewform" target="_blank" class="small-btn">Checkout</a>
-    </div>
+  <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
+  <button class="small-btn" onclick="openCheckoutForm()">Checkout</button>
+</div>
   </div>
 </div>
 
@@ -447,7 +447,27 @@ function updateBadges(){
   },0);
   document.getElementById("cartSubtotal").textContent = `$${subtotal.toFixed(2)}`;
 }
+  
+/* ================= CART DRAWER TOGGLE ================= */
+const cartDrawer = document.getElementById("cart-drawer");
 
+function toggleDrawer() {
+  cartDrawer.classList.toggle("open");
+}
+
+function clearCart() {
+  cart = {};
+  saveCart();
+  renderProducts();
+}
+
+function continueShopping() {
+  toggleDrawer();
+}
+
+function closeConfirmation() {
+  document.getElementById("confirmation-overlay").style.display = "none";
+}
 /* ================= CHECKOUT ================= */
 function openCheckoutForm(){
   const items = Object.entries(cart).map(([id, qty])=>{
