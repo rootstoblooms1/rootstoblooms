@@ -50,10 +50,7 @@ body{
 
 /* FILTER BAR */
 .filter-bar{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin:18px 0;
+  display:none;
 }
 .filter-btn{
   background:var(--accent);
@@ -294,7 +291,6 @@ body{
   </div>
 
   <div id="filterRow" class="filter-bar">
-    <button class="filter-btn active" data-filter="all" onclick="applyFilter('all')">All</button>
   </div>
 
   <div id="productGrid" class="product-grid"></div>
