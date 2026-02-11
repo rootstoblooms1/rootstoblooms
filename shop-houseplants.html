@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roots to Blooms — Shop</title>
+<title>Roots to Blooms — Houseplants</title>
 
 <style>
 :root{
@@ -209,7 +209,7 @@ body{
   top:0;
   right:-420px;
   width:380px;
-  bottom:0;
+  bottom:40px;
   max-height:100%;
   padding:18px;
   padding-bottom:calc(18px + env(safe-area-inset-bottom));
@@ -253,6 +253,7 @@ body{
 .pickup-time{margin-top:6px;}
 
 /* MOBILE CART */
+/* MOBILE CART */
 @media (max-width:720px){
   #cart-drawer{
     top:auto !important;
@@ -267,6 +268,15 @@ body{
     padding-right:calc(12px + env(safe-area-inset-right));
   }
   #cart-drawer.open{ bottom:0; }
+}
+
+/* DESKTOP CART SAFETY */
+@media (min-width: 721px) {
+  #cart-drawer {
+    top: 0;
+    bottom: 40px; /* desktop safe space from taskbar */
+    max-height: calc(100vh - 40px);
+  }
 }
 </style>
 </head>
