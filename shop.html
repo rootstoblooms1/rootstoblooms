@@ -13,6 +13,36 @@
   --dark:#254D32;
 }
 
+/* ===== NAVIGATION ===== */
+.topnav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 20px;
+  background:var(--dark);
+  position:sticky;
+  top:0;
+  z-index:1000;
+}
+
+.topnav a{
+  color:white;
+  text-decoration:none;
+  font-weight:700;
+  margin-left:16px;
+}
+
+.nav-links{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+/* Logo */
+.topnav .logo img{
+  height:40px;
+}
+
 /* Page & header */
 .shop-container{font-family:Arial,Helvetica,sans-serif; padding-bottom:80px;}
 .filter-bar{
@@ -32,27 +62,6 @@
   background:var(--dark);
   color:#fff;
   transform:scale(1.02);
-}
-
-/* ===== TOP CATEGORY BUTTONS ===== */
-.category-buttons{
-  display:flex; flex-wrap:wrap; justify-content:center; gap:10px;
-  margin:20px 0;
-}
-.shop-button{
-  display:inline-block;
-  background:var(--brand-green);
-  color:white;
-  padding:10px 20px;
-  border-radius:8px;
-  text-decoration:none;
-  font-weight:700;
-  cursor:pointer;
-  border:none;
-  transition:0.2s;
-}
-.shop-button:hover{
-  background:#3b8025;
 }
 
 /* Product grid */
@@ -84,11 +93,8 @@
   background:#f3f3f3;
 }
 
-/* ===== SOLD OUT OVERLAY ===== */
-.product-card.sold-out .product-image{
-  filter:grayscale(100%);
-  opacity:0.6;
-}
+/* ===== SOLD OUT / COMING SOON OVERLAY ===== */
+.product-card.sold-out .product-image,
 .product-card.coming-soon .product-image{
   filter:grayscale(100%);
   opacity:0.6;
@@ -121,7 +127,7 @@
 .swatches{
   display:flex;
   gap:8px;
-  margin:10px 0 12px 0;   /* space above/below */
+  margin:10px 0 12px 0;
   flex-wrap:wrap;
 }
 
@@ -216,19 +222,17 @@
   flex-direction:column;
   gap:10px;
   overflow:hidden;
-  box-sizing:border-box; /* 🔥 critical for iOS Safari */
+  box-sizing:border-box;
 }
 #cart-drawer.open{ right:0; }
 
-/* Scrollable cart items */
 .cart-items{
   flex:1;
-  min-height:0;              /* 🔥 REQUIRED on iOS */
+  min-height:0;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
 
-/* Cart lines */
 .cart-line{
   display:flex;
   justify-content:space-between;
@@ -245,9 +249,8 @@
   cursor:pointer;
 }
 
-/* Sticky footer */
 .drawer-footer{
-  flex-shrink:0;             /* 🔥 prevents push-off */
+  flex-shrink:0;
   background:#fff;
   border-top:1px solid #f0f0f0;
   padding-top:12px;
@@ -281,7 +284,7 @@
   box-shadow:0 12px 40px rgba(0,0,0,0.3);
 }
 
-/* ===== iOS SAFE MOBILE CART (BOTTOM SHEET) ===== */
+/* iOS mobile cart bottom sheet */
 @media (max-width:720px){
   #cart-drawer{
     top:auto !important;
@@ -299,25 +302,28 @@
 }
 
 /* Dynamic swatch colors */
-.swatch[data-color] { background-color: transparent; } 
+.swatch[data-color]{ background-color: transparent; }
 </style>
 </head>
 <body>
 
+<!-- NAVIGATION -->
+<nav class="topnav">
+  <a href="/" class="logo">
+    <img src="/path/to/logo.png" alt="Roots to Blooms Logo">
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/shop.html">Shop</a>
+  </div>
+</nav>
+
+<!-- SHOP CONTENT -->
 <div class="shop-container">
   <div id="loadingNotice" style="text-align:center;padding:40px 12px;font-weight:800;color:#555">
     🌱 Loading products… please wait
   </div>
 
-  <!-- Top category jump buttons -->
-  <div class="category-buttons">
-    <button class="shop-button" onclick="applyFilter('houseplants')">Houseplants</button>
-    <button class="shop-button" onclick="applyFilter('annuals')">Annuals</button>
-    <button class="shop-button" onclick="applyFilter('vegetable starters')">Vegetable Starters</button>
-    <button class="shop-button" onclick="applyFilter('all')">All Plants</button>
-  </div>
-
-  <!-- Dynamic filter buttons -->
   <div id="filterRow" class="filter-bar">
     <button class="filter-btn active" data-filter="all" onclick="applyFilter('all')">All</button>
   </div>
@@ -325,6 +331,7 @@
   <div id="productGrid" class="product-grid"></div>
 </div>
 
+<!-- FLOATING CART -->
 <div id="floating-cart" title="View cart" onclick="toggleDrawer()">
   🛒 Cart
   <div class="badge" id="floatBadge">0</div>
@@ -359,18 +366,12 @@
   </div>
 </div>
 
+<script src="cart.js"></script>
 <script>
 // ================= CONFIG =================
 const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
-const STORAGE_KEY="plant_shop_cart_v6";
-const PAGE_CATEGORY="houseplants"; 
-
-// ================= STATE =================
-let RAW=[];
-let GROUPED=[];
-let cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
-let hideSold=false;
-let activeFilter="all";
+const PAGE_CATEGORY="houseplants"; // change per page
+let RAW=[], GROUPED=[], hideSold=false, activeFilter="all";
 
 // ================= FETCH =================
 async function fetchProducts(){
@@ -392,14 +393,10 @@ async function fetchProducts(){
 // ================= GROUP VARIANTS =================
 function buildGroups(){
   const pageTag=PAGE_CATEGORY.toLowerCase().trim();
-  const filtered=RAW.filter(p =>
-    (p.categories||[]).map(c=>c.toLowerCase().trim()).includes(pageTag)
-  );
+  const filtered=RAW.filter(p=>(p.categories||[]).map(c=>c.toLowerCase().trim()).includes(pageTag));
   const map={};
   filtered.forEach(p=>{
-    if(!map[p.group]){
-      map[p.group]={ base:p, variants:[], categories:new Set() };
-    }
+    if(!map[p.group]) map[p.group]={base:p,variants:[],categories:new Set()};
     map[p.group].variants.push(p);
     p.categories.forEach(c=>{
       if(c.toLowerCase()!==pageTag) map[p.group].categories.add(c);
@@ -422,12 +419,13 @@ function renderFilters(){
       if(usable) cats.add(c);
     });
   });
-  row.innerHTML=`<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')">all</button>` +
-    [...cats].sort().map(c=>`<button class="filter-btn" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`).join("") +
+  row.innerHTML=`<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')" data-filter="all">all</button>`+
+    [...cats].sort().map(c=>`<button class="filter-btn" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`).join("")+
     `<button class="filter-btn" onclick="toggleSold()" data-filter="sold">hide sold out</button>`;
 }
 
 function toggleSold(){ hideSold=!hideSold; renderProducts(); }
+function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
 
 // ================= PRODUCTS =================
 function renderProducts(){
@@ -442,42 +440,41 @@ function renderProducts(){
     const selected=variants[0];
     const id=selected.id;
     const qty=cart[id]||0;
-    let addArea = qty>0
-      ? `<div class="qty-row"><button class="qty-btn" onclick="updateQty('${id}',-1)">-</button><div class="qty-num">${qty}</div><button class="qty-btn" onclick="updateQty('${id}',1)">+</button></div>`
-      : `<button class="add-btn" onclick="firstAdd('${id}')" ${(selected.soldOut||selected.comingSoon)?'disabled':''}>Add</button>`;
-    const swatches=group.variants.map(v=>`<div class="swatch ${v.id===selected.id?'selected':''}" style="background-color:${v.swatch.startsWith('#')||v.swatch.startsWith('rgb')?v.swatch:'#'+v.swatch}" onclick="selectVariant('${group.base.group}','${v.id}')"></div>`).join("");
+    const swatches=[...new Map(group.variants.map(v=>[v.swatch,v])).values()];
+    let addArea=qty>0?`<div class="qty-row"><button class="qty-btn" onclick="updateQty('${id}',-1)">-</button><div class="qty-num">${qty}</div><button class="qty-btn" onclick="updateQty('${id}',1)">+</button></div>`:
+      `<button class="add-btn" onclick="firstAdd('${id}')" ${(selected.soldOut||selected.comingSoon)?'disabled':''}>Add</button>`;
     grid.innerHTML+=`
 <div class="product-card ${selected.soldOut?'sold-out':''} ${selected.comingSoon?'coming-soon':''}">
-  <div class="product-image-wrap">
-    <img class="product-image" src="${selected.photo}">
-    ${selected.soldOut?overlay("SOLD OUT","#c33"):""}
-    ${selected.comingSoon?overlay("COMING SOON","#777"):""}
-  </div>
-  <div>
-    <div class="product-title">${selected.name}</div>
-    <div class="product-latin">${selected.latin||""}</div>
-    <div class="product-price">$${selected.price.toFixed(2)}</div>
-    <div class="swatches">${swatches}</div>
-  </div>
-  ${addArea}
-</div>`;
+<div class="product-image-wrap">
+<img class="product-image" src="${selected.photo}">
+${selected.soldOut?overlay("SOLD OUT","#c33"):""}
+${selected.comingSoon?overlay("COMING SOON","#777"):""}
+</div>
+<div>
+<div class="product-title">${selected.name}</div>
+<div class="product-latin">${selected.latin||""}</div>
+<div class="product-price">$${selected.price.toFixed(2)}</div>
+<div class="swatches">${swatches.filter(v=>v.swatch&&v.swatch.trim()!=="").map(v=>`<div class="swatch ${v.id===selected.id?'selected':''}" style="background-color:${v.swatch.startsWith("#")||v.swatch.startsWith("rgb")?v.swatch:'#'+v.swatch}" onclick="selectVariant('${group.base.group}','${v.id}')"></div>`).join("")}</div>
+</div>
+${addArea}
+</div>
+`; 
   });
   updateBadges();
 }
 
+// ================= HELPERS =================
 function overlay(txt,color){ return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`; }
 function selectVariant(group,id){ const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){ g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts(); } }
-function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
-
-// ================= CART =================
 function getProductById(id){ return RAW.find(p=>p.id===id); }
-function saveCart(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateBadges(); }
 function firstAdd(id){ const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts(); }
 function updateQty(id,c){ if(!cart[id]) return; cart[id]+=c; if(cart[id]<=0) delete cart[id]; saveCart(); renderProducts(); }
+function saveCart(){ localStorage.setItem("plant_shop_cart_v6",JSON.stringify(cart)); updateBadges(); }
 function updateBadges(){ const total=Object.values(cart).reduce((s,q)=>s+q,0); floatBadge.textContent=total; cartCount.textContent=total; }
 
 // ================= INIT =================
 fetchProducts();
+setInterval(fetchProducts,300000);
 </script>
 
 </body>
