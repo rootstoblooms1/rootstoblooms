@@ -441,8 +441,23 @@ function getProductById(id){return RAW.find(p=>p.id===id);}
 function saveCart(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); updateBadges(); }
 function firstAdd(id){ const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts(); }
 function updateQty(id,c){ const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts(); }
-function updateBadges(){ const total=Object.values(cart).reduce((s,q)=>s+q,0); floatBadge.textContent=total; cartCountEl.textContent=total; }
+function updateBadges(){
+  let totalQty = 0;
+  let subtotal = 0;
 
+  for (let id in cart){
+    const qty = cart[id];
+    const product = getProductById(id);
+    if(!product) continue;
+    totalQty += qty;
+    subtotal += qty * product.price;
+  }
+
+  floatBadge.textContent = totalQty;
+  cartCountEl.textContent = totalQty;
+  document.getElementById("cartSubtotal").textContent = "$" + subtotal.toFixed(2);
+}
+  
 /* ================= INIT ================= */
 fetchProducts();
 setInterval(fetchProducts,300000);
