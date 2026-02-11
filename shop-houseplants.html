@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roots to Blooms — Houseplants</title>
+<title>Roots to Blooms — Shop</title>
 
 <style>
 :root{
@@ -51,9 +51,9 @@ body{
 /* FILTER BAR */
 .filter-bar{
   display:none;
+  margin-bottom:20px;
   flex-wrap:wrap;
   gap:8px;
-  margin-bottom:18px;
 }
 .filter-btn{
   background:var(--accent);
@@ -63,6 +63,7 @@ body{
   border-radius:999px;
   cursor:pointer;
   font-weight:700;
+  transition:.2s;
 }
 .filter-btn.active{
   background:var(--dark);
@@ -275,11 +276,12 @@ body{
 </head>
 
 <body>
+<!-- NAV -->
 <nav class="topnav">
   <a href="/" class="logo"><img src="IMG_1466.png" alt="Roots to Blooms Logo"></a>
   <div class="nav-links">
     <a href="/">Home</a>
-    <a href="shop-houseplants.html">Shop</a>
+    <a href="shop.html">Shop</a>
     <a href="/about.html">About</a>
     <a href="/contact.html">Contact</a>
   </div>
@@ -289,18 +291,76 @@ body{
   <div id="loadingNotice" style="text-align:center;padding:40px 12px;font-weight:800;color:#555">
     🌱 Loading products… please wait
   </div>
-
   <div id="filterRow" class="filter-bar"></div>
   <div id="productGrid" class="product-grid"></div>
 </div>
 
+<!-- FLOATING CART -->
 <div id="floating-cart" title="View cart" onclick="toggleDrawer()">
   🛒 Cart
   <div class="badge" id="floatBadge">0</div>
 </div>
 
+<!-- CART DRAWER -->
 <div id="cart-drawer">
-  <!-- drawer content and customer form here (same as your original code) -->
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h3 style="margin:0">Your Cart</h3>
+    <div>
+      <button class="small-btn" onclick="clearCart()">Clear</button>
+      <button class="small-btn" onclick="toggleDrawer()">Close</button>
+    </div>
+  </div>
+  <div id="cartItemsWrap" class="cart-items"></div>
+  <!-- CUSTOMER FORM -->
+  <div class="customer-section">
+    <label for="custName">Name</label>
+    <input type="text" id="custName" placeholder="First Last">
+    <label for="custEmail">Email</label>
+    <input type="email" id="custEmail">
+    <label for="custPhone">Phone</label>
+    <input type="tel" id="custPhone">
+    <label for="custContactMethod">Preferred Contact Method</label>
+    <select id="custContactMethod">
+      <option>Call</option><option>Text</option><option>Email</option>
+    </select>
+    <label for="custPickupDelivery">Pickup or Delivery</label>
+    <select id="custPickupDelivery" onchange="toggleDeliveryAddress(this.value)">
+      <option value="pickup">Pickup</option>
+      <option value="delivery">Delivery</option>
+    </select>
+    <div class="delivery-address" id="deliveryAddress">
+      <input type="text" placeholder="Address Line 1" id="addr1">
+      <input type="text" placeholder="Address Line 2" id="addr2">
+      <input type="text" placeholder="City" id="city" oninput="calculateDeliveryFee()">
+      <input type="text" placeholder="Postal Code" id="postal" oninput="calculateDeliveryFee()">
+    </div>
+    <label for="custDate">Pickup / Delivery Date</label>
+    <input type="date" id="custDate" onchange="generateTimeSlots();">
+    <label for="custTime">Pickup / Delivery Time</label>
+    <select id="custTime" class="pickup-time"></select>
+    <label for="custNotes">Notes / Special Instructions</label>
+    <textarea id="custNotes" rows="2"></textarea>
+    <label for="custMarketing">How did you hear about us?</label>
+    <select id="custMarketing">
+      <option>Google Search</option>
+      <option>Facebook</option>
+      <option>Instagram</option>
+      <option>Poster</option>
+      <option>From a Friend/Family Member</option>
+      <option>Other (please specify)</option>
+    </select>
+  </div>
+
+  <div class="drawer-footer">
+    <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
+    <div class="totals"><div>Products</div><div id="cartProducts">$0.00</div></div>
+    <div class="totals" id="deliveryRow" style="display:none;"><div>Delivery</div><div id="cartDelivery">$0.00</div></div>
+    <div class="totals"><div><strong>Total</strong></div><div id="cartSubtotal"><strong>$0.00</strong></div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
+      <button class="small-btn" onclick="openCheckoutForm()">Checkout</button>
+    </div>
+  </div>
 </div>
 
 <div id="confirmation-overlay">
@@ -314,7 +374,7 @@ body{
 </div>
 
 <script>
-// ======== CART LOGIC & FETCH PRODUCTS ========
+/* ================= SHOP & CART LOGIC ================= */
 const productGrid = document.getElementById("productGrid");
 const floatBadge = document.getElementById("floatBadge");
 const cartCountEl = document.getElementById("cartCount");
@@ -331,7 +391,132 @@ let RAW=[], GROUPED=[], cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}")
 let hideSold=false, activeFilter="all";
 let deliveryFee=0;
 
-// Insert all the cart logic JS here EXACTLY as you provided
+/* ================= CART FUNCTIONS ================= */
+function getProductById(id){return RAW.find(p=>p.id===id);}
+function saveCart(){localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateBadges();}
+function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
+function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
+function updateBadges(){
+
+  const itemCount = Object.values(cart).reduce((s,q)=>s+q,0);
+  floatBadge.textContent = itemCount;
+  cartCountEl.textContent = itemCount;
+
+  const productTotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+    const p = getProductById(id);
+    return sum + (p ? p.price * qty : 0);
+  },0);
+
+  const grandTotal = productTotal + deliveryFee;
+
+  cartProductsEl.textContent = `$${productTotal.toFixed(2)}`;
+  cartSubtotalEl.textContent = `$${grandTotal.toFixed(2)}`;
+
+  if(deliveryFee > 0){
+    deliveryRowEl.style.display = "flex";
+    cartDeliveryEl.textContent = `$${deliveryFee.toFixed(2)}`;
+  } else {
+    deliveryRowEl.style.display = "none";
+  }
+
+}
+  
+/* ================= CART DRAWER ================= */
+const cartDrawer = document.getElementById("cart-drawer");
+function toggleDrawer(){cartDrawer.classList.toggle("open");}
+function clearCart(){cart={}; deliveryFee=0; saveCart(); updateBadges(); renderProducts();}
+function continueShopping(){toggleDrawer();}
+function closeConfirmation(){document.getElementById("confirmation-overlay").style.display = "none";}
+
+/* ================= DELIVERY / TIME ================= */
+const custPickupDelivery = document.getElementById("custPickupDelivery");
+const deliveryAddress = document.getElementById("deliveryAddress");
+const custTime = document.getElementById("custTime");
+
+function toggleDeliveryAddress(val){
+  if(val==="delivery"){ deliveryAddress.style.display="flex"; calculateDeliveryFee(); }
+  else{ deliveryAddress.style.display="none"; deliveryFee=0; updateBadges(); }
+}
+
+function calculateDeliveryFee(){
+  const city = document.getElementById("city").value.trim().toLowerCase();
+  const postal = document.getElementById("postal").value.trim();
+  if(["halifax","dartmouth","spryfield"].includes(city)){ deliveryFee=5; }
+  else if(["bedford","sackville","bayers lake","timberlea","eastern passage"].includes(city)){ deliveryFee=8; }
+  else if(["porter's lake","lawrencetown","fall river","hammonds plains","hatchet lake"].includes(city)){
+    deliveryFee=20; alert("Orders over $20 delivery require courier; remainder refunded after shipping."); }
+  else{ deliveryFee=0; }
+  updateBadges();
+}
+
+/* ================= TIME SLOT & DATE HANDLING ================= */
+const custDate = document.getElementById("custDate");
+const closedDays = ["thu"]; // days the shop is closed
+const openHours = {
+  mon:[19,21],
+  tue:[19,21],
+  wed:[19,21],
+  thu:[],
+  fri:[19,21],
+  sat:[9,17],
+  sun:[9,14]
+};
+
+// Set min date to today
+const today = new Date();
+custDate.min = today.toISOString().split("T")[0];
+
+// Generate time slots based on selected date
+function generateTimeSlots() {
+  custTime.innerHTML = "";
+  const dateStr = custDate.value;
+  if (!dateStr) { 
+    custTime.innerHTML = "<option>Please select a date first</option>"; 
+    return; 
+  }
+
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const selectedDate = new Date(year, month-1, day);
+  const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
+  const dayName = dayMap[selectedDate.getDay()];
+
+  // Check if closed
+  if (closedDays.includes(dayName)) {
+    custTime.innerHTML = "<option>Closed on this day</option>";
+    alert("Sorry, we are closed on Thursdays. Please choose another date.");
+    custDate.value = "";
+    return;
+  }
+
+  const hours = openHours[dayName];
+  if(!hours || hours.length===0){ 
+    custTime.innerHTML = "<option>No slots available</option>"; 
+    return; 
+  }
+
+  for(let h = hours[0]; h < hours[1]; h++){
+    for(let m = 0; m < 60; m += 30){
+const raw = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+
+let hour12 = h % 12 || 12;
+let ampm = h < 12 ? "AM" : "PM";
+const pretty = `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
+
+custTime.innerHTML += `<option value="${raw}">${pretty}</option>`;
+    }
+  }
+}
+
+// Optional: prevent selecting closed days directly
+custDate.addEventListener("input", generateTimeSlots);
+
+// Ensure products are fetched on load:
+fetchProducts().catch(err=>{
+  console.error("Failed to fetch products", err);
+  productGrid.innerHTML="<p style='color:red;text-align:center'>Failed to load products. Please try again later.</p>";
+});
+generateTimeSlots();
 </script>
+
 </body>
 </html>
