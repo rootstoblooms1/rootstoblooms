@@ -3,17 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roots to Blooms</title>
+<title>Roots to Blooms — Home</title>
 
 <style>
 :root{
   --brand-green:#4EA337;
-  --brand-brown:#4A2300;
-  --accent:#c6e3d2;
   --dark:#254D32;
+  --accent:#c6e3d2;
 }
 
-/* ================= NAVIGATION ================= */
+/* ====== General ====== */
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fafafa;color:#333;}
+h1,h2{margin:16px 0 8px 0;text-align:center;color:var(--dark);}
+a{text-decoration:none;color:inherit;}
+
+/* ====== Navigation ====== */
 .topnav{
   display:flex;
   align-items:center;
@@ -24,123 +28,96 @@
   top:0;
   z-index:1000;
 }
-.topnav .logo img{
-  height:48px;
-}
+.topnav .logo img{height:48px;}
 .nav-links a{
   color:white;
-  text-decoration:none;
   font-weight:700;
   margin-left:20px;
   padding:8px 12px;
   border-radius:6px;
   transition:0.2s;
 }
-.nav-links a:hover{
-  background:var(--brand-green);
-}
+.nav-links a:hover{background:var(--brand-green);}
 
-/* ================= PAGE LAYOUT ================= */
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  background:#fafafa;
+/* ====== Dropdown ====== */
+.dropdown{
+  position:relative;
+  display:inline-block;
 }
-.container{
-  max-width:1200px;
-  margin:auto;
-  padding:20px;
-}
-.hero{
-  height:300px;
-  background:url('https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?q=80&w=1600') center/cover;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.dropbtn{
+  background:var(--dark);
   color:white;
-  font-size:48px;
-  font-weight:800;
-  text-align:center;
-  border-radius:12px;
-  margin-bottom:20px;
-}
-.section{
-  background:#fff;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 8px 18px rgba(0,0,0,0.06);
-  margin-bottom:20px;
-}
-
-/* FLOATING CART */
-#floating-cart{
-  position:fixed;
-  bottom:calc(20px + env(safe-area-inset-bottom));
-  right:20px;
-  z-index:9999;
-  background:var(--accent);
-  color:var(--dark);
-  padding:12px 16px;
-  border-radius:999px;
-  box-shadow:0 10px 24px rgba(0,0,0,0.18);
-  display:flex;
-  gap:8px;
-  align-items:center;
+  font-weight:700;
+  padding:8px 12px;
+  border:none;
+  border-radius:6px;
   cursor:pointer;
 }
-#floating-cart .badge{
-  background:var(--dark);
-  color:#fff;
-  padding:2px 8px;
-  border-radius:12px;
-  font-weight:800;
+.dropbtn:hover{
+  background:var(--brand-green);
+}
+.dropdown-content{
+  display:none;
+  position:absolute;
+  background:#fff;
+  min-width:160px;
+  box-shadow:0 8px 16px rgba(0,0,0,0.2);
+  border-radius:6px;
+  overflow:hidden;
+  z-index:1000;
+}
+.dropdown-content a{
+  color:var(--dark);
+  padding:12px 16px;
+  display:block;
+  font-weight:700;
+}
+.dropdown-content a:hover{
+  background:var(--accent);
+}
+.dropdown:hover .dropdown-content{
+  display:block;
 }
 
-/* CART DRAWER */
-#cart-drawer{
-  position:fixed;
-  top:0;
-  right:-420px;
-  width:380px;
-  bottom:0;
-  max-height:100%;
-  padding:18px;
-  padding-bottom:calc(18px + env(safe-area-inset-bottom));
+/* ====== Product Grid ====== */
+.product-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:16px;
+  padding:0 20px 40px 20px;
+  max-width:1200px;
+  margin:auto;
+}
+.product-card{
   background:#fff;
-  z-index:10000;
-  box-shadow:-8px 0 30px rgba(0,0,0,0.2);
-  transition:right .32s ease;
+  border-radius:12px;
+  box-shadow:0 6px 12px rgba(0,0,0,0.08);
+  overflow:hidden;
   display:flex;
   flex-direction:column;
-  gap:10px;
-  overflow:hidden;
-  box-sizing:border-box;
+  cursor:pointer;
+  transition:transform 0.15s;
 }
-#cart-drawer.open{ right:0; }
-.cart-items{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.cart-line{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed #eee;}
-.small-btn{background:#eee;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;}
-.drawer-footer{flex-shrink:0;background:#fff;border-top:1px solid #f0f0f0;padding-top:12px;display:flex;flex-direction:column;gap:8px;}
-.drawer-footer > div{flex-wrap:wrap;}
-.totals{display:flex;justify-content:space-between;font-weight:800;}
-#confirmation-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:12000;}
-.confirmation-card{background:#fff;padding:20px;border-radius:12px;width:min(560px,95%);text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.3);}
-
-/* MOBILE CART */
-@media (max-width:720px){
-  #cart-drawer{
-    top:auto !important;
-    bottom:-100%;
-    right:0;
-    left:0;
-    width:100%;
-    max-height:90%;
-    border-radius:16px 16px 0 0;
-    transition:bottom .32s ease;
-    padding-left:calc(12px + env(safe-area-inset-left));
-    padding-right:calc(12px + env(safe-area-inset-right));
-  }
-  #cart-drawer.open{ bottom:0; }
+.product-card:hover{transform:scale(1.03);}
+.product-image{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+  background:#f3f3f3;
+}
+.product-title{
+  font-weight:800;
+  padding:8px 12px 4px 12px;
+  font-size:15px;
+  color:var(--dark);
+  text-align:center;
+}
+.product-price{
+  padding:0 12px 8px 12px;
+  font-weight:700;
+  text-align:center;
+  color:#555;
+  font-size:14px;
 }
 </style>
 </head>
@@ -152,77 +129,75 @@ body{
   <a href="/" class="logo"><img src="IMG_1466.png" alt="Roots to Blooms Logo"></a>
   <div class="nav-links">
     <a href="/">Home</a>
-    <a href="shop.html">Shop</a>
+
+    <div class="dropdown">
+      <button class="dropbtn">Shop ▼</button>
+      <div class="dropdown-content">
+        <a href="shop-houseplants.html">Houseplants</a>
+        <a href="shop-annuals.html">Annuals</a>
+        <a href="shop-vegetable-starters.html">Vegetable Starters</a>
+      </div>
+    </div>
+
     <a href="/about.html">About</a>
     <a href="/contact.html">Contact</a>
   </div>
 </nav>
 
-<div class="container">
-  <div class="hero">Welcome to Roots to Blooms</div>
-  <div class="section">
-    <h2>Featured Plants</h2>
-    <p>Explore our curated selection of beautiful houseplants, perfect for your home or garden.</p>
-    <a href="shop.html">Shop Now →</a>
-  </div>
-  <div class="section">
-    <h2>About Us</h2>
-    <p>Roots to Blooms is a plant shop dedicated to bringing nature closer to you. Browse, learn, and grow with us!</p>
-  </div>
-</div>
+<h1>Roots to Blooms</h1>
 
-<!-- FLOATING CART -->
-<div id="floating-cart" title="View cart" onclick="toggleDrawer()">
-  🛒 Cart
-  <div class="badge" id="floatBadge">0</div>
-</div>
+<h2 id="houseplantsTitle">Houseplants</h2>
+<div id="houseplantsGrid" class="product-grid"></div>
 
-<!-- CART DRAWER -->
-<div id="cart-drawer">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <h3 style="margin:0">Your Cart</h3>
-    <div>
-      <button class="small-btn" onclick="clearCart()">Clear</button>
-      <button class="small-btn" onclick="toggleDrawer()">Close</button>
-    </div>
-  </div>
-  <div id="cartItemsWrap" class="cart-items"></div>
-  <div class="drawer-footer">
-    <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
-    <div class="totals"><div>Subtotal</div><div id="cartSubtotal">$0.00</div></div>
-    <div style="display:flex;gap:8px;">
-      <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
-      <button class="small-btn" onclick="openCheckoutForm()">Checkout</button>
-    </div>
-  </div>
-</div>
+<h2 id="annualsTitle">Annuals</h2>
+<div id="annualsGrid" class="product-grid"></div>
 
-<div id="confirmation-overlay">
-  <div class="confirmation-card">
-    <h2>Order Received</h2>
-    <p id="confirmation-text"></p>
-    <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-      <button class="small-btn" onclick="closeConfirmation()">Close</button>
-    </div>
-  </div>
-</div>
+<h2 id="vegetablesTitle">Vegetable Starters</h2>
+<div id="vegetablesGrid" class="product-grid"></div>
 
 <script>
-const floatBadge = document.getElementById("floatBadge");
-const cartCountEl = document.getElementById("cartCount");
-const STORAGE_KEY="plant_shop_cart_v6";
-let cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
+// ================== HOMEPAGE PRODUCTS ==================
+const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
 
-function saveCart(){localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateBadges();}
-function updateBadges(){const total=Object.values(cart).reduce((s,q)=>s+q,0); floatBadge.textContent=total; cartCountEl.textContent=total;}
-function toggleDrawer(){document.getElementById('cart-drawer').classList.toggle('open');}
-function clearCart(){cart={}; saveCart();}
-function continueShopping(){toggleDrawer();}
-function openCheckoutForm(){alert("Checkout form goes here.");}
-function closeConfirmation(){document.getElementById('confirmation-overlay').style.display='none';}
+async function loadHomeProducts(){
+  const res = await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
+  const products = await res.json();
 
-updateBadges();
+  function renderGrid(gridId, titleId, category, link){
+    const grid = document.getElementById(gridId);
+    const title = document.getElementById(titleId);
+
+    const filtered = products.filter(p => (p.categories || []).map(c=>c.toLowerCase()).includes(category.toLowerCase()));
+
+    if(filtered.length === 0){
+      grid.style.display = "none";
+      title.style.display = "none";
+      return;
+    }
+
+    grid.style.display = "grid";
+    title.style.display = "block";
+    grid.innerHTML = '';
+
+    filtered.forEach(p=>{
+      const card = document.createElement('a');
+      card.href = link;
+      card.className = 'product-card';
+      card.innerHTML = `
+        <img class="product-image" src="${p.photo}" alt="${p.name}">
+        <div class="product-title">${p.name}</div>
+        <div class="product-price">$${Number(p.price).toFixed(2)}</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  renderGrid('houseplantsGrid','houseplantsTitle','houseplants','shop-houseplants.html');
+  renderGrid('annualsGrid','annualsTitle','annuals','shop-annuals.html');
+  renderGrid('vegetablesGrid','vegetablesTitle','vegetable starters','shop-vegetable-starters.html');
+}
+
+loadHomeProducts();
 </script>
-
 </body>
 </html>
