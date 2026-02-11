@@ -350,7 +350,7 @@ body{
     </div>
 
     <label for="custDate">Pickup / Delivery Date</label>
-    <input type="date" id="custDate" onchange="validateDate(); generateTimeSlots();">
+    <input type="date" id="custDate" onchange="generateTimeSlots();">
 
     <label for="custTime">Pickup / Delivery Time</label>
     <select id="custTime" class="pickup-time"></select>
@@ -486,62 +486,22 @@ function generateTimeSlots(){
   }
 }
 
-/* ================= DATE VALIDATION ================= */
+/* ================= DATE PICKER: DISABLE THURSDAYS ================= */
 const custDate = document.getElementById("custDate");
-const closedDays = ["thu"]; 
+const closedDays = ["thu"];
 const today = new Date();
 custDate.min = today.toISOString().split("T")[0];
 
-function validateDate(){
-  const dateStr = custDate.value;
-  if(!dateStr) return;
-
-  const selectedDate = new Date(dateStr);
+custDate.addEventListener("input", () => {
+  const selected = new Date(custDate.value);
   const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
-  const dayName = dayMap[selectedDate.getDay()];
-
-  if(closedDays.includes(dayName)){
-    alert("Sorry, we are closed on Thursdays. Please choose another date.");
+  const dayName = dayMap[selected.getDay()];
+  if(closedDays.includes(dayName)) {
+    alert("Sorry, we are closed on Thursdays. Please select another date.");
     custDate.value = "";
     custTime.innerHTML = "<option>Please select a valid date</option>";
   }
-}
-
-function disableClosedDays() {
-  const today = new Date();
-  const minDate = today.toISOString().split("T")[0];
-  const maxDaysAhead = 30; // show 30 days ahead
-  const closedDaysSet = new Set(closedDays); // e.g., ["thu"]
-
-  custDate.min = minDate;
-
-  custDate.addEventListener("input", () => {
-    const selected = new Date(custDate.value);
-    const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
-    const dayName = dayMap[selected.getDay()];
-    if(closedDaysSet.has(dayName)) {
-      alert("Sorry, we are closed on Thursdays. Please select another date.");
-      custDate.value = "";
-      custTime.innerHTML = "<option>Please select a valid date</option>";
-    }
-  });
-
-  // Optional: mark disabled days visually
-  custDate.addEventListener("mouseover", () => {
-    const dates = [];
-    for(let i=0;i<=maxDaysAhead;i++){
-      const d = new Date();
-      d.setDate(today.getDate()+i);
-      const dayName = ["sun","mon","tue","wed","thu","fri","sat"][d.getDay()];
-      if(closedDaysSet.has(dayName)) {
-        dates.push(d.toISOString().split("T")[0]);
-      }
-    }
-    custDate.setAttribute("data-disabled", dates.join(","));
-  });
-}
-disableClosedDays();
-
+});
 
 /* ================= FETCH PRODUCTS ================= */
 async function fetchProducts(){
@@ -656,19 +616,20 @@ function openCheckoutForm(){
 
   const prefillData = {
     "entry.1046011819": items,
-    "entry.1046011819": "$"+subtotal.toFixed(2),
-    "entry.123456": document.getElementById("custName").value,
-    "entry.123457": document.getElementById("custEmail").value,
-    "entry.123458": document.getElementById("custPhone").value,
-    "entry.123459": document.getElementById("custContactMethod").value,
-    "entry.123460": document.getElementById("custPickupDelivery").value,
-    "entry.123461": document.getElementById("addr1").value,
-    "entry.123462": document.getElementById("addr2").value,
-    "entry.123463": document.getElementById("city").value,
-    "entry.123464": document.getElementById("postal").value,
-    "entry.123465": document.getElementById("custTime").value,
-    "entry.123466": document.getElementById("custNotes").value,
-    "entry.123467": document.getElementById("custMarketing").value
+    "entry.362516403": "$"+subtotal.toFixed(2),
+    "entry.991310792": document.getElementById("custName").value,
+    "entry.380963175": document.getElementById("custEmail").value,
+    "entry.640553104": document.getElementById("custPhone").value,
+    "entry.1469637469": document.getElementById("custContactMethod").value,
+    "entry.590490152": document.getElementById("custPickupDelivery").value,
+    "entry.489484198": document.getElementById("addr1").value,
+    "entry.1117374631": document.getElementById("addr2").value,
+    "entry.635395700": document.getElementById("city").value,
+    "entry.2075536009": document.getElementById("postal").value,
+    "entry.1225481208": document.getElementById("custDate").value,
+    "entry.2009788871": document.getElementById("custTime").value,
+    "entry.2140423836": document.getElementById("custNotes").value,
+    "entry.798763112": document.getElementById("custMarketing").value
   };
 
   const prefillURL = formBase + "&" + Object.entries(prefillData).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join("&");
