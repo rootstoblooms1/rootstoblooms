@@ -449,8 +449,11 @@ function calculateDeliveryFee(){
   updateBadges();
 }
 
-/* ================= TIME SLOT GENERATION ================= */
-const openHours={
+/* ================= TIME SLOT & DATE HANDLING ================= */
+const custDate = document.getElementById("custDate");
+const custTime = document.getElementById("custTime");
+const closedDays = ["thu"]; // days the shop is closed
+const openHours = {
   mon:[19,21],
   tue:[19,21],
   wed:[19,21],
@@ -460,19 +463,33 @@ const openHours={
   sun:[9,14]
 };
 
-function generateTimeSlots(){
+// Set min date to today
+const today = new Date();
+custDate.min = today.toISOString().split("T")[0];
+
+// Generate time slots based on selected date
+function generateTimeSlots() {
   custTime.innerHTML = "";
-  const dateInput = document.getElementById("custDate").value;
-  if(!dateInput){ 
-    custTime.innerHTML = "<option>Please select a date first</option>";
+  const dateStr = custDate.value;
+  if (!dateStr) { 
+    custTime.innerHTML = "<option>Please select a date first</option>"; 
+    return; 
+  }
+
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const selectedDate = new Date(year, month-1, day);
+  const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
+  const dayName = dayMap[selectedDate.getDay()];
+
+  // Check if closed
+  if (closedDays.includes(dayName)) {
+    custTime.innerHTML = "<option>Closed on this day</option>";
+    alert("Sorry, we are closed on Thursdays. Please choose another date.");
+    custDate.value = "";
     return;
   }
 
-  const selectedDate = new Date(dateInput);
-  const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
-  const dayName = dayMap[selectedDate.getDay()];
   const hours = openHours[dayName];
-  
   if(!hours || hours.length===0){ 
     custTime.innerHTML = "<option>No slots available</option>"; 
     return; 
@@ -486,22 +503,8 @@ function generateTimeSlots(){
   }
 }
 
-/* ================= DATE PICKER: DISABLE THURSDAYS ================= */
-const custDate = document.getElementById("custDate");
-const closedDays = ["thu"];
-const today = new Date();
-custDate.min = today.toISOString().split("T")[0];
-
-custDate.addEventListener("input", () => {
-  const selected = new Date(custDate.value);
-  const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
-  const dayName = dayMap[selected.getDay()];
-  if(closedDays.includes(dayName)) {
-    alert("Sorry, we are closed on Thursdays. Please select another date.");
-    custDate.value = "";
-    custTime.innerHTML = "<option>Please select a valid date</option>";
-  }
-});
+// Optional: prevent selecting closed days directly
+custDate.addEventListener("input", generateTimeSlots);
 
 /* ================= FETCH PRODUCTS ================= */
 async function fetchProducts(){
