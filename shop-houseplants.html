@@ -51,9 +51,6 @@ body{
 /* FILTER BAR */
 .filter-bar{
   display:none;
-  margin-bottom:20px;
-  flex-wrap:wrap;
-  gap:8px;
 }
 .filter-btn{
   background:var(--accent);
@@ -63,7 +60,6 @@ body{
   border-radius:999px;
   cursor:pointer;
   font-weight:700;
-  transition:.2s;
 }
 .filter-btn.active{
   background:var(--dark);
@@ -276,7 +272,8 @@ body{
 </head>
 
 <body>
-<!-- NAV -->
+
+<!-- NAVIGATION -->
 <nav class="topnav">
   <a href="/" class="logo"><img src="IMG_1466.png" alt="Roots to Blooms Logo"></a>
   <div class="nav-links">
@@ -287,11 +284,15 @@ body{
   </div>
 </nav>
 
+<!-- SHOP CONTAINER -->
 <div class="shop-container">
   <div id="loadingNotice" style="text-align:center;padding:40px 12px;font-weight:800;color:#555">
     🌱 Loading products… please wait
   </div>
-  <div id="filterRow" class="filter-bar"></div>
+
+  <div id="filterRow" class="filter-bar">
+  </div>
+
   <div id="productGrid" class="product-grid"></div>
 </div>
 
@@ -310,36 +311,49 @@ body{
       <button class="small-btn" onclick="toggleDrawer()">Close</button>
     </div>
   </div>
+
   <div id="cartItemsWrap" class="cart-items"></div>
+
   <!-- CUSTOMER FORM -->
   <div class="customer-section">
     <label for="custName">Name</label>
     <input type="text" id="custName" placeholder="First Last">
+
     <label for="custEmail">Email</label>
     <input type="email" id="custEmail">
+
     <label for="custPhone">Phone</label>
     <input type="tel" id="custPhone">
+
     <label for="custContactMethod">Preferred Contact Method</label>
     <select id="custContactMethod">
-      <option>Call</option><option>Text</option><option>Email</option>
+      <option>Call</option>
+      <option>Text</option>
+      <option>Email</option>
     </select>
+
     <label for="custPickupDelivery">Pickup or Delivery</label>
     <select id="custPickupDelivery" onchange="toggleDeliveryAddress(this.value)">
       <option value="pickup">Pickup</option>
       <option value="delivery">Delivery</option>
     </select>
+
     <div class="delivery-address" id="deliveryAddress">
       <input type="text" placeholder="Address Line 1" id="addr1">
       <input type="text" placeholder="Address Line 2" id="addr2">
       <input type="text" placeholder="City" id="city" oninput="calculateDeliveryFee()">
       <input type="text" placeholder="Postal Code" id="postal" oninput="calculateDeliveryFee()">
     </div>
+
     <label for="custDate">Pickup / Delivery Date</label>
     <input type="date" id="custDate" onchange="generateTimeSlots();">
+
     <label for="custTime">Pickup / Delivery Time</label>
     <select id="custTime" class="pickup-time"></select>
+
     <label for="custNotes">Notes / Special Instructions</label>
     <textarea id="custNotes" rows="2"></textarea>
+
     <label for="custMarketing">How did you hear about us?</label>
     <select id="custMarketing">
       <option>Google Search</option>
@@ -352,10 +366,22 @@ body{
   </div>
 
   <div class="drawer-footer">
-    <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
-    <div class="totals"><div>Products</div><div id="cartProducts">$0.00</div></div>
-    <div class="totals" id="deliveryRow" style="display:none;"><div>Delivery</div><div id="cartDelivery">$0.00</div></div>
-    <div class="totals"><div><strong>Total</strong></div><div id="cartSubtotal"><strong>$0.00</strong></div></div>
+  <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
+
+  <div class="totals">
+    <div>Products</div>
+    <div id="cartProducts">$0.00</div>
+  </div>
+
+  <div class="totals" id="deliveryRow" style="display:none;">
+    <div>Delivery</div>
+    <div id="cartDelivery">$0.00</div>
+  </div>
+
+  <div class="totals">
+    <div><strong>Total</strong></div>
+    <div id="cartSubtotal"><strong>$0.00</strong></div>
+  </div>
     <div style="display:flex;gap:8px;">
       <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
       <button class="small-btn" onclick="openCheckoutForm()">Checkout</button>
@@ -510,13 +536,155 @@ custTime.innerHTML += `<option value="${raw}">${pretty}</option>`;
 // Optional: prevent selecting closed days directly
 custDate.addEventListener("input", generateTimeSlots);
 
-// Ensure products are fetched on load:
-fetchProducts().catch(err=>{
-  console.error("Failed to fetch products", err);
-  productGrid.innerHTML="<p style='color:red;text-align:center'>Failed to load products. Please try again later.</p>";
-});
-generateTimeSlots();
-</script>
+/* ================= FETCH PRODUCTS ================= */
+async function fetchProducts(){
+  const res=await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
+  RAW=await res.json();
+  RAW.forEach(p=>{
+    p.stock=Number(p.stock);
+    p.price=Number(p.price);
+    p.soldOut=p.stock<=0;
+    p.comingSoon=(p.categories||[]).map(c=>c.toLowerCase()).includes("coming soon");
+  });
+  buildGroups();
+  renderFilters();
+document.getElementById("filterRow").style.display = "flex"; // show filters now
+renderProducts();
+document.getElementById("loadingNotice")?.remove();
+productGrid.style.display="grid";
+  renderProducts();
+  document.getElementById("loadingNotice")?.remove();
+  productGrid.style.display="grid";
+}
 
+function buildGroups(){
+  const pageTag=PAGE_CATEGORY.toLowerCase().trim();
+  const filtered=RAW.filter(p=>(p.categories||[]).map(c=>c.toLowerCase().trim()).includes(pageTag));
+  const map={};
+  filtered.forEach(p=>{
+    if(!map[p.group]) map[p.group]={base:p, variants:[], categories:new Set()};
+    map[p.group].variants.push(p);
+    p.categories.forEach(c=>{if(c.toLowerCase()!==pageTag) map[p.group].categories.add(c);});
+  });
+  GROUPED=Object.values(map);
+}
+
+/* ================= FILTERS ================= */
+function renderFilters(){
+  const row=document.getElementById("filterRow");
+  const cats=new Set();
+  GROUPED.forEach(g=>g.categories.forEach(c=>{
+    const usable=GROUPED.some(prod=>{
+      if(!prod.categories.has(c)) return false;
+      if(activeFilter==="all") return prod.variants.some(v=>!v.soldOut);
+      return true;
+    });
+    if(usable) cats.add(c);
+  }));
+  row.innerHTML=`<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')" data-filter="all">All</button>`+
+    [...cats].sort().map(c=>`<button class="filter-btn" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`).join("")+
+    `<button class="filter-btn" onclick="toggleSold()" data-filter="sold">hide sold out</button>`;
+}
+function toggleSold(){ hideSold=!hideSold; renderProducts(); }
+function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
+
+/* ================= PRODUCTS ================= */
+function renderProducts(){
+  productGrid.innerHTML="";
+  GROUPED.forEach(group=>{
+    if(activeFilter!=="all" && !group.categories.has(activeFilter)) return;
+    let variants=group.variants;
+    if(activeFilter==="all") variants=variants.filter(v=>!v.soldOut);
+    if(hideSold) variants=variants.filter(v=>!v.soldOut);
+    if(!variants.length) return;
+    const selected=variants[0], id=selected.id, qty=cart[id]||0;
+    const swatches=[...new Map(group.variants.map(v=>[v.swatch,v])).values()];
+
+    let addArea;
+    if(qty>0){
+      addArea=`<div class="qty-row">
+        <button class="qty-btn" onclick="updateQty('${id}',-1)">-</button>
+        <div class="qty-num">${qty}</div>
+        <button class="qty-btn" onclick="updateQty('${id}',1)" ${qty>=selected.stock?'disabled':''}>+</button>
+      </div>`;
+    } else {
+      addArea=`<button class="add-btn" onclick="firstAdd('${id}')" ${selected.soldOut||selected.comingSoon?'disabled':''}>Add</button>`;
+    }
+
+    productGrid.innerHTML+=`
+<div class="product-card ${selected.soldOut?'sold-out':''} ${selected.comingSoon?'coming-soon':''}">
+<div class="product-image-wrap">
+<img class="product-image" src="${selected.photo}">
+${selected.soldOut?overlay("SOLD OUT","#c33"):""}
+${selected.comingSoon?overlay("COMING SOON","#777"):""}
+</div>
+<div>
+<div class="product-title">${selected.name}</div>
+<div class="product-latin">${selected.latin||""}</div>
+<div class="product-price">$${selected.price.toFixed(2)}</div>
+<div class="swatches">
+${group.variants.filter(v=>v.swatch && v.swatch.trim()!=="").map(v=>{
+  let color=v.swatch.trim(); if(!color.startsWith("#") && !color.startsWith("rgb") && !color.startsWith("hsl")) color="#"+color;
+  return `<div class="swatch ${v.id===selected.id?'selected':''}" style="background-color:${color}" onclick="selectVariant('${group.base.group}','${v.id}')"></div>`;
+}).join("")}
+</div>
+</div>
+${addArea}
+</div>`;
+  });
+  updateBadges();
+}
+function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
+function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
+
+/* ================= CHECKOUT ================= */
+function openCheckoutForm(){
+  if(Object.keys(cart).length === 0){
+    alert("Your cart is empty.");
+    return;
+  }
+  if(!custName.value || !custPhone.value || !custDate.value || !custTime.value){
+  alert("Please complete name, phone, date, and time.");
+  return;
+}
+  const items = Object.entries(cart).map(([id, qty])=>{
+    const p=getProductById(id);
+    return p ? `${p.name} x${qty}` : '';
+  }).filter(Boolean).join(", ");
+
+  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+    const p=getProductById(id);
+    return sum + (p ? p.price*qty : 0);
+  },0) + deliveryFee;
+
+  const formBase = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/viewform?usp=pp_url";
+
+  const prefillData = {
+    "entry.1046011819": items,
+    "entry.362516403": "$"+subtotal.toFixed(2),
+    "entry.991310792": document.getElementById("custName").value,
+    "entry.380963175": document.getElementById("custEmail").value,
+    "entry.640553104": document.getElementById("custPhone").value,
+    "entry.1469637469": document.getElementById("custContactMethod").value,
+    "entry.590490152": document.getElementById("custPickupDelivery").value,
+    "entry.489484198": document.getElementById("addr1").value,
+    "entry.1117374631": document.getElementById("addr2").value,
+    "entry.635395700": document.getElementById("city").value,
+    "entry.2075536009": document.getElementById("postal").value,
+    "entry.1225481208": document.getElementById("custDate").value,
+    "entry.2009788871": document.getElementById("custTime").value,
+    "entry.2140423836": document.getElementById("custNotes").value,
+    "entry.798763112": document.getElementById("custMarketing").value
+  };
+
+  const prefillURL = formBase + "&" + Object.entries(prefillData).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join("&");
+  window.open(prefillURL, "_blank");
+}
+
+/* ================= INIT ================= */
+generateTimeSlots();
+fetchProducts();
+setInterval(fetchProducts,300000);
+</script>
 </body>
 </html>
