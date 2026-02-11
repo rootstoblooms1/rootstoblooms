@@ -240,6 +240,27 @@ body{
 #confirmation-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:12000;}
 .confirmation-card{background:#fff;padding:20px;border-radius:12px;width:min(560px,95%);text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.3);}
 
+/* CUSTOMER FORM IN CART */
+.customer-section{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:12px;
+}
+.customer-section input, .customer-section select, .customer-section textarea{
+  padding:6px 8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  width:100%;
+  box-sizing:border-box;
+}
+.customer-section label{
+  font-weight:700;
+}
+.delivery-address{display:none; flex-direction:column; gap:6px; margin-top:6px;}
+.delivery-address input{width:100%;}
+.pickup-time{margin-top:6px;}
+
 /* MOBILE CART */
 @media (max-width:720px){
   #cart-drawer{
@@ -300,14 +321,64 @@ body{
       <button class="small-btn" onclick="toggleDrawer()">Close</button>
     </div>
   </div>
+
   <div id="cartItemsWrap" class="cart-items"></div>
+
+  <!-- CUSTOMER FORM -->
+  <div class="customer-section">
+    <label for="custName">Name</label>
+    <input type="text" id="custName" placeholder="First Last">
+
+    <label for="custEmail">Email</label>
+    <input type="email" id="custEmail">
+
+    <label for="custPhone">Phone</label>
+    <input type="tel" id="custPhone">
+
+    <label for="custContactMethod">Preferred Contact Method</label>
+    <select id="custContactMethod">
+      <option>Call</option>
+      <option>Text</option>
+      <option>Email</option>
+    </select>
+
+    <label for="custPickupDelivery">Pickup or Delivery</label>
+    <select id="custPickupDelivery" onchange="toggleDeliveryAddress(this.value)">
+      <option value="pickup">Pickup</option>
+      <option value="delivery">Delivery</option>
+    </select>
+
+    <div class="delivery-address" id="deliveryAddress">
+      <input type="text" placeholder="Address Line 1" id="addr1">
+      <input type="text" placeholder="Address Line 2" id="addr2">
+      <input type="text" placeholder="City" id="city">
+      <input type="text" placeholder="Postal Code" id="postal">
+    </div>
+
+    <label for="custTime">Pickup / Delivery Time</label>
+    <select id="custTime" class="pickup-time"></select>
+
+    <label for="custNotes">Notes / Special Instructions</label>
+    <textarea id="custNotes" rows="2"></textarea>
+
+    <label for="custMarketing">How did you hear about us?</label>
+    <select id="custMarketing">
+      <option>Google Search</option>
+      <option>Facebook</option>
+      <option>Instagram</option>
+      <option>Poster</option>
+      <option>From a Friend/Family Member</option>
+      <option>Other (please specify)</option>
+    </select>
+  </div>
+
   <div class="drawer-footer">
     <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
     <div class="totals"><div>Subtotal</div><div id="cartSubtotal">$0.00</div></div>
     <div style="display:flex;gap:8px;">
-  <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
-  <button class="small-btn" onclick="openCheckoutForm()">Checkout</button>
-</div>
+      <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
+      <button class="small-btn" onclick="openCheckoutForm()">Checkout</button>
+    </div>
   </div>
 </div>
 
@@ -322,16 +393,90 @@ body{
 </div>
 
 <script>
+/* ================= SHOP LOGIC ================= */
 const productGrid = document.getElementById("productGrid");
 const floatBadge = document.getElementById("floatBadge");
 const cartCountEl = document.getElementById("cartCount");
+const cartSubtotalEl = document.getElementById("cartSubtotal");
 
 const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
-const STORAGE_KEY="plant_shop_cart_v6";
+const STORAGE_KEY="plant_shop_cart_v7";
 const PAGE_CATEGORY="houseplants";
 
 let RAW=[], GROUPED=[], cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
 let hideSold=false, activeFilter="all";
+let deliveryFee=0;
+
+/* ================= CART FUNCTIONS ================= */
+function getProductById(id){return RAW.find(p=>p.id===id);}
+function saveCart(){localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateBadges();}
+function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
+function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
+function updateBadges(){
+  const total=Object.values(cart).reduce((s,q)=>s+q,0);
+  floatBadge.textContent=total; 
+  cartCountEl.textContent=total;
+  let subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+    const p = getProductById(id);
+    return sum + (p ? p.price*qty : 0);
+  },0);
+  subtotal += deliveryFee;
+  cartSubtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+}
+
+/* ================= CART DRAWER ================= */
+const cartDrawer = document.getElementById("cart-drawer");
+function toggleDrawer(){cartDrawer.classList.toggle("open");}
+function clearCart(){cart={}; deliveryFee=0; saveCart(); renderProducts();}
+function continueShopping(){toggleDrawer();}
+function closeConfirmation(){document.getElementById("confirmation-overlay").style.display = "none";}
+
+/* ================= DELIVERY / TIME ================= */
+const custPickupDelivery = document.getElementById("custPickupDelivery");
+const deliveryAddress = document.getElementById("deliveryAddress");
+const custTime = document.getElementById("custTime");
+
+function toggleDeliveryAddress(val){
+  if(val==="delivery"){ deliveryAddress.style.display="flex"; calculateDeliveryFee(); }
+  else{ deliveryAddress.style.display="none"; deliveryFee=0; updateBadges(); }
+}
+
+function calculateDeliveryFee(){
+  const city = document.getElementById("city").value.trim().toLowerCase();
+  const postal = document.getElementById("postal").value.trim();
+  if(["halifax","dartmouth","spryfield"].includes(city)){ deliveryFee=5; }
+  else if(["bedford","sackville","bayers lake","timberlea","eastern passage"].includes(city)){ deliveryFee=8; }
+  else if(["porter's lake","lawrencetown","fall river","hammonds plains","hatchet lake"].includes(city)){
+    deliveryFee=20; alert("Orders over $20 delivery require courier; remainder refunded after shipping."); }
+  else{ deliveryFee=0; }
+  updateBadges();
+}
+
+/* ================= TIME SLOT GENERATION ================= */
+const openHours={
+  mon:[19,21],
+  tue:[19,21],
+  wed:[19,21],
+  thu:[],
+  fri:[19,21],
+  sat:[9,17],
+  sun:[9,14]
+};
+
+function generateTimeSlots(){
+  custTime.innerHTML="";
+  const now = new Date();
+  const today = now.getDay();
+  const dayMap=["sun","mon","tue","wed","thu","fri","sat"];
+  const hours=openHours[dayMap[today]];
+  if(!hours || hours.length===0){ custTime.innerHTML="<option>No slots available today</option>"; return; }
+  for(let h=hours[0];h<hours[1];h++){
+    for(let m=0;m<60;m+=30){
+      const slot = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      custTime.innerHTML += `<option>${slot}</option>`;
+    }
+  }
+}
 
 /* ================= FETCH PRODUCTS ================= */
 async function fetchProducts(){
@@ -378,7 +523,6 @@ function renderFilters(){
     [...cats].sort().map(c=>`<button class="filter-btn" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`).join("")+
     `<button class="filter-btn" onclick="toggleSold()" data-filter="sold">hide sold out</button>`;
 }
-
 function toggleSold(){ hideSold=!hideSold; renderProducts(); }
 function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
 
@@ -428,46 +572,9 @@ ${addArea}
   });
   updateBadges();
 }
-
 function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
 function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
 
-/* ================= CART LOGIC ================= */
-function getProductById(id){return RAW.find(p=>p.id===id);}
-function saveCart(){localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateBadges();}
-function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
-function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
-function updateBadges(){
-  const total=Object.values(cart).reduce((s,q)=>s+q,0);
-  floatBadge.textContent=total; 
-  cartCountEl.textContent=total;
-  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
-    const p = getProductById(id);
-    return sum + (p ? p.price*qty : 0);
-  },0);
-  document.getElementById("cartSubtotal").textContent = `$${subtotal.toFixed(2)}`;
-}
-  
-/* ================= CART DRAWER TOGGLE ================= */
-const cartDrawer = document.getElementById("cart-drawer");
-
-function toggleDrawer() {
-  cartDrawer.classList.toggle("open");
-}
-
-function clearCart() {
-  cart = {};
-  saveCart();
-  renderProducts();
-}
-
-function continueShopping() {
-  toggleDrawer();
-}
-
-function closeConfirmation() {
-  document.getElementById("confirmation-overlay").style.display = "none";
-}
 /* ================= CHECKOUT ================= */
 function openCheckoutForm(){
   const items = Object.entries(cart).map(([id, qty])=>{
@@ -478,21 +585,35 @@ function openCheckoutForm(){
   const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
     const p=getProductById(id);
     return sum + (p ? p.price*qty : 0);
-  },0);
+  },0) + deliveryFee;
 
-  // Replace these with your Google Form entry IDs
   const formBase = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/viewform?usp=pp_url";
-  const itemsField = "entry.1046011819";    // field for items
-  const subtotalField = "entry.1046011819"; // field for subtotal
 
-  const prefillURL = `${formBase}&${itemsField}=${encodeURIComponent(items)}&${subtotalField}=${encodeURIComponent("$"+subtotal.toFixed(2))}`;
+  const prefillData = {
+    "entry.1046011819": items,
+    "entry.1046011819": "$"+subtotal.toFixed(2),
+    "entry.123456": document.getElementById("custName").value,
+    "entry.123457": document.getElementById("custEmail").value,
+    "entry.123458": document.getElementById("custPhone").value,
+    "entry.123459": document.getElementById("custContactMethod").value,
+    "entry.123460": document.getElementById("custPickupDelivery").value,
+    "entry.123461": document.getElementById("addr1").value,
+    "entry.123462": document.getElementById("addr2").value,
+    "entry.123463": document.getElementById("city").value,
+    "entry.123464": document.getElementById("postal").value,
+    "entry.123465": document.getElementById("custTime").value,
+    "entry.123466": document.getElementById("custNotes").value,
+    "entry.123467": document.getElementById("custMarketing").value
+  };
+
+  const prefillURL = formBase + "&" + Object.entries(prefillData).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join("&");
   window.open(prefillURL, "_blank");
 }
 
 /* ================= INIT ================= */
+generateTimeSlots();
 fetchProducts();
 setInterval(fetchProducts,300000);
 </script>
-
 </body>
 </html>
