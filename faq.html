@@ -95,6 +95,77 @@ body{
 .nav-links .dropdown:hover .dropbtn {
   background-color: var(--brand-green);
 }
+/* ===================== MOBILE NAVIGATION ===================== */
+.hamburger {
+  display: none;
+  font-size: 28px;
+  color: white;
+  user-select: none;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+
+  .topnav {
+    flex-wrap: wrap;
+    padding: 10px 16px;
+  }
+
+  /* Show hamburger */
+  .hamburger {
+    display: block;
+  }
+
+  /* Nav links hidden by default */
+  .nav-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+
+  /* Show when hamburger toggled */
+  .nav-links.active {
+    display: flex;
+  }
+
+  /* Force dropdown closed */
+  .nav-links .dropdown-content {
+    display: none;
+    position: static;
+    background-color: var(--dark);
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  /* Show when toggled */
+  .nav-links .dropdown-content.active {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Dropdown links */
+  .nav-links .dropdown-content a {
+    color: white;
+  }
+
+  /* Make button look like link */
+  .nav-links .dropbtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    color: white;
+    padding: 10px;
+    text-align: left;
+  }
+
+  /* Disable desktop hover behavior */
+  .nav-links .dropdown:hover .dropdown-content {
+    display: none;
+  }
+
+}
 
 /* HERO SECTION */
 .hero{
