@@ -818,8 +818,22 @@ function renderProducts(){
     if(activeFilter==="all") variants=variants.filter(v=>!v.soldOut);
     if(hideSold) variants=variants.filter(v=>!v.soldOut);
     if(!variants.length) return;
-    const selected=variants[0], id=selected.id, qty=cart[id]||0;
-    const swatches=[...new Map(group.variants.map(v=>[v.swatch,v])).values()];
+
+    const selected=variants[0];
+    const id=selected.id;
+    const qty=cart[id]||0;
+
+    // Build swatches array: each color becomes a separate swatch div
+    let swatches = [];
+    group.variants.forEach(v=>{
+      if(v.swatch && v.swatch.trim()!==""){
+        v.swatch.split(",").forEach(c=>{
+          let color = c.trim();
+          if(!color.startsWith("#") && !color.startsWith("rgb") && !color.startsWith("hsl")) color="#"+color;
+          swatches.push({ variantId: v.id, color });
+        });
+      }
+    });
 
     let addArea;
     if(qty>0){
@@ -834,29 +848,27 @@ function renderProducts(){
 
     productGrid.innerHTML+=`
 <div class="product-card ${selected.soldOut?'sold-out':''} ${selected.comingSoon?'coming-soon':''}">
-<div class="product-image-wrap">
-<img class="product-image" src="${selected.photo}">
-${selected.soldOut?overlay("SOLD OUT","#c33"):""}
-${selected.comingSoon?overlay("COMING SOON","#777"):""}
-</div>
-<div>
-<div class="product-title">${selected.name}</div>
-<div class="product-latin">${selected.latin||""}</div>
-<div class="product-price">$${selected.price.toFixed(2)}</div>
-<div class="swatches">
-${group.variants.filter(v=>v.swatch && v.swatch.trim()!=="").map(v=>{
-  let color=v.swatch.trim(); if(!color.startsWith("#") && !color.startsWith("rgb") && !color.startsWith("hsl")) color="#"+color;
-  return `<div class="swatch ${v.id===selected.id?'selected':''}" style="background-color:${color}" onclick="selectVariant('${group.base.group}','${v.id}')"></div>`;
-}).join("")}
-</div>
-</div>
-${addArea}
+  <div class="product-image-wrap">
+    <img class="product-image" src="${selected.photo}">
+    ${selected.soldOut?overlay("SOLD OUT","#c33"):""}
+    ${selected.comingSoon?overlay("COMING SOON","#777"):""}
+  </div>
+  <div>
+    <div class="product-title">${selected.name}</div>
+    <div class="product-latin">${selected.latin||""}</div>
+    <div class="product-price">$${selected.price.toFixed(2)}</div>
+    ${swatches.length>0?`<div class="swatches">
+      ${swatches.map(s=>`
+        <div class="swatch ${s.variantId===selected.id?'selected':''}" 
+             style="background-color:${s.color}" 
+             onclick="selectVariant('${group.base.group}','${s.variantId}')"></div>`).join("")}
+    </div>`:""}
+  </div>
+  ${addArea}
 </div>`;
   });
   updateBadges();
 }
-function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
-function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
 
 /* ================= CHECKOUT ================= */
 /* ================= SILENT GOOGLE FORM SUBMIT ================= */
