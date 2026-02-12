@@ -456,7 +456,7 @@ function updateBadges(){
   }
 
 }
-  
+
 /* ================= CART DRAWER ================= */
 const cartDrawer = document.getElementById("cart-drawer");
 function toggleDrawer(){cartDrawer.classList.toggle("open");}
@@ -648,61 +648,65 @@ function overlay(txt,color){return `<div class="sold-out-overlay"><span style="b
 function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
 
 /* ================= CHECKOUT ================= */
-function openCheckoutForm() {
-  // 1. Check if cart is empty
+  function openCheckoutForm() {
   if (Object.keys(cart).length === 0) {
     alert("Your cart is empty.");
     return;
   }
-
-  // 2. Validate required fields
-  if (!custName.value || !custPhone.value || !custDate.value || !custTime.value) {
+     if (!custName.value || !custPhone.value || !custDate.value || !custTime.value) {
     alert("Please complete name, phone, date, and time.");
     return;
   }
-
-  // 3. Gather cart items
-  const items = Object.entries(cart).map(([id, qty]) => {
-    const p = getProductById(id);
+ const p = getProductById(id);
     return p ? `${p.name} x${qty}` : '';
   }).filter(Boolean).join(", ");
 
-  const subtotal = Object.entries(cart).reduce((sum, [id, qty]) => {
-    const p = getProductById(id);
-    return sum + (p ? p.price * qty : 0);
-  }, 0) + deliveryFee;
+  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+     const p = getProductById(id);
+    return sum + (p ? p.price*qty : 0);
+  },0) + deliveryFee;
+  // Google Form POST endpoint
+  const formEndpoint = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse";
 
-  // 4. Fill hidden form
-  document.getElementById("f_items").value = items;
-  document.getElementById("f_subtotal").value = "$" + subtotal.toFixed(2);
-  document.getElementById("f_name").value = custName.value;
-  document.getElementById("f_email").value = custEmail.value;
-  document.getElementById("f_phone").value = custPhone.value;
-  document.getElementById("f_contact").value = custContactMethod.value;
-  document.getElementById("f_pickupdelivery").value = custPickupDelivery.value;
-  document.getElementById("f_addr1").value = document.getElementById("addr1").value;
-  document.getElementById("f_addr2").value = document.getElementById("addr2").value;
-  document.getElementById("f_city").value = document.getElementById("city").value;
-  document.getElementById("f_postal").value = document.getElementById("postal").value;
-  document.getElementById("f_date").value = custDate.value;
-  document.getElementById("f_time").value = custTime.value;
-  document.getElementById("f_notes").value = document.getElementById("custNotes").value;
-  document.getElementById("f_marketing").value = custMarketing.value;
+  // Map of field names → values
+  const formData = new FormData();
+  formData.append("entry.1046011819", items);
+  formData.append("entry.362516403", "$"+subtotal.toFixed(2));
+  formData.append("entry.991310792", custName.value);
+  formData.append("entry.380963175", custEmail.value);
+  formData.append("entry.640553104", custPhone.value);
+  formData.append("entry.1469637469", custContactMethod.value);
+  formData.append("entry.590490152", custPickupDelivery.value);
+  formData.append("entry.489484198", document.getElementById("addr1").value);
+  formData.append("entry.1117374631", document.getElementById("addr2").value);
+  formData.append("entry.635395700", document.getElementById("city").value);
+  formData.append("entry.2075536009", document.getElementById("postal").value);
+  formData.append("entry.1225481208", custDate.value);
+  formData.append("entry.2009788871", custTime.value);
+  formData.append("entry.2140423836", document.getElementById("custNotes").value);
+  formData.append("entry.798763112", custMarketing.value);
 
-  // 5. Submit the form invisibly
-  document.getElementById("invisibleForm").submit();
+  // Submit invisibly
+  fetch(formEndpoint, {
+    method: "POST",
+    mode: "no-cors", // prevents CORS issues
+    body: formData
+  }).then(() => {
+    // Show confirmation overlay immediately
+    const overlay = document.getElementById("confirmation-overlay");
+    const textEl = document.getElementById("confirmation-text");
+    textEl.textContent = `Thank you, ${custName.value}! Your order has been confirmed.\n\nItems: ${items}\nTotal: $${subtotal.toFixed(2)}`;
+    overlay.style.display = "flex";
 
-  // 6. Show confirmation overlay
-  const overlay = document.getElementById("confirmation-overlay");
-  const textEl = document.getElementById("confirmation-text");
-  textEl.textContent = `Thank you, ${custName.value}! Your order has been confirmed.\n\nItems: ${items}\nTotal: $${subtotal.toFixed(2)}`;
-  overlay.style.display = "flex";
-
-  // 7. Clear cart
-  cart = {};
-  deliveryFee = 0;
-  saveCart();
-  renderProducts();
+    // Clear cart
+    cart = {};
+    deliveryFee = 0;
+    saveCart();
+    renderProducts();
+  }).catch(err => {
+    alert("There was a problem submitting your order. Please try again.");
+    console.error(err);
+  });
 }
 
 /* ================= INIT ================= */
@@ -710,26 +714,5 @@ generateTimeSlots();
 fetchProducts();
 setInterval(fetchProducts,300000);
 </script>
-  <!-- Hidden Google Form submission -->
-<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-
-<form id="invisibleForm" action="https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse" 
-      method="POST" target="hidden_iframe">
-  <input name="entry.1046011819" id="f_items">
-  <input name="entry.362516403" id="f_subtotal">
-  <input name="entry.991310792" id="f_name">
-  <input name="entry.380963175" id="f_email">
-  <input name="entry.640553104" id="f_phone">
-  <input name="entry.1469637469" id="f_contact">
-  <input name="entry.590490152" id="f_pickupdelivery">
-  <input name="entry.489484198" id="f_addr1">
-  <input name="entry.1117374631" id="f_addr2">
-  <input name="entry.635395700" id="f_city">
-  <input name="entry.2075536009" id="f_postal">
-  <input name="entry.1225481208" id="f_date">
-  <input name="entry.2009788871" id="f_time">
-  <input name="entry.2140423836" id="f_notes">
-  <input name="entry.798763112" id="f_marketing">
-</form>
 </body>
 </html>
