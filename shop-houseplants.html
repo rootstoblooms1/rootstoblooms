@@ -648,15 +648,19 @@ function overlay(txt,color){return `<div class="sold-out-overlay"><span style="b
 function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
 
 /* ================= CHECKOUT ================= */
+/* ================= SILENT GOOGLE FORM SUBMIT ================= */
 function openCheckoutForm(){
+
   if(Object.keys(cart).length === 0){
     alert("Your cart is empty.");
     return;
   }
+
   if(!custName.value || !custPhone.value || !custDate.value || !custTime.value){
-  alert("Please complete name, phone, date, and time.");
-  return;
-}
+    alert("Please complete name, phone, date, and time.");
+    return;
+  }
+
   const items = Object.entries(cart).map(([id, qty])=>{
     const p=getProductById(id);
     return p ? `${p.name} x${qty}` : '';
@@ -667,28 +671,62 @@ function openCheckoutForm(){
     return sum + (p ? p.price*qty : 0);
   },0) + deliveryFee;
 
-  const formBase = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/viewform?usp=pp_url";
+  const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse";
 
-  const prefillData = {
+  const formData = {
     "entry.1046011819": items,
     "entry.362516403": "$"+subtotal.toFixed(2),
-    "entry.991310792": document.getElementById("custName").value,
-    "entry.380963175": document.getElementById("custEmail").value,
-    "entry.640553104": document.getElementById("custPhone").value,
-    "entry.1469637469": document.getElementById("custContactMethod").value,
-    "entry.590490152": document.getElementById("custPickupDelivery").value,
-    "entry.489484198": document.getElementById("addr1").value,
-    "entry.1117374631": document.getElementById("addr2").value,
-    "entry.635395700": document.getElementById("city").value,
-    "entry.2075536009": document.getElementById("postal").value,
-    "entry.1225481208": document.getElementById("custDate").value,
-    "entry.2009788871": document.getElementById("custTime").value,
-    "entry.2140423836": document.getElementById("custNotes").value,
-    "entry.798763112": document.getElementById("custMarketing").value
+    "entry.991310792": custName.value,
+    "entry.380963175": custEmail.value,
+    "entry.640553104": custPhone.value,
+    "entry.1469637469": custContactMethod.value,
+    "entry.590490152": custPickupDelivery.value,
+    "entry.489484198": addr1.value,
+    "entry.1117374631": addr2.value,
+    "entry.635395700": city.value,
+    "entry.2075536009": postal.value,
+    "entry.1225481208": custDate.value,
+    "entry.2009788871": custTime.value,
+    "entry.2140423836": custNotes.value,
+    "entry.798763112": custMarketing.value
   };
 
-  const prefillURL = formBase + "&" + Object.entries(prefillData).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join("&");
-  window.open(prefillURL, "_blank");
+  // Build hidden form
+  const hiddenForm = document.createElement("form");
+  hiddenForm.action = formURL;
+  hiddenForm.method = "POST";
+  hiddenForm.target = "hidden_iframe";
+
+  Object.entries(formData).forEach(([k,v])=>{
+    const input = document.createElement("input");
+    input.type="hidden";
+    input.name=k;
+    input.value=v;
+    hiddenForm.appendChild(input);
+  });
+
+  document.body.appendChild(hiddenForm);
+
+  // Hidden iframe target
+  let iframe = document.getElementById("hidden_iframe");
+  if(!iframe){
+    iframe = document.createElement("iframe");
+    iframe.name="hidden_iframe";
+    iframe.id="hidden_iframe";
+    iframe.style.display="none";
+    document.body.appendChild(iframe);
+  }
+
+  hiddenForm.submit();
+  hiddenForm.remove();
+
+  /* Success UI */
+  document.getElementById("confirmation-text").innerText =
+    "Thank you! Your order has been submitted successfully.";
+
+  document.getElementById("confirmation-overlay").style.display = "flex";
+
+  clearCart();
 }
 
 /* ================= INIT ================= */
