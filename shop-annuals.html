@@ -356,7 +356,7 @@ body{
     </div>
 
     <label for="custDate">Pickup / Delivery Date</label>
-    <input type="date" id="custDate" onchange="generateTimeSlots();">
+    <input type="date" id="custDate">
 
     <label for="custTime">Pickup / Delivery Time</label>
     <select id="custTime" class="pickup-time"></select>
@@ -394,7 +394,7 @@ body{
   </div>
     <div style="display:flex;gap:8px;">
       <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
-      <button class="small-btn" onclick="openCheckoutForm()">Checkout</button>
+      <button class="small-btn" id="checkoutBtn" onclick="openCheckoutForm()">Checkout</button>
     </div>
   </div>
 </div>
@@ -429,7 +429,11 @@ let deliveryFee=0;
 
 /* ================= CART FUNCTIONS ================= */
 function getProductById(id){return RAW.find(p=>p.id===id);}
-function saveCart(){localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateBadges();}
+function saveCart(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(cart));
+  updateBadges();
+  renderCartItems();
+}
 function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
 function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
 function updateBadges(){
@@ -456,37 +460,99 @@ function updateBadges(){
   }
 
 }
+function renderCartItems(){
+  const wrap = document.getElementById("cartItemsWrap");
+  wrap.innerHTML = "";
+
+  Object.entries(cart).forEach(([id,qty])=>{
+    const p = getProductById(id);
+    if(!p) return;
+
+    wrap.innerHTML += `
+      <div class="cart-line">
+        <div>
+          <div><strong>${p.name}</strong></div>
+          <div>$${p.price.toFixed(2)} × ${qty}</div>
+        </div>
+        <div>
+          <button class="small-btn" onclick="updateQty('${id}',-1)">−</button>
+          <button class="small-btn" onclick="updateQty('${id}',1)">+</button>
+        </div>
+      </div>
+    `;
+  });
+}
 
 /* ================= CART DRAWER ================= */
 const cartDrawer = document.getElementById("cart-drawer");
-function toggleDrawer(){cartDrawer.classList.toggle("open");}
+function toggleDrawer(){
+  cartDrawer.classList.toggle("open");
+  renderCartItems();
+  updateBadges();
+}
 function clearCart(){cart={}; deliveryFee=0; saveCart(); updateBadges(); renderProducts();}
 function continueShopping(){toggleDrawer();}
 function closeConfirmation(){document.getElementById("confirmation-overlay").style.display = "none";}
 
 /* ================= DELIVERY / TIME ================= */
 const custPickupDelivery = document.getElementById("custPickupDelivery");
+// ===== Customer form references =====
+const custName = document.getElementById("custName");
+const custEmail = document.getElementById("custEmail");
+const custPhone = document.getElementById("custPhone");
+const custContactMethod = document.getElementById("custContactMethod");
+const addr1 = document.getElementById("addr1");
+const addr2 = document.getElementById("addr2");
+const city = document.getElementById("city");
+const postal = document.getElementById("postal");
+const custDateEl = document.getElementById("custDate");
+const custNotes = document.getElementById("custNotes");
+const custMarketing = document.getElementById("custMarketing");
 const deliveryAddress = document.getElementById("deliveryAddress");
 const custTime = document.getElementById("custTime");
 
 function toggleDeliveryAddress(val){
-  if(val==="delivery"){ deliveryAddress.style.display="flex"; calculateDeliveryFee(); }
+  if(val==="Delivery"){ deliveryAddress.style.display="flex"; calculateDeliveryFee(); }
   else{ deliveryAddress.style.display="none"; deliveryFee=0; updateBadges(); }
 }
 
 function calculateDeliveryFee(){
-  const city = document.getElementById("city").value.trim().toLowerCase();
-  const postal = document.getElementById("postal").value.trim();
-  if(["halifax","dartmouth","spryfield"].includes(city)){ deliveryFee=5; }
-  else if(["bedford","sackville","bayers lake","timberlea","eastern passage"].includes(city)){ deliveryFee=8; }
-  else if(["porter's lake","lawrencetown","fall river","hammonds plains","hatchet lake"].includes(city)){
-    deliveryFee=20; alert("Orders over $20 delivery require courier; remainder refunded after shipping."); }
-  else{ deliveryFee=0; }
+  const cityVal = city.value.trim().toLowerCase();
+  const postalVal = postal.value.trim();
+
+  if(["halifax","dartmouth","spryfield"].includes(cityVal)){
+    deliveryFee = 5;
+  }
+  else if(["bedford","sackville","bayers lake","timberlea","eastern passage"].includes(cityVal)){
+    deliveryFee = 8;
+  }
+  else if(["porter's lake","lawrencetown","fall river","hammonds plains","hatchet lake"].includes(cityVal)){
+    deliveryFee = 20;
+    alert("Orders outside local zone require courier. $20 deposit applied.");
+  }
+  else{
+    deliveryFee = 0;
+  }
+
   updateBadges();
 }
-
 /* ================= TIME SLOT & DATE HANDLING ================= */
 const custDate = document.getElementById("custDate");
+// Prevent selecting Thursdays
+custDate.addEventListener("change", function () {
+
+  const d = new Date(this.value);
+
+  if (d.getDay() === 4) {   // 4 = Thursday
+    alert("Sorry — we are closed on Thursdays. Please choose another date.");
+    this.value = "";
+    custTime.innerHTML = "";
+    return;
+  }
+
+  generateTimeSlots();
+});
+
 const closedDays = ["thu"]; // days the shop is closed
 const openHours = {
   mon:[19,21],
@@ -505,46 +571,49 @@ custDate.min = today.toISOString().split("T")[0];
 // Generate time slots based on selected date
 function generateTimeSlots() {
   custTime.innerHTML = "";
+
   const dateStr = custDate.value;
-  if (!dateStr) { 
-    custTime.innerHTML = "<option>Please select a date first</option>"; 
-    return; 
+  if (!dateStr) {
+    custTime.innerHTML = "<option>Please select a date first</option>";
+    return;
   }
 
   const [year, month, day] = dateStr.split("-").map(Number);
   const selectedDate = new Date(year, month-1, day);
+
+  const now = new Date();
+  const isToday =
+    selectedDate.toDateString() === now.toDateString();
+
   const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
   const dayName = dayMap[selectedDate.getDay()];
-
-  // Check if closed
-  if (closedDays.includes(dayName)) {
-    custTime.innerHTML = "<option>Closed on this day</option>";
-    alert("Sorry, we are closed on Thursdays. Please choose another date.");
-    custDate.value = "";
-    return;
-  }
-
   const hours = openHours[dayName];
-  if(!hours || hours.length===0){ 
-    custTime.innerHTML = "<option>No slots available</option>"; 
-    return; 
+
+  if(!hours || hours.length===0){
+    custTime.innerHTML = "<option>No slots available</option>";
+    return;
   }
 
   for(let h = hours[0]; h < hours[1]; h++){
     for(let m = 0; m < 60; m += 30){
-const raw = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 
-let hour12 = h % 12 || 12;
-let ampm = h < 12 ? "AM" : "PM";
-const pretty = `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
+      const slot = new Date(year,month-1,day,h,m);
 
-custTime.innerHTML += `<option value="${raw}">${pretty}</option>`;
+      // Skip past times today
+      if(isToday && slot < now) continue;
+
+      const raw = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      const hour12 = h % 12 || 12;
+      const ampm = h < 12 ? "AM" : "PM";
+      const pretty = `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
+
+      custTime.innerHTML += `<option value="${raw}">${pretty}</option>`;
     }
   }
-}
 
-// Optional: prevent selecting closed days directly
-custDate.addEventListener("input", generateTimeSlots);
+  if(custTime.innerHTML === "")
+    custTime.innerHTML = "<option>No remaining slots today</option>";
+}
 
 /* ================= FETCH PRODUCTS ================= */
 async function fetchProducts(){
@@ -562,9 +631,6 @@ document.getElementById("filterRow").style.display = "flex"; // show filters now
 renderProducts();
 document.getElementById("loadingNotice")?.remove();
 productGrid.style.display="grid";
-  renderProducts();
-  document.getElementById("loadingNotice")?.remove();
-  productGrid.style.display="grid";
 }
 
 function buildGroups(){
@@ -651,20 +717,28 @@ function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); 
 /* ================= SILENT GOOGLE FORM SUBMIT ================= */
 function openCheckoutForm(){
 
+  const btn = document.getElementById("checkoutBtn");
+
+  // Validate BEFORE disabling button
   if(Object.keys(cart).length === 0){
     alert("Your cart is empty.");
     return;
   }
 
-  if(!custName.value || !custPhone.value || !custDate.value || !custTime.value){
+  if(!custName.value || !custPhone.value || !custDateEl.value || !custTime.value){
     alert("Please complete name, phone, date, and time.");
     return;
   }
 
+  btn.disabled = true;
+  btn.innerText = "Submitting...";
+
   const items = Object.entries(cart).map(([id, qty])=>{
-    const p=getProductById(id);
-    return p ? `${p.name} x${qty}` : '';
-  }).filter(Boolean).join(", ");
+    const p = getProductById(id);
+    if(!p) return "";
+    const line = p.price * qty;
+    return `${p.name} x${qty} — $${line.toFixed(2)}`;
+  }).filter(Boolean).join("\n");
 
   const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
     const p=getProductById(id);
@@ -691,7 +765,6 @@ function openCheckoutForm(){
     "entry.798763112": custMarketing.value
   };
 
-  // Build hidden form
   const hiddenForm = document.createElement("form");
   hiddenForm.action = formURL;
   hiddenForm.method = "POST";
@@ -707,7 +780,6 @@ function openCheckoutForm(){
 
   document.body.appendChild(hiddenForm);
 
-  // Hidden iframe target
   let iframe = document.getElementById("hidden_iframe");
   if(!iframe){
     iframe = document.createElement("iframe");
@@ -720,19 +792,24 @@ function openCheckoutForm(){
   hiddenForm.submit();
   hiddenForm.remove();
 
-  /* Success UI */
   document.getElementById("confirmation-text").innerText =
     "Thank you! Your order has been submitted successfully.";
 
   document.getElementById("confirmation-overlay").style.display = "flex";
 
   clearCart();
+
+  setTimeout(()=>{
+    btn.disabled = false;
+    btn.innerText = "Checkout";
+  },2000);
 }
 
 /* ================= INIT ================= */
 generateTimeSlots();
 fetchProducts();
 setInterval(fetchProducts,300000);
+renderCartItems();
 </script>
 </body>
 </html>
