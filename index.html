@@ -32,15 +32,76 @@ body{
   z-index:1000;
 }
 .topnav .logo img{height:48px;}
-.nav-links a{
+.nav-links a,
+.nav-links .dropbtn {
   color:white;
   text-decoration:none;
   font-weight:700;
-  margin-left:20px;
   padding:8px 12px;
   border-radius:6px;
   transition:0.2s;
 }
+
+.nav-links a {
+  margin-left:20px;
+}
+/* Make nav links wrap or hide on small screens */
+@media screen and (max-width: 768px) {
+  .topnav {
+    flex-wrap: wrap; /* allow elements to stack */
+    padding: 10px 16px;
+  }
+
+  /* Hide nav links by default */
+  .nav-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+
+  /* Show nav links when active */
+  .nav-links.active {
+    display: flex;
+  }
+
+  .nav-links a,
+  .nav-links .dropbtn {
+    margin: 6px 0;
+    padding: 10px;
+  }
+
+  /* Dropdown content full width on mobile */
+  .nav-links .dropdown-content {
+    position: static;
+    box-shadow: none;
+    border-radius: 0;
+    background-color: var(--dark);
+  }
+
+  .nav-links .dropdown-content a {
+    color: white;
+  }
+
+  .nav-links .dropdown:hover .dropdown-content {
+    display: none; /* disable hover dropdown on mobile */
+  }
+
+  /* Hamburger menu button */
+  .hamburger {
+    display: block;
+    cursor: pointer;
+  }
+}
+
+/* Hide hamburger on desktop */
+.hamburger {
+  display: none;
+  font-size: 28px;
+  color: white;
+  user-select: none;
+}
+
 .nav-links a:hover{background:var(--brand-green);}
 /* Dropdown container */
 .nav-links .dropdown {
@@ -184,9 +245,11 @@ footer a:hover{text-decoration:underline;}
 
 <body>
 
-<!-- NAVIGATION -->
 <nav class="topnav">
   <a href="/" class="logo"><img src="IMG_1466.png" alt="Roots to Blooms Logo"></a>
+  
+  <div class="hamburger">&#9776;</div> <!-- Hamburger icon -->
+
   <div class="nav-links">
     <a href="/">Home</a>
 
