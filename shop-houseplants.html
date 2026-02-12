@@ -241,62 +241,69 @@ body{
 .product-latin{color:#666; font-size:12px;}
 .product-price{font-weight:800; margin-top:8px;}
 
-/* SWATCHES */
-.swatches{
-  display:flex;
-  gap:8px;
-  margin:10px 0 12px 0;
-  flex-wrap:wrap;
-}
-.swatch{
-  width:20px;
-  height:20px;
-  border-radius:50%;
-  cursor:pointer;
-  border:2px solid #ddd;
-  flex-shrink:0;
-  box-sizing:border-box;
-  transition:.15s;
-}
-.swatch:hover{transform:scale(1.1);}
-.swatch.selected{border:3px solid var(--brand-green);}
+function renderProducts() {
+  productGrid.innerHTML = "";
 
-/* ADD / QTY */
-.add-btn{
-  background:var(--dark);
-  color:#fff;
-  border:none;
-  padding:10px 14px;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:800;
-  margin-top:auto;
-}
-.add-btn:disabled{
-  opacity:0.5;
-  cursor:not-allowed;
-}
-.qty-row{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-top:auto;
-}
-.qty-btn{
-  background:#eee;
-  border:none;
-  padding:6px 10px;
-  border-radius:6px;
-  cursor:pointer;
-}
-.qty-btn:disabled{
-  opacity:0.4;
-  cursor:not-allowed;
-}
-.qty-num{
-  min-width:28px;
-  text-align:center;
-  font-weight:800;
+  GROUPED.forEach(group => {
+    if(activeFilter !== "all" && !group.categories.has(activeFilter)) return;
+
+    let variants = group.variants;
+    if(activeFilter === "all") variants = variants.filter(v => !v.soldOut);
+    if(hideSold) variants = variants.filter(v => !v.soldOut);
+    if(!variants.length) return;
+
+    const selected = variants[0];
+    const id = selected.id;
+    const qty = cart[id] || 0;
+
+    // Prepare swatches (split comma-separated colors)
+    let swatches = [];
+    variants.forEach(v => {
+      if(v.swatch && v.swatch.trim() !== "") {
+        v.swatch.split(',').forEach(c => {
+          let color = c.trim();
+          if(!color.startsWith("#") && !color.startsWith("rgb") && !color.startsWith("hsl")) color = "#" + color;
+          swatches.push({ id: v.id, color });
+        });
+      }
+    });
+
+    let addArea;
+    if(qty > 0){
+      addArea = `
+        <div class="qty-row">
+          <button class="qty-btn" onclick="updateQty('${id}',-1)">-</button>
+          <div class="qty-num">${qty}</div>
+          <button class="qty-btn" onclick="updateQty('${id}',1)" ${qty>=selected.stock?'disabled':''}>+</button>
+        </div>`;
+    } else {
+      addArea = `<button class="add-btn" onclick="firstAdd('${id}')" ${selected.soldOut || selected.comingSoon ? 'disabled' : ''}>Add</button>`;
+    }
+
+    productGrid.innerHTML += `
+      <div class="product-card ${selected.soldOut?'sold-out':''} ${selected.comingSoon?'coming-soon':''}">
+        <div class="product-image-wrap">
+          <img class="product-image" src="${selected.photo}">
+          ${selected.soldOut ? overlay("SOLD OUT","#c33") : ""}
+          ${selected.comingSoon ? overlay("COMING SOON","#777") : ""}
+        </div>
+        <div>
+          <div class="product-title">${selected.name}</div>
+          <div class="product-latin">${selected.latin||""}</div>
+          <div class="product-price">$${selected.price.toFixed(2)}</div>
+          ${swatches.length > 0 ? `<div class="swatches">
+            ${swatches.map(s => `
+              <div class="swatch ${s.id === selected.id ? 'selected' : ''}" 
+                   style="background-color:${s.color}" 
+                   onclick="selectVariant('${group.base.group}','${s.id}')"></div>`).join("")}
+          </div>` : ""}
+        </div>
+        ${addArea}
+      </div>
+    `;
+  });
+
+  updateBadges();
 }
 
 /* FLOATING CART */
