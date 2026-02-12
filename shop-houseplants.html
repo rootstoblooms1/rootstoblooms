@@ -719,6 +719,7 @@ function openCheckoutForm(){
 
   const btn = document.getElementById("checkoutBtn");
 
+  // Validate BEFORE disabling button
   if(Object.keys(cart).length === 0){
     alert("Your cart is empty.");
     return;
@@ -732,22 +733,12 @@ function openCheckoutForm(){
   btn.disabled = true;
   btn.innerText = "Submitting...";
 
-  if(Object.keys(cart).length === 0){
-    alert("Your cart is empty.");
-    return;
-  }
-
-  if(!custName.value || !custPhone.value || !custDateEl.value || !custTime.value){
-    alert("Please complete name, phone, date, and time.");
-    return;
-  }
-
   const items = Object.entries(cart).map(([id, qty])=>{
-  const p = getProductById(id);
-  if(!p) return "";
-  const line = p.price * qty;
-  return `${p.name} x${qty} — $${line.toFixed(2)}`;
-}).filter(Boolean).join("\n");
+    const p = getProductById(id);
+    if(!p) return "";
+    const line = p.price * qty;
+    return `${p.name} x${qty} — $${line.toFixed(2)}`;
+  }).filter(Boolean).join("\n");
 
   const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
     const p=getProductById(id);
@@ -774,7 +765,6 @@ function openCheckoutForm(){
     "entry.798763112": custMarketing.value
   };
 
-  // Build hidden form
   const hiddenForm = document.createElement("form");
   hiddenForm.action = formURL;
   hiddenForm.method = "POST";
@@ -790,7 +780,6 @@ function openCheckoutForm(){
 
   document.body.appendChild(hiddenForm);
 
-  // Hidden iframe target
   let iframe = document.getElementById("hidden_iframe");
   if(!iframe){
     iframe = document.createElement("iframe");
@@ -803,17 +792,17 @@ function openCheckoutForm(){
   hiddenForm.submit();
   hiddenForm.remove();
 
-  /* Success UI */
   document.getElementById("confirmation-text").innerText =
     "Thank you! Your order has been submitted successfully.";
 
   document.getElementById("confirmation-overlay").style.display = "flex";
 
   clearCart();
+
   setTimeout(()=>{
-  btn.disabled = false;
-  btn.innerText = "Checkout";
-},2000);
+    btn.disabled = false;
+    btn.innerText = "Checkout";
+  },2000);
 }
 
 /* ================= INIT ================= */
