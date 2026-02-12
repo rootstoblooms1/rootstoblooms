@@ -716,9 +716,21 @@ function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); 
 /* ================= CHECKOUT ================= */
 /* ================= SILENT GOOGLE FORM SUBMIT ================= */
 function openCheckoutForm(){
+
   const btn = document.getElementById("checkoutBtn");
-btn.disabled = true;
-btn.innerText = "Submitting...";
+
+  if(Object.keys(cart).length === 0){
+    alert("Your cart is empty.");
+    return;
+  }
+
+  if(!custName.value || !custPhone.value || !custDateEl.value || !custTime.value){
+    alert("Please complete name, phone, date, and time.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "Submitting...";
 
   if(Object.keys(cart).length === 0){
     alert("Your cart is empty.");
@@ -731,9 +743,11 @@ btn.innerText = "Submitting...";
   }
 
   const items = Object.entries(cart).map(([id, qty])=>{
-    const p=getProductById(id);
-    return p ? `${p.name} x${qty}` : '';
-  }).filter(Boolean).join(", ");
+  const p = getProductById(id);
+  if(!p) return "";
+  const line = p.price * qty;
+  return `${p.name} x${qty} — $${line.toFixed(2)}`;
+}).filter(Boolean).join("\n");
 
   const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
     const p=getProductById(id);
