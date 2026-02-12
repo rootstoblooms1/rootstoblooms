@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roots to Blooms — Annuals</title>
+<!-- Flatpickr Datepicker -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <style>
 :root{
@@ -356,7 +359,7 @@ body{
     </div>
 
     <label for="custDate">Pickup / Delivery Date</label>
-    <input type="date" id="custDate">
+    <input type="text" id="custDate" placeholder="Select a date">
 
     <label for="custTime">Pickup / Delivery Time</label>
     <select id="custTime" class="pickup-time"></select>
@@ -538,20 +541,24 @@ function calculateDeliveryFee(){
 }
 /* ================= TIME SLOT & DATE HANDLING ================= */
 const custDate = document.getElementById("custDate");
-// Prevent selecting Thursdays
-custDate.addEventListener("change", function () {
-
-  const d = new Date(this.value);
-
-  if (d.getDay() === 4) {   // 4 = Thursday
-    alert("Sorry — we are closed on Thursdays. Please choose another date.");
-    this.value = "";
-    custTime.innerHTML = "";
-    return;
+flatpickr("#custDate", {
+  minDate: "today",
+  dateFormat: "Y-m-d",
+  disable: [
+    function(date) {
+      // Return true to disable Thursdays (4 = Thursday)
+      return date.getDay() === 4;
+    }
+  ],
+  onChange: function(selectedDates, dateStr) {
+    if (!dateStr) {
+      custTime.innerHTML = "";
+      return;
+    }
+    generateTimeSlots(); 
   }
-
-  generateTimeSlots();
 });
+
 
 const closedDays = ["thu"]; // days the shop is closed
 const openHours = {
@@ -566,7 +573,6 @@ const openHours = {
 
 // Set min date to today
 const today = new Date();
-custDate.min = today.toISOString().split("T")[0];
 
 // Generate time slots based on selected date
 function generateTimeSlots() {
