@@ -108,6 +108,7 @@ body {
 }
 
 @media screen and (max-width: 768px) {
+
   .topnav {
     flex-wrap: wrap;
     padding: 10px 16px;
@@ -117,13 +118,8 @@ body {
   .hamburger {
     display: block;
   }
-  /* Mobile dropdown visible when active */
-.nav-links .dropdown-content.active {
-  display: flex;
-  flex-direction: column;
-}
 
-  /* Nav links hidden by default, vertical on mobile */
+  /* Nav links hidden by default */
   .nav-links {
     display: none;
     width: 100%;
@@ -131,32 +127,47 @@ body {
     margin-top: 10px;
   }
 
+  /* Show when hamburger toggled */
   .nav-links.active {
     display: flex;
   }
 
-  .nav-links a,
-  .nav-links .dropbtn {
-    margin: 6px 0;
-    padding: 10px;
-  }
-
-  /* Dropdown content mobile overrides */
+  /* Force dropdown closed */
   .nav-links .dropdown-content {
+    display: none;
     position: static;
     background-color: var(--dark);
     box-shadow: none;
     border-radius: 0;
   }
 
+  /* Show when toggled */
+  .nav-links .dropdown-content.active {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Dropdown links */
   .nav-links .dropdown-content a {
     color: white;
   }
 
-  /* Disable hover dropdown on mobile */
+  /* Make button look like link */
+  .nav-links .dropbtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    color: white;
+    padding: 10px;
+    text-align: left;
+  }
+
+  /* Disable desktop hover behavior */
   .nav-links .dropdown:hover .dropdown-content {
     display: none;
   }
+
 }
 
 /* ===================== HERO SECTION ===================== */
@@ -282,7 +293,7 @@ footer a:hover {
 
     <!-- Dropdown for Shop -->
     <div class="dropdown">
-      <a href="shop.html" class="dropbtn">Shop</a>
+      <button class="dropbtn">Shop</button>
       <div class="dropdown-content">
         <a href="shop-houseplants.html">Houseplants</a>
         <a href="shop-annuals.html">Annuals</a>
