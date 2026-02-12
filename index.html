@@ -8,16 +8,19 @@
 <style>
 :root{
   --brand-green:#4EA337;
-  --dark:#254D32;
+  --brand-brown:#4A2300;
   --accent:#c6e3d2;
+  --dark:#254D32;
 }
 
-/* ====== General ====== */
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fafafa;color:#333;}
-h1,h2{margin:16px 0 8px 0;text-align:center;color:var(--dark);}
-a{text-decoration:none;color:inherit;}
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#fafafa;
+  color:#333;
+}
 
-/* ====== Navigation ====== */
+/* NAVIGATION */
 .topnav{
   display:flex;
   align-items:center;
@@ -31,6 +34,7 @@ a{text-decoration:none;color:inherit;}
 .topnav .logo img{height:48px;}
 .nav-links a{
   color:white;
+  text-decoration:none;
   font-weight:700;
   margin-left:20px;
   padding:8px 12px;
@@ -39,86 +43,89 @@ a{text-decoration:none;color:inherit;}
 }
 .nav-links a:hover{background:var(--brand-green);}
 
-/* ====== Dropdown ====== */
-.dropdown{
-  position:relative;
-  display:inline-block;
-}
-.dropbtn{
-  background:var(--dark);
+/* HERO SECTION */
+.hero{
+  background:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('hero.jpg') center/cover no-repeat;
   color:white;
-  font-weight:700;
-  padding:8px 12px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
+  text-align:center;
+  padding:120px 20px 80px;
 }
-.dropbtn:hover{
+.hero h1{
+  font-size:48px;
+  margin:0 0 16px;
+}
+.hero p{
+  font-size:20px;
+  margin:0 0 24px;
+}
+.hero a{
+  display:inline-block;
   background:var(--brand-green);
-}
-.dropdown-content{
-  display:none;
-  position:absolute;
-  background:#fff;
-  min-width:160px;
-  box-shadow:0 8px 16px rgba(0,0,0,0.2);
-  border-radius:6px;
-  overflow:hidden;
-  z-index:1000;
-}
-.dropdown-content a{
-  color:var(--dark);
-  padding:12px 16px;
-  display:block;
+  color:white;
+  padding:12px 24px;
+  border-radius:8px;
   font-weight:700;
+  text-decoration:none;
+  transition:0.2s;
 }
-.dropdown-content a:hover{
-  background:var(--accent);
-}
-.dropdown:hover .dropdown-content{
-  display:block;
-}
+.hero a:hover{background:#3d872a;}
 
-/* ====== Product Grid ====== */
-.product-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:16px;
-  padding:0 20px 40px 20px;
+/* FEATURE CATEGORIES */
+.feature-section{
   max-width:1200px;
   margin:auto;
+  padding:60px 20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:24px;
 }
-.product-card{
-  background:#fff;
+.feature-card{
+  background:white;
   border-radius:12px;
-  box-shadow:0 6px 12px rgba(0,0,0,0.08);
   overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  cursor:pointer;
-  transition:transform 0.15s;
+  box-shadow:0 8px 18px rgba(0,0,0,0.06);
+  text-align:center;
+  transition:transform 0.2s;
 }
-.product-card:hover{transform:scale(1.03);}
-.product-image{
+.feature-card:hover{transform:scale(1.03);}
+.feature-card img{
   width:100%;
-  height:160px;
+  height:200px;
   object-fit:cover;
-  background:#f3f3f3;
 }
-.product-title{
-  font-weight:800;
-  padding:8px 12px 4px 12px;
-  font-size:15px;
+.feature-card h3{
+  margin:12px 0 6px;
+  font-size:20px;
   color:var(--dark);
-  text-align:center;
 }
-.product-price{
-  padding:0 12px 8px 12px;
+.feature-card p{
+  font-size:14px;
+  color:#666;
+  margin:0 12px 12px;
+}
+.feature-card a{
+  display:inline-block;
+  margin-bottom:12px;
+  background:var(--brand-green);
+  color:white;
+  padding:8px 16px;
+  border-radius:8px;
+  text-decoration:none;
   font-weight:700;
+}
+.feature-card a:hover{background:#3d872a;}
+
+/* FOOTER */
+footer{
+  background:var(--dark);
+  color:white;
   text-align:center;
-  color:#555;
+  padding:20px 12px;
   font-size:14px;
 }
+footer a{color:var(--brand-green); text-decoration:none;}
+footer a:hover{text-decoration:underline;}
+
 </style>
 </head>
 
@@ -129,75 +136,45 @@ a{text-decoration:none;color:inherit;}
   <a href="/" class="logo"><img src="IMG_1466.png" alt="Roots to Blooms Logo"></a>
   <div class="nav-links">
     <a href="/">Home</a>
-
-    <div class="dropdown">
-      <button class="dropbtn">Shop ▼</button>
-      <div class="dropdown-content">
-        <a href="shop-houseplants.html">Houseplants</a>
-        <a href="shop-annuals.html">Annuals</a>
-        <a href="shop-vegetable-starters.html">Vegetable Starters</a>
-      </div>
-    </div>
-
+    <a href="shop.html">Shop</a>
     <a href="/about.html">About</a>
     <a href="/contact.html">Contact</a>
   </div>
 </nav>
 
-<h1>Roots to Blooms</h1>
+<!-- HERO -->
+<section class="hero">
+  <h1>Welcome to Roots to Blooms</h1>
+  <p>Discover houseplants, garden starters, and seasonal blooms to brighten your home.</p>
+  <a href="shop.html">Shop Now</a>
+</section>
 
-<h2 id="houseplantsTitle">Houseplants</h2>
-<div id="houseplantsGrid" class="product-grid"></div>
+<!-- FEATURED CATEGORIES -->
+<section class="feature-section">
+  <div class="feature-card">
+    <img src="houseplants.jpg" alt="Houseplants">
+    <h3>Houseplants</h3>
+    <p>Lush greenery perfect for indoors. Low-maintenance and stylish.</p>
+    <a href="houseplants.html">Shop Houseplants</a>
+  </div>
+  <div class="feature-card">
+    <img src="annuals.jpg" alt="Annuals">
+    <h3>Annuals</h3>
+    <p>Vibrant seasonal blooms to brighten your garden and balcony.</p>
+    <a href="annuals.html">Shop Annuals</a>
+  </div>
+  <div class="feature-card">
+    <img src="vegetables.jpg" alt="Vegetable Starters">
+    <h3>Vegetable Starters</h3>
+    <p>Organic seedlings ready to plant for a bountiful harvest.</p>
+    <a href="vegetables.html">Shop Vegetable Starters</a>
+  </div>
+</section>
 
-<h2 id="annualsTitle">Annuals</h2>
-<div id="annualsGrid" class="product-grid"></div>
+<!-- FOOTER -->
+<footer>
+  &copy; 2026 Roots to Blooms — <a href="/contact.html">Contact Us</a>
+</footer>
 
-<h2 id="vegetablesTitle">Vegetable Starters</h2>
-<div id="vegetablesGrid" class="product-grid"></div>
-
-<script>
-// ================== HOMEPAGE PRODUCTS ==================
-const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
-
-async function loadHomeProducts(){
-  const res = await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
-  const products = await res.json();
-
-  function renderGrid(gridId, titleId, category, link){
-    const grid = document.getElementById(gridId);
-    const title = document.getElementById(titleId);
-
-    const filtered = products.filter(p => (p.categories || []).map(c=>c.toLowerCase()).includes(category.toLowerCase()));
-
-    if(filtered.length === 0){
-      grid.style.display = "none";
-      title.style.display = "none";
-      return;
-    }
-
-    grid.style.display = "grid";
-    title.style.display = "block";
-    grid.innerHTML = '';
-
-    filtered.forEach(p=>{
-      const card = document.createElement('a');
-      card.href = link;
-      card.className = 'product-card';
-      card.innerHTML = `
-        <img class="product-image" src="${p.photo}" alt="${p.name}">
-        <div class="product-title">${p.name}</div>
-        <div class="product-price">$${Number(p.price).toFixed(2)}</div>
-      `;
-      grid.appendChild(card);
-    });
-  }
-
-  renderGrid('houseplantsGrid','houseplantsTitle','houseplants','shop-houseplants.html');
-  renderGrid('annualsGrid','annualsTitle','annuals','shop-annuals.html');
-  renderGrid('vegetablesGrid','vegetablesTitle','vegetable starters','shop-vegetable-starters.html');
-}
-
-loadHomeProducts();
-</script>
 </body>
 </html>
