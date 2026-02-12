@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roots to Blooms — FAQ</title>
+
+<style>
+:root{
+  --brand-green:#4EA337;
+  --brand-brown:#4A2300;
+  --accent:#c6e3d2;
+  --dark:#254D32;
+}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#fafafa;
+  color:#333;
+}
+
+/* NAVIGATION */
+.topnav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 24px;
+  background:var(--dark);
+  position:sticky;
+  top:0;
+  z-index:1000;
+}
+.topnav .logo img{height:48px;}
+.nav-links a{
+  color:white;
+  text-decoration:none;
+  font-weight:700;
+  margin-left:20px;
+  padding:8px 12px;
+  border-radius:6px;
+  transition:0.2s;
+}
+.nav-links a:hover{background:var(--brand-green);}
+
+/* HERO SECTION */
+.hero{
+  background:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('hero.jpg') center/cover no-repeat;
+  color:white;
+  text-align:center;
+  padding:120px 20px 80px;
+}
+.hero h1{
+  font-size:48px;
+  margin:0 0 16px;
+}
+.hero p{
+  font-size:20px;
+  margin:0 0 24px;
+}
+
+/* FAQ SECTION */
+.faq-section{
+  max-width:900px;
+  margin:60px auto;
+  padding:0 20px;
+}
+.faq-section h2{
+  text-align:center;
+  color:var(--dark);
+  margin-bottom:40px;
+  font-size:36px;
+}
+.faq-item{
+  background:white;
+  border-radius:12px;
+  margin-bottom:16px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+  overflow:hidden;
+  transition:transform 0.2s;
+}
+.faq-item:hover{transform:scale(1.01);}
+.faq-question{
+  padding:18px 24px;
+  cursor:pointer;
+  font-weight:700;
+  color:var(--dark);
+  position:relative;
+}
+.faq-question::after{
+  content:'\002B';
+  position:absolute;
+  right:24px;
+  font-size:24px;
+  transition:transform 0.2s;
+}
+.faq-item.active .faq-question::after{
+  transform:rotate(45deg);
+}
+.faq-answer{
+  max-height:0;
+  overflow:hidden;
+  padding:0 24px;
+  background:#f9f9f9;
+  transition:max-height 0.3s ease, padding 0.3s ease;
+}
+.faq-item.active .faq-answer{
+  max-height:1000px;
+  padding:16px 24px;
+}
+
+/* FOOTER */
+footer{
+  background:var(--dark);
+  color:white;
+  text-align:center;
+  padding:20px 12px;
+  font-size:14px;
+}
+footer a{color:var(--brand-green); text-decoration:none;}
+footer a:hover{text-decoration:underline;}
+</style>
+</head>
+
+<body>
+
+<!-- NAVIGATION -->
+<nav class="topnav">
+  <a href="/" class="logo"><img src="IMG_1466.png" alt="Roots to Blooms Logo"></a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="shop.html">Shop</a>
+    <a href="/about.html">About</a>
+    <a href="/contact.html">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Frequently Asked Questions</h1>
+  <p>Everything you need to know about Roots to Blooms and how to get your plants.</p>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq-section">
+
+  <div class="faq-item">
+    <div class="faq-question">Where are you located?</div>
+    <div class="faq-answer">
+      <p>Roots to Blooms is located at 960 Barrington Street, Halifax NS.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">What are your hours?</div>
+    <div class="faq-answer">
+      <p>Our Hours of Operation not including holidays, are:</p>
+      <ul>
+        <li>Monday-Wednesday: 7pm-9pm</li>
+        <li>Thursday: closed</li>
+        <li>Friday: 7pm-9pm</li>
+        <li>Saturday: 9am-5pm</li>
+        <li>Sunday: 9am-2pm</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">Can I visit your store?</div>
+    <div class="faq-answer">
+      <p>Unfortunately, no. Roots to Blooms is not a "Brick and Mortar" store. You are not able to browse plants in person. However, we can take plenty of pictures of the plants you are interested in. We want you to be happy with your purchases!</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">How do I get the plants that I want to buy?</div>
+    <div class="faq-answer">
+      <p>Curbside pickup or delivery. When you checkout (hover over Shop, then select Houseplants), you will be redirected to a Google Form. After submitting, we will contact you shortly.</p>
+      <p>Generally, pickup or delivery is during our normal Hours of Operation. We try to be accommodating, but Roots to Blooms is a part-time business, so plants are usually not sold between 8am-5pm, Monday-Friday.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">How much is delivery?</div>
+    <div class="faq-answer">
+      <p>Delivery fees depend on your location:</p>
+      <ul>
+        <li>Halifax, Dartmouth, Spryfield: $5</li>
+        <li>Bedford, Sackville (Middle and Lower), Bayer's Lake, Timberlea, Eastern Passage: $8</li>
+      </ul>
+      <p>We will confirm a specific delivery time after receiving your order. If you need to reschedule, please contact us as soon as possible.</p>
+      <p>When we arrive, we will wait 15 minutes for you to respond. If no response, your order will be returned and delivery fees may apply for each delivery attempt.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer>
+  &copy; 2026 Roots to Blooms — <a href="/contact.html">Contact Us</a>
+</footer>
+
+<script>
+// FAQ toggle
+const faqItems = document.querySelectorAll('.faq-item');
+faqItems.forEach(item => {
+  item.querySelector('.faq-question').addEventListener('click', () => {
+    item.classList.toggle('active');
+  });
+});
+</script>
+
+</body>
+</html>
