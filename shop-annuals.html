@@ -35,43 +35,37 @@
   transition:0.2s;
 }
 .nav-links a:hover{background:var(--brand-green);}
-.dropdown{
-  position:relative;
-  display:inline-block;
-}
-.dropbtn{
-  background:var(--dark);
-  color:white;
-  font-weight:700;
-  padding:8px 12px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-}
-.dropbtn:hover{background:var(--brand-green);}
-.dropdown-content{
-  display:none;
-  position:absolute;
-  background:#fff;
-  min-width:160px;
-  box-shadow:0 8px 16px rgba(0,0,0,0.2);
-  border-radius:6px;
-  overflow:hidden;
-  z-index:1000;
-}
-.dropdown-content a{
-  color:var(--dark);
-  padding:12px 16px;
-  display:block;
-  font-weight:700;
-}
-.dropdown-content a:hover{background:var(--accent);}
-.dropdown:hover .dropdown-content{display:block;}
 
 /* ================= PAGE & SHOP LAYOUT ================= */
-body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
-.shop-container{padding:20px;max-width:1200px;margin:auto;}
-.filter-bar{display:none;} /* FILTERS HIDDEN FOR ANNUALS */
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#fafafa;
+}
+.shop-container{
+  padding:20px;
+  max-width:1200px;
+  margin:auto;
+}
+
+/* FILTER BAR */
+.filter-bar{
+  display:none;
+}
+.filter-btn{
+  background:var(--accent);
+  color:var(--dark);
+  border:none;
+  padding:8px 12px;
+  border-radius:999px;
+  cursor:pointer;
+  font-weight:700;
+}
+.filter-btn.active{
+  background:var(--dark);
+  color:#fff;
+  transform:scale(1.02);
+}
 
 /* PRODUCT GRID */
 .product-grid{
@@ -100,7 +94,10 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
   background:#f3f3f3;
 }
 .product-card.sold-out .product-image,
-.product-card.coming-soon .product-image{filter:grayscale(100%);opacity:0.6;}
+.product-card.coming-soon .product-image{
+  filter:grayscale(100%);
+  opacity:0.6;
+}
 .sold-out-overlay{
   position:absolute;
   inset:0;
@@ -120,16 +117,31 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
   font-size:13px;
 }
 
-.product-title{font-weight:800;color:var(--dark);margin:0;font-size:16px;}
-.product-latin{color:#666;font-size:12px;}
-.product-price{font-weight:800;margin-top:8px;}
-.swatches{display:flex;gap:8px;margin:10px 0 12px 0;flex-wrap:wrap;}
+.product-title{font-weight:800; color:var(--dark); margin:0; font-size:16px;}
+.product-latin{color:#666; font-size:12px;}
+.product-price{font-weight:800; margin-top:8px;}
+
+/* SWATCHES */
+.swatches{
+  display:flex;
+  gap:8px;
+  margin:10px 0 12px 0;
+  flex-wrap:wrap;
+}
 .swatch{
-  width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid #ddd;flex-shrink:0;box-sizing:border-box;transition:.15s;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  cursor:pointer;
+  border:2px solid #ddd;
+  flex-shrink:0;
+  box-sizing:border-box;
+  transition:.15s;
 }
 .swatch:hover{transform:scale(1.1);}
 .swatch.selected{border:3px solid var(--brand-green);}
 
+/* ADD / QTY */
 .add-btn{
   background:var(--dark);
   color:#fff;
@@ -140,7 +152,10 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
   font-weight:800;
   margin-top:auto;
 }
-.add-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.add-btn:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
 .qty-row{
   display:flex;
   align-items:center;
@@ -154,8 +169,15 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
   border-radius:6px;
   cursor:pointer;
 }
-.qty-btn:disabled{opacity:0.4;cursor:not-allowed;}
-.qty-num{min-width:28px;text-align:center;font-weight:800;}
+.qty-btn:disabled{
+  opacity:0.4;
+  cursor:not-allowed;
+}
+.qty-num{
+  min-width:28px;
+  text-align:center;
+  font-weight:800;
+}
 
 /* FLOATING CART */
 #floating-cart{
@@ -187,7 +209,7 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
   top:0;
   right:-420px;
   width:380px;
-  bottom:0;
+  bottom:40px;
   max-height:100%;
   padding:18px;
   padding-bottom:calc(18px + env(safe-area-inset-bottom));
@@ -198,7 +220,7 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
   display:flex;
   flex-direction:column;
   gap:10px;
-  overflow:hidden;
+  overflow-y:auto;
   box-sizing:border-box;
 }
 #cart-drawer.open{ right:0; }
@@ -212,15 +234,25 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
 .confirmation-card{background:#fff;padding:20px;border-radius:12px;width:min(560px,95%);text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.3);}
 
 /* CUSTOMER FORM IN CART */
-.customer-section{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.customer-section{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:12px;
+}
 .customer-section input, .customer-section select, .customer-section textarea{
-  padding:6px 8px;border-radius:6px;border:1px solid #ccc;width:100%;box-sizing:border-box;
+  padding:6px 8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  width:100%;
+  box-sizing:border-box;
 }
 .customer-section label{font-weight:700;}
 .delivery-address{display:none; flex-direction:column; gap:6px; margin-top:6px;}
 .delivery-address input{width:100%;}
 .pickup-time{margin-top:6px;}
 
+/* MOBILE CART */
 /* MOBILE CART */
 @media (max-width:720px){
   #cart-drawer{
@@ -237,6 +269,15 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
   }
   #cart-drawer.open{ bottom:0; }
 }
+
+/* DESKTOP CART SAFETY */
+@media (min-width: 721px) {
+  #cart-drawer {
+    top: 0;
+    bottom: 40px; /* desktop safe space from taskbar */
+    max-height: calc(100vh - 40px);
+  }
+}
 </style>
 </head>
 
@@ -247,14 +288,7 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
   <a href="/" class="logo"><img src="IMG_1466.png" alt="Roots to Blooms Logo"></a>
   <div class="nav-links">
     <a href="/">Home</a>
-    <div class="dropdown">
-      <button class="dropbtn">Shop ▼</button>
-      <div class="dropdown-content">
-        <a href="shop-houseplants.html">Houseplants</a>
-        <a href="shop-annuals.html">Annuals</a>
-        <a href="shop-vegetable-starters.html">Vegetable Starters</a>
-      </div>
-    </div>
+    <a href="shop.html">Shop</a>
     <a href="/about.html">About</a>
     <a href="/contact.html">Contact</a>
   </div>
@@ -266,7 +300,8 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
     🌱 Loading products… please wait
   </div>
 
-  <div id="filterRow" class="filter-bar"></div> <!-- filters hidden -->
+  <div id="filterRow" class="filter-bar">
+  </div>
 
   <div id="productGrid" class="product-grid"></div>
 </div>
@@ -279,7 +314,89 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
 
 <!-- CART DRAWER -->
 <div id="cart-drawer">
-  <!-- same cart drawer as houseplants -->
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h3 style="margin:0">Your Cart</h3>
+    <div>
+      <button class="small-btn" onclick="clearCart()">Clear</button>
+      <button class="small-btn" onclick="toggleDrawer()">Close</button>
+    </div>
+  </div>
+
+  <div id="cartItemsWrap" class="cart-items"></div>
+
+  <!-- CUSTOMER FORM -->
+  <div class="customer-section">
+    <label for="custName">Name</label>
+    <input type="text" id="custName" placeholder="First Last">
+
+    <label for="custEmail">Email</label>
+    <input type="email" id="custEmail">
+
+    <label for="custPhone">Phone</label>
+    <input type="tel" id="custPhone">
+
+    <label for="custContactMethod">Preferred Contact Method</label>
+    <select id="custContactMethod">
+      <option>Call</option>
+      <option>Text</option>
+      <option>Email</option>
+    </select>
+
+    <label for="custPickupDelivery">Pickup or Delivery</label>
+    <select id="custPickupDelivery" onchange="toggleDeliveryAddress(this.value)">
+      <option value="Pickup">Pickup</option>
+      <option value="Delivery">Delivery</option>
+    </select>
+
+    <div class="delivery-address" id="deliveryAddress">
+      <input type="text" placeholder="Address Line 1" id="addr1">
+      <input type="text" placeholder="Address Line 2" id="addr2">
+      <input type="text" placeholder="City" id="city" oninput="calculateDeliveryFee()">
+      <input type="text" placeholder="Postal Code" id="postal" oninput="calculateDeliveryFee()">
+    </div>
+
+    <label for="custDate">Pickup / Delivery Date</label>
+    <input type="date" id="custDate" onchange="generateTimeSlots();">
+
+    <label for="custTime">Pickup / Delivery Time</label>
+    <select id="custTime" class="pickup-time"></select>
+
+    <label for="custNotes">Notes / Special Instructions</label>
+    <textarea id="custNotes" rows="2"></textarea>
+
+    <label for="custMarketing">How did you hear about us?</label>
+    <select id="custMarketing">
+      <option>Google Search</option>
+      <option>Facebook</option>
+      <option>Instagram</option>
+      <option>Poster</option>
+      <option>From a Friend/Family Member</option>
+      <option>Other (please specify in Notes/Special Instructions)</option>
+    </select>
+  </div>
+
+  <div class="drawer-footer">
+  <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
+
+  <div class="totals">
+    <div>Products</div>
+    <div id="cartProducts">$0.00</div>
+  </div>
+
+  <div class="totals" id="deliveryRow" style="display:none;">
+    <div>Delivery</div>
+    <div id="cartDelivery">$0.00</div>
+  </div>
+
+  <div class="totals">
+    <div><strong>Total</strong></div>
+    <div id="cartSubtotal"><strong>$0.00</strong></div>
+  </div>
+    <div style="display:flex;gap:8px;">
+      <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
+      <button class="small-btn" onclick="openCheckoutForm()">Checkout</button>
+    </div>
+  </div>
 </div>
 
 <div id="confirmation-overlay">
@@ -293,9 +410,291 @@ body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#fafafa;}
 </div>
 
 <script>
-// =================== SCRIPT ===================
-const PAGE_CATEGORY="annuals"; // page category for filtering
+/* ================= SHOP & CART LOGIC ================= */
+const productGrid = document.getElementById("productGrid");
+const floatBadge = document.getElementById("floatBadge");
+const cartCountEl = document.getElementById("cartCount");
+const cartSubtotalEl = document.getElementById("cartSubtotal");
+const cartProductsEl = document.getElementById("cartProducts");
+const cartDeliveryEl = document.getElementById("cartDelivery");
+const deliveryRowEl = document.getElementById("deliveryRow"); 
+
+const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
+const STORAGE_KEY="plant_shop_cart_v8";
+const PAGE_CATEGORY="annuals";
+
+let RAW=[], GROUPED=[], cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
+let hideSold=false, activeFilter="all";
+let deliveryFee=0;
+
+/* ================= CART FUNCTIONS ================= */
+function getProductById(id){return RAW.find(p=>p.id===id);}
+function saveCart(){localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateBadges();}
+function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
+function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
+function updateBadges(){
+
+  const itemCount = Object.values(cart).reduce((s,q)=>s+q,0);
+  floatBadge.textContent = itemCount;
+  cartCountEl.textContent = itemCount;
+
+  const productTotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+    const p = getProductById(id);
+    return sum + (p ? p.price * qty : 0);
+  },0);
+
+  const grandTotal = productTotal + deliveryFee;
+
+  cartProductsEl.textContent = `$${productTotal.toFixed(2)}`;
+  cartSubtotalEl.textContent = `$${grandTotal.toFixed(2)}`;
+
+  if(deliveryFee > 0){
+    deliveryRowEl.style.display = "flex";
+    cartDeliveryEl.textContent = `$${deliveryFee.toFixed(2)}`;
+  } else {
+    deliveryRowEl.style.display = "none";
+  }
+
+}
+
+/* ================= CART DRAWER ================= */
+const cartDrawer = document.getElementById("cart-drawer");
+function toggleDrawer(){cartDrawer.classList.toggle("open");}
+function clearCart(){cart={}; deliveryFee=0; saveCart(); updateBadges(); renderProducts();}
+function continueShopping(){toggleDrawer();}
+function closeConfirmation(){document.getElementById("confirmation-overlay").style.display = "none";}
+
+/* ================= DELIVERY / TIME ================= */
+const custPickupDelivery = document.getElementById("custPickupDelivery");
+const deliveryAddress = document.getElementById("deliveryAddress");
+const custTime = document.getElementById("custTime");
+
+function toggleDeliveryAddress(val){
+  if(val==="delivery"){ deliveryAddress.style.display="flex"; calculateDeliveryFee(); }
+  else{ deliveryAddress.style.display="none"; deliveryFee=0; updateBadges(); }
+}
+
+function calculateDeliveryFee(){
+  const city = document.getElementById("city").value.trim().toLowerCase();
+  const postal = document.getElementById("postal").value.trim();
+  if(["halifax","dartmouth","spryfield"].includes(city)){ deliveryFee=5; }
+  else if(["bedford","sackville","bayers lake","timberlea","eastern passage"].includes(city)){ deliveryFee=8; }
+  else if(["porter's lake","lawrencetown","fall river","hammonds plains","hatchet lake"].includes(city)){
+    deliveryFee=20; alert("Orders over $20 delivery require courier; remainder refunded after shipping."); }
+  else{ deliveryFee=0; }
+  updateBadges();
+}
+
+/* ================= TIME SLOT & DATE HANDLING ================= */
+const custDate = document.getElementById("custDate");
+const closedDays = ["thu"]; // days the shop is closed
+const openHours = {
+  mon:[19,21],
+  tue:[19,21],
+  wed:[19,21],
+  thu:[],
+  fri:[19,21],
+  sat:[9,17],
+  sun:[9,14]
+};
+
+// Set min date to today
+const today = new Date();
+custDate.min = today.toISOString().split("T")[0];
+
+// Generate time slots based on selected date
+function generateTimeSlots() {
+  custTime.innerHTML = "";
+  const dateStr = custDate.value;
+  if (!dateStr) { 
+    custTime.innerHTML = "<option>Please select a date first</option>"; 
+    return; 
+  }
+
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const selectedDate = new Date(year, month-1, day);
+  const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
+  const dayName = dayMap[selectedDate.getDay()];
+
+  // Check if closed
+  if (closedDays.includes(dayName)) {
+    custTime.innerHTML = "<option>Closed on this day</option>";
+    alert("Sorry, we are closed on Thursdays. Please choose another date.");
+    custDate.value = "";
+    return;
+  }
+
+  const hours = openHours[dayName];
+  if(!hours || hours.length===0){ 
+    custTime.innerHTML = "<option>No slots available</option>"; 
+    return; 
+  }
+
+  for(let h = hours[0]; h < hours[1]; h++){
+    for(let m = 0; m < 60; m += 30){
+const raw = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+
+let hour12 = h % 12 || 12;
+let ampm = h < 12 ? "AM" : "PM";
+const pretty = `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
+
+custTime.innerHTML += `<option value="${raw}">${pretty}</option>`;
+    }
+  }
+}
+
+// Optional: prevent selecting closed days directly
+custDate.addEventListener("input", generateTimeSlots);
+
+/* ================= FETCH PRODUCTS ================= */
+async function fetchProducts(){
+  const res=await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
+  RAW=await res.json();
+  RAW.forEach(p=>{
+    p.stock=Number(p.stock);
+    p.price=Number(p.price);
+    p.soldOut=p.stock<=0;
+    p.comingSoon=(p.categories||[]).map(c=>c.toLowerCase()).includes("coming soon");
+  });
+  buildGroups();
+  renderFilters();
+document.getElementById("filterRow").style.display = "flex"; // show filters now
+renderProducts();
+document.getElementById("loadingNotice")?.remove();
+productGrid.style.display="grid";
+  renderProducts();
+  document.getElementById("loadingNotice")?.remove();
+  productGrid.style.display="grid";
+}
+
+function buildGroups(){
+  const pageTag=PAGE_CATEGORY.toLowerCase().trim();
+  const filtered=RAW.filter(p=>(p.categories||[]).map(c=>c.toLowerCase().trim()).includes(pageTag));
+  const map={};
+  filtered.forEach(p=>{
+    if(!map[p.group]) map[p.group]={base:p, variants:[], categories:new Set()};
+    map[p.group].variants.push(p);
+    p.categories.forEach(c=>{if(c.toLowerCase()!==pageTag) map[p.group].categories.add(c);});
+  });
+  GROUPED=Object.values(map);
+}
+
+/* ================= FILTERS ================= */
+function renderFilters(){
+  const row=document.getElementById("filterRow");
+  const cats=new Set();
+  GROUPED.forEach(g=>g.categories.forEach(c=>{
+    const usable=GROUPED.some(prod=>{
+      if(!prod.categories.has(c)) return false;
+      if(activeFilter==="all") return prod.variants.some(v=>!v.soldOut);
+      return true;
+    });
+    if(usable) cats.add(c);
+  }));
+  row.innerHTML=`<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')" data-filter="all">All</button>`+
+    [...cats].sort().map(c=>`<button class="filter-btn" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`).join("")+
+    `<button class="filter-btn" onclick="toggleSold()" data-filter="sold">hide sold out</button>`;
+}
+function toggleSold(){ hideSold=!hideSold; renderProducts(); }
+function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
+
+/* ================= PRODUCTS ================= */
+function renderProducts(){
+  productGrid.innerHTML="";
+  GROUPED.forEach(group=>{
+    if(activeFilter!=="all" && !group.categories.has(activeFilter)) return;
+    let variants=group.variants;
+    if(activeFilter==="all") variants=variants.filter(v=>!v.soldOut);
+    if(hideSold) variants=variants.filter(v=>!v.soldOut);
+    if(!variants.length) return;
+    const selected=variants[0], id=selected.id, qty=cart[id]||0;
+    const swatches=[...new Map(group.variants.map(v=>[v.swatch,v])).values()];
+
+    let addArea;
+    if(qty>0){
+      addArea=`<div class="qty-row">
+        <button class="qty-btn" onclick="updateQty('${id}',-1)">-</button>
+        <div class="qty-num">${qty}</div>
+        <button class="qty-btn" onclick="updateQty('${id}',1)" ${qty>=selected.stock?'disabled':''}>+</button>
+      </div>`;
+    } else {
+      addArea=`<button class="add-btn" onclick="firstAdd('${id}')" ${selected.soldOut||selected.comingSoon?'disabled':''}>Add</button>`;
+    }
+
+    productGrid.innerHTML+=`
+<div class="product-card ${selected.soldOut?'sold-out':''} ${selected.comingSoon?'coming-soon':''}">
+<div class="product-image-wrap">
+<img class="product-image" src="${selected.photo}">
+${selected.soldOut?overlay("SOLD OUT","#c33"):""}
+${selected.comingSoon?overlay("COMING SOON","#777"):""}
+</div>
+<div>
+<div class="product-title">${selected.name}</div>
+<div class="product-latin">${selected.latin||""}</div>
+<div class="product-price">$${selected.price.toFixed(2)}</div>
+<div class="swatches">
+${group.variants.filter(v=>v.swatch && v.swatch.trim()!=="").map(v=>{
+  let color=v.swatch.trim(); if(!color.startsWith("#") && !color.startsWith("rgb") && !color.startsWith("hsl")) color="#"+color;
+  return `<div class="swatch ${v.id===selected.id?'selected':''}" style="background-color:${color}" onclick="selectVariant('${group.base.group}','${v.id}')"></div>`;
+}).join("")}
+</div>
+</div>
+${addArea}
+</div>`;
+  });
+  updateBadges();
+}
+function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
+function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
+
+/* ================= CHECKOUT ================= */
+function openCheckoutForm(){
+  if(Object.keys(cart).length === 0){
+    alert("Your cart is empty.");
+    return;
+  }
+  if(!custName.value || !custPhone.value || !custDate.value || !custTime.value){
+  alert("Please complete name, phone, date, and time.");
+  return;
+}
+  const items = Object.entries(cart).map(([id, qty])=>{
+    const p=getProductById(id);
+    return p ? `${p.name} x${qty}` : '';
+  }).filter(Boolean).join(", ");
+
+  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+    const p=getProductById(id);
+    return sum + (p ? p.price*qty : 0);
+  },0) + deliveryFee;
+
+  const formBase = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/viewform?usp=pp_url";
+
+  const prefillData = {
+    "entry.1046011819": items,
+    "entry.362516403": "$"+subtotal.toFixed(2),
+    "entry.991310792": document.getElementById("custName").value,
+    "entry.380963175": document.getElementById("custEmail").value,
+    "entry.640553104": document.getElementById("custPhone").value,
+    "entry.1469637469": document.getElementById("custContactMethod").value,
+    "entry.590490152": document.getElementById("custPickupDelivery").value,
+    "entry.489484198": document.getElementById("addr1").value,
+    "entry.1117374631": document.getElementById("addr2").value,
+    "entry.635395700": document.getElementById("city").value,
+    "entry.2075536009": document.getElementById("postal").value,
+    "entry.1225481208": document.getElementById("custDate").value,
+    "entry.2009788871": document.getElementById("custTime").value,
+    "entry.2140423836": document.getElementById("custNotes").value,
+    "entry.798763112": document.getElementById("custMarketing").value
+  };
+
+  const prefillURL = formBase + "&" + Object.entries(prefillData).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join("&");
+  window.open(prefillURL, "_blank");
+}
+
+/* ================= INIT ================= */
+generateTimeSlots();
+fetchProducts();
+setInterval(fetchProducts,300000);
 </script>
-<script src="shop-cart.js"></script>
 </body>
 </html>
