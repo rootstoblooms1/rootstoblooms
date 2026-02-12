@@ -42,6 +42,59 @@ body{
   transition:0.2s;
 }
 .nav-links a:hover{background:var(--brand-green);}
+/* Dropdown container */
+.nav-links .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown button styling (matches nav links) */
+.nav-links .dropbtn {
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  transition: 0.2s;
+}
+
+/* Dropdown content (hidden by default) */
+.nav-links .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 180px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  z-index: 1000;
+  top: 100%; /* Position below the button */
+  left: 0;
+}
+
+/* Links inside dropdown */
+.nav-links .dropdown-content a {
+  color: var(--dark);
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.nav-links .dropdown-content a:hover {
+  background-color: var(--brand-green);
+  color: white;
+}
+
+/* Show the dropdown on hover */
+.nav-links .dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Optional: hover effect on dropdown button */
+.nav-links .dropdown:hover .dropbtn {
+  background-color: var(--brand-green);
+}
 
 /* HERO SECTION */
 .hero{
@@ -129,7 +182,17 @@ footer a:hover{text-decoration:underline;}
   <a href="/" class="logo"><img src="IMG_1466.png" alt="Roots to Blooms Logo"></a>
   <div class="nav-links">
     <a href="/">Home</a>
-    <a href="shop.html">Shop</a>
+
+    <!-- Dropdown for Shop -->
+    <div class="dropdown">
+      <a href="shop.html" class="dropbtn">Shop</a>
+      <div class="dropdown-content">
+        <a href="shop-houseplants.html">Houseplants</a>
+        <a href="shop-annuals.html">Annuals</a>
+        <a href="shop-vegetable-starters.html">Vegetable Starters</a>
+      </div>
+    </div>
+
     <a href="/about.html">About</a>
     <a href="/contact.html">Contact</a>
     <a href="faq.html">FAQ</a>
