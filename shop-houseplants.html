@@ -16,46 +16,48 @@
   --dark:#254D32;
 }
 
-/* ================= NAVIGATION ================= */
-.topnav{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:14px 24px;
-  background:var(--dark);
-  position:sticky;
-  top:0;
-  z-index:1000;
-}
-.topnav .logo img{height:48px;}
-.nav-links a{
-  color:white;
-  text-decoration:none;
-  font-weight:700;
-  margin-left:20px;
-  padding:8px 12px;
-  border-radius:6px;
-  transition:0.2s;
-}
-.nav-links a:hover{background:var(--brand-green);}
-/* Dropdown container */
-.nav-links .dropdown {
-  position: relative;
-  display: inline-block;
+/* ===================== NAVIGATION ===================== */
+.topnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--dark);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-/* Dropdown button styling (matches nav links) */
+.topnav .logo img {
+  height: 48px;
+}
+
+.nav-links a,
 .nav-links .dropbtn {
   color: white;
   text-decoration: none;
   font-weight: 700;
   padding: 8px 12px;
   border-radius: 6px;
-  display: inline-block;
   transition: 0.2s;
 }
 
-/* Dropdown content (hidden by default) */
+.nav-links a {
+  margin-left: 20px;
+}
+
+.nav-links a:hover,
+.nav-links .dropbtn:hover {
+  background: var(--brand-green);
+}
+
+/* Dropdown container */
+.nav-links .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown content (desktop) */
 .nav-links .dropdown-content {
   display: none;
   position: absolute;
@@ -64,32 +66,92 @@
   box-shadow: 0 8px 16px rgba(0,0,0,0.2);
   border-radius: 8px;
   z-index: 1000;
-  top: 100%; /* Position below the button */
+  top: 100%;
   left: 0;
 }
 
-/* Links inside dropdown */
 .nav-links .dropdown-content a {
   color: var(--dark);
   padding: 12px 16px;
-  text-decoration: none;
   display: block;
   font-weight: 600;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
+
 .nav-links .dropdown-content a:hover {
   background-color: var(--brand-green);
   color: white;
 }
 
-/* Show the dropdown on hover */
+/* Show dropdown on hover (desktop) */
 .nav-links .dropdown:hover .dropdown-content {
   display: block;
 }
 
-/* Optional: hover effect on dropdown button */
+/* Optional hover effect on dropdown button */
 .nav-links .dropdown:hover .dropbtn {
   background-color: var(--brand-green);
+}
+
+/* ===================== MOBILE NAVIGATION ===================== */
+.hamburger {
+  display: none;
+  font-size: 28px;
+  color: white;
+  user-select: none;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+  .topnav {
+    flex-wrap: wrap;
+    padding: 10px 16px;
+  }
+
+  /* Show hamburger */
+  .hamburger {
+    display: block;
+  }
+  /* Mobile dropdown visible when active */
+.nav-links .dropdown-content.active {
+  display: flex;
+  flex-direction: column;
+}
+
+  /* Nav links hidden by default, vertical on mobile */
+  .nav-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+
+  .nav-links a,
+  .nav-links .dropbtn {
+    margin: 6px 0;
+    padding: 10px;
+  }
+
+  /* Dropdown content mobile overrides */
+  .nav-links .dropdown-content {
+    position: static;
+    background-color: var(--dark);
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .nav-links .dropdown-content a {
+    color: white;
+  }
+
+  /* Disable hover dropdown on mobile */
+  .nav-links .dropdown:hover .dropdown-content {
+    display: none;
+  }
 }
 
 /* ================= PAGE & SHOP LAYOUT ================= */
@@ -340,8 +402,12 @@ body{
 <body>
 
 <!-- NAVIGATION -->
+
 <nav class="topnav">
   <a href="/" class="logo"><img src="IMG_1466.png" alt="Roots to Blooms Logo"></a>
+  
+  <div class="hamburger">&#9776;</div> <!-- Hamburger icon -->
+
   <div class="nav-links">
     <a href="/">Home</a>
 
