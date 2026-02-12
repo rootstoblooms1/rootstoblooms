@@ -6,53 +6,124 @@
 <title>Roots to Blooms — Home</title>
 
 <style>
-:root{
-  --brand-green:#4EA337;
-  --brand-brown:#4A2300;
-  --accent:#c6e3d2;
-  --dark:#254D32;
+:root {
+  --brand-green: #4EA337;
+  --brand-green-hover: #3d872a; /* unified hover color */
+  --brand-brown: #4A2300;
+  --accent: #c6e3d2;
+  --dark: #254D32;
 }
 
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  background:#fafafa;
-  color:#333;
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #fafafa;
+  color: #333;
 }
 
-/* NAVIGATION */
-.topnav{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:14px 24px;
-  background:var(--dark);
-  position:sticky;
-  top:0;
-  z-index:1000;
+/* ===================== NAVIGATION ===================== */
+.topnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--dark);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
-.topnav .logo img{height:48px;}
+
+.topnav .logo img {
+  height: 48px;
+}
+
 .nav-links a,
 .nav-links .dropbtn {
-  color:white;
-  text-decoration:none;
-  font-weight:700;
-  padding:8px 12px;
-  border-radius:6px;
-  transition:0.2s;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: 0.2s;
 }
 
 .nav-links a {
-  margin-left:20px;
+  margin-left: 20px;
 }
-/* Make nav links wrap or hide on small screens */
+
+.nav-links a:hover,
+.nav-links .dropbtn:hover {
+  background: var(--brand-green);
+}
+
+/* Dropdown container */
+.nav-links .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown content (desktop) */
+.nav-links .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 180px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  z-index: 1000;
+  top: 100%;
+  left: 0;
+}
+
+.nav-links .dropdown-content a {
+  color: var(--dark);
+  padding: 12px 16px;
+  display: block;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav-links .dropdown-content a:hover {
+  background-color: var(--brand-green);
+  color: white;
+}
+
+/* Show dropdown on hover (desktop) */
+.nav-links .dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Optional hover effect on dropdown button */
+.nav-links .dropdown:hover .dropbtn {
+  background-color: var(--brand-green);
+}
+
+/* ===================== MOBILE NAVIGATION ===================== */
+.hamburger {
+  display: none;
+  font-size: 28px;
+  color: white;
+  user-select: none;
+  cursor: pointer;
+}
+
 @media screen and (max-width: 768px) {
   .topnav {
-    flex-wrap: wrap; /* allow elements to stack */
+    flex-wrap: wrap;
     padding: 10px 16px;
   }
 
-  /* Hide nav links by default */
+  /* Show hamburger */
+  .hamburger {
+    display: block;
+  }
+  /* Mobile dropdown visible when active */
+.nav-links .dropdown-content.active {
+  display: flex;
+  flex-direction: column;
+}
+
+  /* Nav links hidden by default, vertical on mobile */
   .nav-links {
     display: none;
     width: 100%;
@@ -60,7 +131,6 @@ body{
     margin-top: 10px;
   }
 
-  /* Show nav links when active */
   .nav-links.active {
     display: flex;
   }
@@ -71,174 +141,131 @@ body{
     padding: 10px;
   }
 
-  /* Dropdown content full width on mobile */
+  /* Dropdown content mobile overrides */
   .nav-links .dropdown-content {
     position: static;
+    background-color: var(--dark);
     box-shadow: none;
     border-radius: 0;
-    background-color: var(--dark);
   }
 
   .nav-links .dropdown-content a {
     color: white;
   }
 
+  /* Disable hover dropdown on mobile */
   .nav-links .dropdown:hover .dropdown-content {
-    display: none; /* disable hover dropdown on mobile */
-  }
-
-  /* Hamburger menu button */
-  .hamburger {
-    display: block;
-    cursor: pointer;
+    display: none;
   }
 }
 
-/* Hide hamburger on desktop */
-.hamburger {
-  display: none;
-  font-size: 28px;
+/* ===================== HERO SECTION ===================== */
+.hero {
+  background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('hero.jpg') center/cover no-repeat;
   color: white;
-  user-select: none;
+  text-align: center;
+  padding: 120px 20px 80px;
 }
 
-.nav-links a:hover{background:var(--brand-green);}
-/* Dropdown container */
-.nav-links .dropdown {
-  position: relative;
+.hero h1 {
+  font-size: 48px;
+  margin: 0 0 16px;
+}
+
+.hero p {
+  font-size: 20px;
+  margin: 0 0 24px;
+}
+
+.hero a {
   display: inline-block;
-}
-
-/* Dropdown button styling (matches nav links) */
-.nav-links .dropbtn {
+  background: var(--brand-green);
   color: white;
-  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 8px;
   font-weight: 700;
-  padding: 8px 12px;
-  border-radius: 6px;
-  display: inline-block;
+  text-decoration: none;
   transition: 0.2s;
 }
 
-/* Dropdown content (hidden by default) */
-.nav-links .dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: white;
-  min-width: 180px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-  border-radius: 8px;
-  z-index: 1000;
-  top: 100%; /* Position below the button */
-  left: 0;
+.hero a:hover {
+  background: var(--brand-green-hover);
 }
 
-/* Links inside dropdown */
-.nav-links .dropdown-content a {
+/* ===================== FEATURE CARDS ===================== */
+.feature-section {
+  max-width: 1200px;
+  margin: auto;
+  padding: 60px 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.feature-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.feature-card:hover {
+  transform: scale(1.03);
+}
+
+.feature-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.feature-card h3 {
+  margin: 12px 0 6px;
+  font-size: 20px;
   color: var(--dark);
-  padding: 12px 16px;
+}
+
+.feature-card p {
+  font-size: 14px;
+  color: #666;
+  margin: 0 12px 12px;
+}
+
+.feature-card a {
+  display: inline-block;
+  margin-bottom: 12px;
+  background: var(--brand-green);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
   text-decoration: none;
-  display: block;
-  font-weight: 600;
+  font-weight: 700;
   transition: background 0.2s;
 }
-.nav-links .dropdown-content a:hover {
-  background-color: var(--brand-green);
+
+.feature-card a:hover {
+  background: var(--brand-green-hover);
+}
+
+/* ===================== FOOTER ===================== */
+footer {
+  background: var(--dark);
   color: white;
+  text-align: center;
+  padding: 20px 12px;
+  font-size: 14px;
 }
 
-/* Show the dropdown on hover */
-.nav-links .dropdown:hover .dropdown-content {
-  display: block;
+footer a {
+  color: var(--brand-green);
+  text-decoration: none;
 }
 
-/* Optional: hover effect on dropdown button */
-.nav-links .dropdown:hover .dropbtn {
-  background-color: var(--brand-green);
+footer a:hover {
+  text-decoration: underline;
 }
-
-/* HERO SECTION */
-.hero{
-  background:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('hero.jpg') center/cover no-repeat;
-  color:white;
-  text-align:center;
-  padding:120px 20px 80px;
-}
-.hero h1{
-  font-size:48px;
-  margin:0 0 16px;
-}
-.hero p{
-  font-size:20px;
-  margin:0 0 24px;
-}
-.hero a{
-  display:inline-block;
-  background:var(--brand-green);
-  color:white;
-  padding:12px 24px;
-  border-radius:8px;
-  font-weight:700;
-  text-decoration:none;
-  transition:0.2s;
-}
-.hero a:hover{background:#3d872a;}
-
-/* FEATURE CATEGORIES */
-.feature-section{
-  max-width:1200px;
-  margin:auto;
-  padding:60px 20px;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-  gap:24px;
-}
-.feature-card{
-  background:white;
-  border-radius:12px;
-  overflow:hidden;
-  box-shadow:0 8px 18px rgba(0,0,0,0.06);
-  text-align:center;
-  transition:transform 0.2s;
-}
-.feature-card:hover{transform:scale(1.03);}
-.feature-card img{
-  width:100%;
-  height:200px;
-  object-fit:cover;
-}
-.feature-card h3{
-  margin:12px 0 6px;
-  font-size:20px;
-  color:var(--dark);
-}
-.feature-card p{
-  font-size:14px;
-  color:#666;
-  margin:0 12px 12px;
-}
-.feature-card a{
-  display:inline-block;
-  margin-bottom:12px;
-  background:var(--brand-green);
-  color:white;
-  padding:8px 16px;
-  border-radius:8px;
-  text-decoration:none;
-  font-weight:700;
-}
-.feature-card a:hover{background:#3d872a;}
-
-/* FOOTER */
-footer{
-  background:var(--dark);
-  color:white;
-  text-align:center;
-  padding:20px 12px;
-  font-size:14px;
-}
-footer a{color:var(--brand-green); text-decoration:none;}
-footer a:hover{text-decoration:underline;}
 
 </style>
 </head>
@@ -301,6 +328,35 @@ footer a:hover{text-decoration:underline;}
 <footer>
   &copy; 2026 Roots to Blooms — <a href="/contact.html">Contact Us</a>
 </footer>
+
+<script>
+const hamburger = document.querySelector('.hamburger');
+const navLinks = document.querySelector('.nav-links');
+const shopDropdown = document.querySelector('.dropdown');
+const shopButton = shopDropdown.querySelector('.dropbtn');
+const shopMenu = shopDropdown.querySelector('.dropdown-content');
+
+// Hamburger toggle for main nav
+hamburger.addEventListener('click', () => {
+  navLinks.classList.toggle('active');
+});
+
+// Mobile-only dropdown toggle
+shopButton.addEventListener('click', (e) => {
+  // Only toggle on small screens
+  if (window.innerWidth <= 768) {
+    e.preventDefault(); // prevent navigating to shop.html
+    shopMenu.classList.toggle('active');
+  }
+});
+
+// Optional: close dropdown if window resized to desktop
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) {
+    shopMenu.classList.remove('active');
+  }
+});
+</script>
 
 </body>
 </html>
