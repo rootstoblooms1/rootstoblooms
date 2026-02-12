@@ -104,17 +104,18 @@
 
 @media screen and (max-width: 768px) {
 
+  .nav-links .dropdown {
+    display: block;
+    width: 100%;
+  }
+
   .topnav {
     flex-wrap: wrap;
     padding: 10px 16px;
   }
 
-  /* Show hamburger */
-  .hamburger {
-    display: block;
-  }
+  .hamburger { display: block; }
 
-  /* Nav links hidden by default */
   .nav-links {
     display: none;
     width: 100%;
@@ -122,32 +123,27 @@
     margin-top: 10px;
   }
 
-  /* Show when hamburger toggled */
-  .nav-links.active {
-    display: flex;
-  }
+  .nav-links.active { display: flex; }
 
-  /* Force dropdown closed */
+  /* ⭐ SAFARI-FRIENDLY DROPDOWN */
   .nav-links .dropdown-content {
-    display: none;
+    max-height: 0;
+    overflow: hidden;
     position: static;
     background-color: var(--dark);
     box-shadow: none;
     border-radius: 0;
-  }
-
-  /* Show when toggled */
-  .nav-links .dropdown-content.active {
+    transition: max-height 0.25s ease;
     display: flex;
     flex-direction: column;
   }
 
-  /* Dropdown links */
-  .nav-links .dropdown-content a {
-    color: white;
+  .nav-links .dropdown-content.active {
+    max-height: 500px;
   }
 
-  /* Make button look like link */
+  .nav-links .dropdown-content a { color: white; }
+
   .nav-links .dropbtn {
     background: none;
     border: none;
@@ -156,11 +152,6 @@
     color: white;
     padding: 10px;
     text-align: left;
-  }
-
-  /* Disable desktop hover behavior */
-  .nav-links .dropdown:hover .dropdown-content {
-    display: none;
   }
 
 }
