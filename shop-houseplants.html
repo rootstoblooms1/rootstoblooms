@@ -171,7 +171,31 @@ body{
 /* FILTER BAR */
 .filter-bar{
   display:none;
+
+  /* Horizontal scroll behavior */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  gap: 8px;
+  padding-bottom: 6px;
+
+  /* Smooth iOS scrolling */
+  -webkit-overflow-scrolling: touch;
+
+  /* Prevent wrapping */
+  white-space: nowrap;
+
+  /* Optional: hide scrollbar */
+  scrollbar-width: none;
 }
+.filter-bar::-webkit-scrollbar{
+  display:none;
+}
+.filter-btn{
+  flex: 0 0 auto;   /* 👈 important */
+}
+
 .filter-btn{
   background:var(--accent);
   color:var(--dark);
