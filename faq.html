@@ -243,6 +243,7 @@ footer a:hover{text-decoration:underline;}
 <!-- NAVIGATION -->
 <nav class="topnav">
   <a href="/" class="logo"><img src="IMG_1466.PNG" alt="Roots to Blooms Logo"></a>
+  <div class="hamburger">&#9776;</div>
   <div class="nav-links">
     <a href="/">Home</a>
 
@@ -328,11 +329,37 @@ footer a:hover{text-decoration:underline;}
 </footer>
 
 <script>
-// FAQ toggle
-const faqItems = document.querySelectorAll('.faq-item');
-faqItems.forEach(item => {
-  item.querySelector('.faq-question').addEventListener('click', () => {
-    item.classList.toggle('active');
+const hamburger = document.querySelector('.hamburger');
+const navLinks = document.querySelector('.nav-links');
+const shopDropdown = document.querySelector('.dropdown');
+
+if(hamburger){
+  hamburger.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+  });
+}
+
+if(shopDropdown){
+  const shopButton = shopDropdown.querySelector('.dropbtn');
+  const shopMenu = shopDropdown.querySelector('.dropdown-content');
+
+  shopButton.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768) {
+      e.preventDefault();
+      shopMenu.classList.toggle('active');
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+      shopMenu.classList.remove('active');
+    }
+  });
+}
+/* FAQ ACCORDION */
+document.querySelectorAll('.faq-question').forEach(q=>{
+  q.addEventListener('click', ()=>{
+    q.parentElement.classList.toggle('active');
   });
 });
 </script>
