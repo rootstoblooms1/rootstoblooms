@@ -103,22 +103,19 @@
 }
 
 @media screen and (max-width: 768px) {
+
+  .nav-links .dropdown {
+    display: block;
+    width: 100%;
+  }
+
   .topnav {
     flex-wrap: wrap;
     padding: 10px 16px;
   }
 
-  /* Show hamburger */
-  .hamburger {
-    display: block;
-  }
-  /* Mobile dropdown visible when active */
-.nav-links .dropdown-content.active {
-  display: flex;
-  flex-direction: column;
-}
+  .hamburger { display: block; }
 
-  /* Nav links hidden by default, vertical on mobile */
   .nav-links {
     display: none;
     width: 100%;
@@ -126,32 +123,37 @@
     margin-top: 10px;
   }
 
-  .nav-links.active {
-    display: flex;
-  }
+  .nav-links.active { display: flex; }
 
-  .nav-links a,
-  .nav-links .dropbtn {
-    margin: 6px 0;
-    padding: 10px;
-  }
-
-  /* Dropdown content mobile overrides */
+  /* ⭐ SAFARI-FRIENDLY DROPDOWN */
   .nav-links .dropdown-content {
+    max-height: 0;
+    overflow: hidden;
     position: static;
     background-color: var(--dark);
     box-shadow: none;
     border-radius: 0;
+    transition: max-height 0.25s ease;
+    display: flex;
+    flex-direction: column;
   }
 
-  .nav-links .dropdown-content a {
+  .nav-links .dropdown-content.active {
+    max-height: 500px;
+  }
+
+  .nav-links .dropdown-content a { color: white; }
+
+  .nav-links .dropbtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
     color: white;
+    padding: 10px;
+    text-align: left;
   }
 
-  /* Disable hover dropdown on mobile */
-  .nav-links .dropdown:hover .dropdown-content {
-    display: none;
-  }
 }
 
 /* ================= PAGE & SHOP LAYOUT ================= */
