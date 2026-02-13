@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roots to Blooms — About</title>
+
+<style>
+:root{
+  --brand-green:#4EA337;
+  --brand-brown:#4A2300;
+  --accent:#c6e3d2;
+  --dark:#254D32;
+}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#fafafa;
+  color:#333;
+}
+
+/* NAVIGATION */
+.topnav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 24px;
+  background:var(--dark);
+  position:sticky;
+  top:0;
+  z-index:1000;
+}
+.topnav .logo img{height:48px;}
+.nav-links a{
+  color:white;
+  text-decoration:none;
+  font-weight:700;
+  margin-left:20px;
+  padding:8px 12px;
+  border-radius:6px;
+  transition:0.2s;
+}
+.nav-links a:hover{background:var(--brand-green);}
+.nav-links .dropdown {
+  position: relative;
+  display: inline-block;
+}
+.nav-links .dropbtn {
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  transition: 0.2s;
+}
+.nav-links .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 180px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  z-index: 1000;
+  top: 100%;
+  left: 0;
+}
+.nav-links .dropdown-content a {
+  color: var(--dark);
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.nav-links .dropdown-content a:hover {
+  background-color: var(--brand-green);
+  color: white;
+}
+.nav-links .dropdown:hover .dropdown-content {
+  display: block;
+}
+.nav-links .dropdown:hover .dropbtn {
+  background-color: var(--brand-green);
+}
+
+/* MOBILE NAVIGATION */
+.hamburger {
+  display: none;
+  font-size: 28px;
+  color: white;
+  user-select: none;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+  .nav-links .dropdown {
+    display: block;
+    width: 100%;
+  }
+  .topnav {
+    flex-wrap: wrap;
+    padding: 10px 16px;
+  }
+  .hamburger { display: block; }
+  .nav-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  .nav-links.active { display: flex; }
+  .nav-links .dropdown-content {
+    max-height: 0;
+    overflow: hidden;
+    position: static;
+    background-color: var(--dark);
+    box-shadow: none;
+    border-radius: 0;
+    transition: max-height 0.25s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-links .dropdown-content.active {
+    max-height: 500px;
+  }
+  .nav-links .dropdown-content a { color: white; }
+  .nav-links .dropbtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    color: white;
+    padding: 10px;
+    text-align: left;
+  }
+}
+
+/* HERO SECTION */
+.hero{
+  background:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('hero-about.jpg') center/cover no-repeat;
+  color:white;
+  text-align:center;
+  padding:120px 20px 80px;
+}
+.hero h1{
+  font-size:48px;
+  margin:0 0 16px;
+}
+.hero p{
+  font-size:20px;
+  margin:0 0 24px;
+}
+
+/* ABOUT SECTION */
+.about-section{
+  max-width:900px;
+  margin:60px auto;
+  padding:0 20px;
+  line-height:1.7;
+}
+.about-section h2{
+  text-align:center;
+  color:var(--dark);
+  margin-bottom:40px;
+  font-size:36px;
+}
+.about-section p{
+  margin-bottom:20px;
+}
+.about-section a{
+  color:var(--brand-green);
+  text-decoration:none;
+  font-weight:600;
+}
+.about-section a:hover{
+  text-decoration:underline;
+}
+
+/* FOOTER */
+footer{
+  background:var(--dark);
+  color:white;
+  text-align:center;
+  padding:20px 12px;
+  font-size:14px;
+}
+footer a{color:var(--brand-green); text-decoration:none;}
+footer a:hover{text-decoration:underline;}
+</style>
+</head>
+
+<body>
+
+<!-- NAVIGATION -->
+<nav class="topnav">
+  <a href="/" class="logo"><img src="IMG_1466.PNG" alt="Roots to Blooms Logo"></a>
+  <div class="hamburger">&#9776;</div>
+  <div class="nav-links">
+    <a href="/">Home</a>
+
+    <!-- Dropdown for Shop -->
+    <div class="dropdown">
+      <a href="shop.html" class="dropbtn">Shop</a>
+      <div class="dropdown-content">
+        <a href="shop-houseplants.html">Houseplants</a>
+        <a href="shop-annuals.html">Annuals</a>
+        <a href="shop-vegetable-starters.html">Vegetable Starters</a>
+      </div>
+    </div>
+
+    <a href="/about.html">About</a>
+    <a href="/contact.html">Contact</a>
+    <a href="faq.html">FAQ</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>About Roots to Blooms</h1>
+  <p>Learn our story and why we love sharing plants with our community.</p>
+</section>
+
+<!-- ABOUT SECTION -->
+<section class="about-section">
+  <h2>Our Story</h2>
+  <p>Roots to Blooms is a startup plant nursery based in Halifax, Nova Scotia. Brad, the owner, established the nursery in his living room in September 2025. He was discouraged by how much houseplants cost in retail stores and wanted to make a change.</p>
+
+  <p>By making houseplants more affordable and accessible to everyone, we hope to inspire more people to bring greenery into their homes. Many people enjoy having plants because they provide a sense of comfort and peace. The joy of seeing a plant bloom is truly indescribable and one of the best things about having plants.</p>
+
+  <h2>Our Mission</h2>
+  <p>We strive to produce high-quality houseplants through propagation, a process where plants grow from cuttings. These cuttings are usually taken from a part of the plant that contains plant stem cells, such as a node. Our mission is to ensure that everyone can enjoy the beauty and benefits of plants at home.</p>
+
+  <h2>Have Questions?</h2>
+  <p>No worries! Please visit our <a href="faq.html">FAQ</a> page to learn more.</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  &copy; 2026 Roots to Blooms — <a href="/contact.html">Contact Us</a>
+</footer>
+
+<script>
+const hamburger = document.querySelector('.hamburger');
+const navLinks = document.querySelector('.nav-links');
+const shopDropdown = document.querySelector('.dropdown');
+
+if(hamburger){
+  hamburger.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+  });
+}
+
+if(shopDropdown){
+  const shopButton = shopDropdown.querySelector('.dropbtn');
+  const shopMenu = shopDropdown.querySelector('.dropdown-content');
+
+  shopButton.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768) {
+      e.preventDefault();
+      shopMenu.classList.toggle('active');
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+      shopMenu.classList.remove('active');
+    }
+  });
+});
+</script>
+
+</body>
+</html>
