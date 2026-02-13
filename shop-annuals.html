@@ -171,7 +171,31 @@ body{
 /* FILTER BAR */
 .filter-bar{
   display:none;
+
+  /* Horizontal scroll behavior */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  gap: 8px;
+  padding-bottom: 6px;
+
+  /* Smooth iOS scrolling */
+  -webkit-overflow-scrolling: touch;
+
+  /* Prevent wrapping */
+  white-space: nowrap;
+
+  /* Optional: hide scrollbar */
+  scrollbar-width: none;
 }
+.filter-bar::-webkit-scrollbar{
+  display:none;
+}
+.filter-btn{
+  flex: 0 0 auto;   /* 👈 important */
+}
+
 .filter-btn{
   background:var(--accent);
   color:var(--dark);
@@ -942,6 +966,26 @@ function openCheckoutForm(){
     btn.innerText = "Checkout";
   },2000);
 }
+/* ================= MOBILE NAV TOGGLE ================= */
+const hamburger = document.querySelector(".hamburger");
+const navLinks = document.querySelector(".nav-links");
+
+hamburger.addEventListener("click", () => {
+  navLinks.classList.toggle("active");
+});
+document.querySelectorAll(".nav-links a").forEach(link=>{
+  link.addEventListener("click", ()=>{
+    navLinks.classList.remove("active");
+  });
+});
+document.querySelectorAll(".dropbtn").forEach(btn=>{
+  btn.addEventListener("click", e=>{
+    if(window.innerWidth <= 768){
+      e.preventDefault();
+      btn.nextElementSibling.classList.toggle("active");
+    }
+  });
+});
 
 /* ================= INIT ================= */
 generateTimeSlots();
