@@ -120,6 +120,15 @@ body{
   background:var(--dark);
 }
 
+/* Success message */
+#success-message{
+  display:none;
+  text-align:center;
+  margin-top:20px;
+  color:var(--brand-green);
+  font-weight:700;
+}
+
 /* FOOTER */
 footer{
   background:var(--dark);
@@ -166,7 +175,11 @@ footer a:hover{text-decoration:underline;}
 <!-- CONTACT FORM SECTION -->
 <section class="contact-section">
   <h2>Send Us a Message</h2>
-  <form id="contact-form" action="https://formspree.io/f/mqedpjnl" method="POST">
+  <form id="contact-form" action="https://formsubmit.co/rootstoblooms1@gmail.com" method="POST">
+    <!-- optional hidden fields -->
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_subject" value="New Contact Form Submission!">
+
     <label>Name</label>
     <input type="text" name="name" required>
     
@@ -181,6 +194,7 @@ footer a:hover{text-decoration:underline;}
     
     <input type="submit" value="Send">
   </form>
+  <div id="success-message">✅ Thank you! Your message has been sent.</div>
 </section>
 
 <!-- FOOTER -->
@@ -189,6 +203,7 @@ footer a:hover{text-decoration:underline;}
 </footer>
 
 <script>
+// Hamburger menu toggle
 const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');
 const shopDropdown = document.querySelector('.dropdown');
@@ -216,6 +231,27 @@ if(shopDropdown){
     }
   });
 }
+
+// Show success message after form submission without leaving the page
+const form = document.getElementById('contact-form');
+const successMsg = document.getElementById('success-message');
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  const formData = new FormData(form);
+  fetch(form.action, {
+    method: form.method,
+    body: formData,
+    headers: { 'Accept': 'application/json' }
+  }).then(response => {
+    if(response.ok){
+      form.style.display = 'none';
+      successMsg.style.display = 'block';
+    } else {
+      alert('Oops! There was a problem submitting your form.');
+    }
+  }).catch(error => alert('Oops! There was a problem submitting your form.'));
+});
 </script>
 
 </body>
