@@ -278,10 +278,19 @@ function renderSummary(){
 }
 
 /* ================= DELIVERY ================= */
-function toggleDeliveryAddress(val){
-  document.getElementById("deliveryAddress").style.display =
-    val==="Delivery" ? "flex" : "none";
-  if(val!=="Delivery"){ deliveryFee=0; renderSummary(); }
+function toggleDeliveryAddress(val) {
+  const deliveryDiv = document.getElementById("deliveryAddress");
+  const deliveryRow = document.getElementById("deliveryRow");
+
+  if (val === "Delivery") {
+    deliveryDiv.style.display = "flex";
+    calculateDeliveryFee(); // ensure delivery row and total update immediately
+  } else {
+    deliveryDiv.style.display = "none";
+    deliveryFee = 0;
+    deliveryRow.style.display = "none";
+    renderSummary();
+  }
 }
 
 function calculateDeliveryFee(){
