@@ -731,34 +731,68 @@ function generateTimeSlots() {
 
 /* ================= FETCH PRODUCTS ================= */
 async function fetchProducts(){
-  const res=await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
-  RAW=await res.json();
-  RAW.forEach(p=>{
-    p.stock=Number(p.stock);
-    p.price=Number(p.price);
-    p.soldOut=p.stock<=0;
-    p.comingSoon=(p.categories||[]).map(c=>c.toLowerCase()).includes("coming soon");
-  });
-  buildGroups();
-  renderFilters();
-document.getElementById("filterRow").style.display = "flex"; // show filters now
-renderProducts();
-renderCartItems();
-updateBadges();
-document.getElementById("loadingNotice")?.remove();
-productGrid.style.display="grid";
+  try {
+    const res = await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
+    RAW = await res.json();
+
+    RAW.forEach(p=>{
+      // Ensure categories is an array
+      if(typeof p.categories === "string") {
+        p.categories = p.categories.split(',').map(c => c.trim());
+      } else if (!Array.isArray(p.categories)) {
+        p.categories = [];
+      }
+
+      // Ensure numeric values
+      p.stock = Number(p.stock) || 0;
+      p.price = Number(p.price) || 0;
+
+      // Flags
+      p.soldOut = p.stock <= 0;
+      p.comingSoon = p.categories.map(c => c.toLowerCase()).includes("coming soon");
+
+      // Ensure group exists
+      if(!p.group) p.group = p.name; // fallback if no group
+    });
+
+    buildGroups();
+    renderFilters();
+
+    document.getElementById("filterRow").style.display = "flex"; // show filters now
+    renderProducts();
+    renderCartItems();
+    updateBadges();
+    document.getElementById("loadingNotice")?.remove();
+    productGrid.style.display = "grid";
+  } catch(err) {
+    console.error("Error fetching products:", err);
+    document.getElementById("loadingNotice").textContent = "⚠️ Failed to load products";
+  }
 }
 
+/* ================= BUILD GROUPS ================= */
 function buildGroups(){
-  const pageTag=PAGE_CATEGORY.toLowerCase().trim();
-  const filtered=RAW.filter(p=>(p.categories||[]).map(c=>c.toLowerCase().trim()).includes(pageTag));
-  const map={};
-  filtered.forEach(p=>{
-    if(!map[p.group]) map[p.group]={base:p, variants:[], categories:new Set()};
+  const pageTag = PAGE_CATEGORY.toLowerCase().trim();
+  const map = {};
+
+  RAW.forEach(p=>{
+    // Check if product belongs to current page
+    const catsLower = p.categories.map(c => c.toLowerCase());
+    if(!catsLower.includes(pageTag)) return; 
+
+    // Create group entry if not exists
+    if(!map[p.group]) map[p.group] = { base: p, variants: [], categories: new Set() };
+
     map[p.group].variants.push(p);
-    p.categories.forEach(c=>{if(c.toLowerCase()!==pageTag) map[p.group].categories.add(c);});
+
+    // Add other categories (for filter buttons)
+    p.categories.forEach(c=>{
+      const cLower = c.toLowerCase();
+      if(cLower !== pageTag) map[p.group].categories.add(c);
+    });
   });
-  GROUPED=Object.values(map);
+
+  GROUPED = Object.values(map);
 }
 
 /* ================= FILTERS ================= */
