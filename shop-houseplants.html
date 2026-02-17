@@ -379,8 +379,35 @@ body{
 
 .cart-line{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed #eee;}
 .small-btn{background:#eee;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;}
-.drawer-footer{flex-shrink:0;background:#fff;border-top:1px solid #f0f0f0;padding-top:12px;display:flex;flex-direction:column;gap:8px;}
-.drawer-footer > div{flex-wrap:wrap;}
+/* CART DRAWER FOOTER BUTTONS */
+.drawer-footer > div {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center; /* center buttons */
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 720px) {
+  /* Make buttons bigger and stack them full-width */
+  .drawer-footer > div button {
+    flex: 1 1 100%;       /* full width */
+    padding: 16px 0;      /* taller for easy tapping */
+    font-size: 18px;      /* bigger text */
+    border-radius: 12px;  /* slightly rounded */
+  }
+
+  /* Add space from bottom to avoid Siri / home gesture */
+  #cart-drawer.open {
+    bottom: 12%;          /* lifts drawer up a bit */
+  }
+
+  /* Optional: add extra spacing between stacked buttons */
+  .drawer-footer > div button + button {
+    margin-top: 8px;
+  }
+}
+
 .totals{display:flex;justify-content:space-between;font-weight:800;}
 #confirmation-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:12000;}
 .confirmation-card{background:#fff;padding:20px;border-radius:12px;width:min(560px,95%);text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.3);}
