@@ -11,20 +11,22 @@
 <style>
 :root{
   --brand-green:#4EA337;
-  --brand-brown:#4A2300;
-  --accent:#c6e3d2;
   --dark:#254D32;
+  --accent:#c6e3d2;
 }
+
 body{
   margin:0;
   font-family:Arial, Helvetica, sans-serif;
   background:#fafafa;
 }
+
 .wrapper{
   max-width:900px;
   margin:auto;
   padding:20px;
 }
+
 .summary{
   background:white;
   border-radius:12px;
@@ -32,12 +34,14 @@ body{
   box-shadow:0 8px 18px rgba(0,0,0,.06);
   margin-bottom:18px;
 }
+
 .line{
   display:flex;
   justify-content:space-between;
   padding:6px 0;
   border-bottom:1px dashed #eee;
 }
+
 .total{
   font-weight:800;
   font-size:18px;
@@ -45,6 +49,7 @@ body{
   display:flex;
   justify-content:space-between;
 }
+
 .form{
   background:white;
   border-radius:12px;
@@ -54,6 +59,7 @@ body{
   flex-direction:column;
   gap:10px;
 }
+
 input,select,textarea{
   padding:8px;
   border-radius:6px;
@@ -61,7 +67,9 @@ input,select,textarea{
   width:100%;
   box-sizing:border-box;
 }
+
 label{font-weight:700;}
+
 button{
   background:var(--dark);
   color:white;
@@ -71,6 +79,7 @@ button{
   font-weight:800;
   cursor:pointer;
 }
+
 .delivery-address{display:none; flex-direction:column; gap:6px;}
 </style>
 </head>
@@ -81,7 +90,6 @@ button{
 
 <h2>Checkout</h2>
 
-<!-- CART SUMMARY -->
 <div class="summary">
   <div id="items"></div>
   <div class="total">
@@ -90,48 +98,47 @@ button{
   </div>
 </div>
 
-<!-- CUSTOMER FORM -->
 <div class="form">
 
-<label for="custName">Name</label>
-<input type="text" id="custName" placeholder="First Last">
+<label>Name</label>
+<input id="custName">
 
-<label for="custEmail">Email</label>
-<input type="email" id="custEmail">
+<label>Email</label>
+<input id="custEmail">
 
-<label for="custPhone">Phone *</label>
-<input type="tel" id="custPhone">
+<label>Phone *</label>
+<input id="custPhone">
 
-<label for="custContactMethod">Preferred Contact Method</label>
+<label>Preferred Contact Method</label>
 <select id="custContactMethod">
   <option>Call</option>
   <option>Text</option>
   <option>Email</option>
 </select>
 
-<label for="custPickupDelivery">Pickup or Delivery</label>
+<label>Pickup or Delivery</label>
 <select id="custPickupDelivery" onchange="toggleDeliveryAddress(this.value)">
   <option value="Pickup">Pickup</option>
   <option value="Delivery">Delivery</option>
 </select>
 
 <div class="delivery-address" id="deliveryAddress">
-  <input type="text" placeholder="Address Line 1" id="addr1">
-  <input type="text" placeholder="Address Line 2" id="addr2">
-  <input type="text" placeholder="City" id="city">
-  <input type="text" placeholder="Postal Code" id="postal">
+  <input id="addr1" placeholder="Address line 1">
+  <input id="addr2" placeholder="Address line 2">
+  <input id="city" placeholder="City" oninput="calculateDeliveryFee()">
+  <input id="postal" placeholder="Postal code" oninput="calculateDeliveryFee()">
 </div>
 
-<label for="custDate">Pickup / Delivery Date</label>
-<input type="text" id="custDate" placeholder="Select a date">
+<label>Date</label>
+<input id="custDate">
 
-<label for="custTime">Pickup / Delivery Time</label>
+<label>Time</label>
 <select id="custTime"></select>
 
-<label for="custNotes">Notes / Special Instructions</label>
-<textarea id="custNotes" rows="2"></textarea>
+<label>Notes</label>
+<textarea id="custNotes"></textarea>
 
-<label for="custMarketing">How did you hear about us?</label>
+<label>How did you hear about us?</label>
 <select id="custMarketing">
   <option>Google Search</option>
   <option>Facebook</option>
@@ -142,126 +149,186 @@ button{
 </select>
 
 <button onclick="submitOrder()">Submit Order</button>
+
 </div>
 </div>
 
 <script>
 const STORAGE_KEY="plant_shop_cart_v8";
-const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
+const ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
 const FORM="https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse";
 
 let RAW=[], cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
+let deliveryFee = 0;
 
-/* ================= FETCH PRODUCTS ================= */
-async function fetchProducts(){
-  try{
-    const res = await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
-    RAW = await res.json();
-    RAW.forEach(p=>{
-      p.stock=Number(p.stock)||0;
-      p.price=Number(p.price)||0;
-      p.soldOut=p.stock<=0;
-    });
-    renderSummary();
-  }catch(err){console.error(err);}
+/* ================= INIT ================= */
+async function init(){
+  const res = await fetch(ENDPOINT);
+  RAW = await res.json();
+  RAW.forEach(p=>{p.price=Number(p.price)||0; p.stock=Number(p.stock)||0;});
+  renderSummary();
 }
+init();
 
-/* ================= CART SUMMARY ================= */
+/* ================= CART RENDER ================= */
 function getProduct(id){return RAW.find(p=>p.id===id);}
+
 function renderSummary(){
   const wrap=document.getElementById("items");
   wrap.innerHTML="";
-  let total=0;
+
+  let subtotal=0;
+
   Object.entries(cart).forEach(([id,qty])=>{
     const p=getProduct(id);
     if(!p) return;
-    const line = p.price*qty;
-    total+=line;
+    const line=p.price*qty;
+    subtotal+=line;
     wrap.innerHTML+=`<div class="line"><div>${p.name} x${qty}</div><div>$${line.toFixed(2)}</div></div>`;
   });
+
+  updateTotal();
+}
+
+function updateTotal(){
+  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+    const p = getProduct(id);
+    return sum + (p ? p.price * qty : 0);
+  },0);
+
+  const total = subtotal + deliveryFee;
   document.getElementById("total").innerText="$"+total.toFixed(2);
 }
 
-/* ================= DELIVERY ADDRESS ================= */
+/* ================= DELIVERY LOGIC ================= */
 const deliveryAddress = document.getElementById("deliveryAddress");
+
 function toggleDeliveryAddress(val){
-  deliveryAddress.style.display = val==="Delivery"?"flex":"none";
+  if(val==="Delivery"){ 
+    deliveryAddress.style.display="flex"; 
+    calculateDeliveryFee(); 
+  } else { 
+    deliveryAddress.style.display="none"; 
+    deliveryFee=0; 
+    updateTotal(); 
+  }
 }
 
-/* ================= TIME & DATE ================= */
-const custDateEl = document.getElementById("custDate");
-const custTimeEl = document.getElementById("custTime");
-flatpickr("#custDate", {
+function calculateDeliveryFee(){
+  const cityEl = document.getElementById("city");
+  if(!cityEl) return;
+  const cityVal = cityEl.value.trim().toLowerCase();
+
+  if(["halifax","dartmouth","spryfield"].includes(cityVal)){
+    deliveryFee = 5;
+  }
+  else if(["bedford","sackville","bayers lake","timberlea","eastern passage"].includes(cityVal)){
+    deliveryFee = 8;
+  }
+  else if(["porter's lake","lawrencetown","fall river","hammonds plains","hatchet lake"].includes(cityVal)){
+    deliveryFee = 20;
+    alert("Orders outside local zone require courier. $20 deposit applied.");
+  }
+  else{
+    deliveryFee = 0;
+  }
+  updateTotal();
+}
+
+/* ================= DATE PICKER ================= */
+flatpickr("#custDate",{
   minDate:"today",
-  disable:[d=>d.getDay()===4],
   dateFormat:"Y-m-d",
-  onChange:function(){generateTimeSlots();}
+  disable:[function(date){ return date.getDay()===4; }], // disable Thursdays
+  onChange:function(selectedDates,dateStr){
+    if(!dateStr) return;
+    generateTimeSlots();
+  }
 });
 
-const openHours = {mon:[19,21], tue:[19,21], wed:[19,21], thu:[], fri:[19,21], sat:[9,17], sun:[9,14]};
+/* ================= TIME SLOT ================= */
+const custDateEl=document.getElementById("custDate");
+const custTimeEl=document.getElementById("custTime");
+const openHours={
+  mon:[19,21], tue:[19,21], wed:[19,21], thu:[], fri:[19,21], sat:[9,17], sun:[9,14]
+};
 
 function generateTimeSlots(){
   if(!custDateEl || !custTimeEl) return;
   custTimeEl.innerHTML="";
-  const [y,m,d] = custDateEl.value.split("-").map(Number);
-  if(!y) return;
-  const day=new Date(y,m-1,d), now=new Date(), isToday=day.toDateString()===now.toDateString();
+
+  const [year,month,day]=custDateEl.value.split("-").map(Number);
+  const selectedDate=new Date(year,month-1,day);
+  const now=new Date();
+  const isToday = selectedDate.toDateString()===now.toDateString();
+
   const dayMap=["sun","mon","tue","wed","thu","fri","sat"];
-  const hours=openHours[dayMap[day.getDay()]];
-  if(!hours||hours.length===0){custTimeEl.innerHTML="<option>No slots available</option>"; return;}
-  for(let h=hours[0];h<hours[1];h++){
-    for(let min=0;min<60;min+=30){
-      const slot=new Date(y,m-1,d,h,min);
+  const dayName = dayMap[selectedDate.getDay()];
+  const hours = openHours[dayName];
+
+  if(!hours || hours.length===0){
+    custTimeEl.innerHTML="<option>No slots available</option>";
+    return;
+  }
+
+  for(let h=hours[0]; h<hours[1]; h++){
+    for(let m=0;m<60;m+=30){
+      const slot = new Date(year,month-1,day,h,m);
       if(isToday && slot<now) continue;
-      const raw=`${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
-      const hour12=h%12||12, ampm=h<12?"AM":"PM", pretty=`${hour12}:${String(min).padStart(2,'0')} ${ampm}`;
-      custTimeEl.innerHTML+=`<option value="${raw}">${pretty}</option>`;
+      const raw=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      const hour12=h%12||12;
+      const ampm=h<12?"AM":"PM";
+      custTimeEl.innerHTML+=`<option value="${raw}">${hour12}:${String(m).padStart(2,'0')} ${ampm}</option>`;
     }
   }
+
+  if(custTimeEl.innerHTML==="") custTimeEl.innerHTML="<option>No remaining slots today</option>";
 }
 
 /* ================= SUBMIT ORDER ================= */
 function submitOrder(){
-  if(Object.keys(cart).length===0){alert("Cart empty");return;}
-  const items=Object.entries(cart).map(([id,qty])=>`${getProduct(id).name} x${qty}`).join("\n");
-  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+  if(Object.keys(cart).length===0){ alert("Cart empty"); return; }
+
+  const items = Object.entries(cart).map(([id,qty])=>{
     const p=getProduct(id);
-    return sum + (p ? p.price*qty :0);
+    return `${p.name} x${qty}`;
+  }).join("\n");
+
+  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
+    const p = getProduct(id);
+    return sum + (p ? p.price*qty : 0);
   },0);
 
-  const data={
+  const formData = {
     "entry.1046011819": items,
     "entry.362516403": "$"+subtotal.toFixed(2),
-    "entry.991310792": document.getElementById("custName").value,
-    "entry.380963175": document.getElementById("custEmail").value,
-    "entry.640553104": document.getElementById("custPhone").value,
-    "entry.1469637469": document.getElementById("custContactMethod").value,
-    "entry.590490152": document.getElementById("custPickupDelivery").value,
-    "entry.489484198": document.getElementById("addr1").value,
-    "entry.1117374631": document.getElementById("addr2").value,
-    "entry.635395700": document.getElementById("city").value,
-    "entry.2075536009": document.getElementById("postal").value,
-    "entry.1225481208": document.getElementById("custDate").value,
-    "entry.2009788871": document.getElementById("custTime").value,
-    "entry.2140423836": document.getElementById("custNotes").value,
-    "entry.798763112": document.getElementById("custMarketing").value
+    "entry.991310792": custName.value,
+    "entry.380963175": custEmail.value,
+    "entry.640553104": custPhone.value,
+    "entry.1469637469": custContactMethod.value,
+    "entry.590490152": custPickupDelivery.value,
+    "entry.489484198": addr1.value,
+    "entry.1117374631": addr2.value,
+    "entry.635395700": city.value,
+    "entry.2075536009": postal.value,
+    "entry.1225481208": custDate.value,
+    "entry.2009788871": custTime.value,
+    "entry.2140423836": custNotes.value,
+    "entry.798763112": custMarketing.value
   };
 
   const form=document.createElement("form");
   form.method="POST";
   form.action=FORM;
-  Object.entries(data).forEach(([k,v])=>{
+  Object.entries(formData).forEach(([k,v])=>{
     const i=document.createElement("input");
-    i.name=k;
-    i.value=v;
-    form.appendChild(i);
+    i.name=k; i.value=v; form.appendChild(i);
   });
   document.body.appendChild(form);
   form.submit();
+
   localStorage.removeItem(STORAGE_KEY);
 }
-
-fetchProducts();
 </script>
 
 </body>
