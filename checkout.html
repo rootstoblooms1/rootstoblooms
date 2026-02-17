@@ -235,6 +235,8 @@ h2{
 <iframe name="hidden" style="display:none;"></iframe>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 const STORAGE_KEY="plant_shop_cart_v8";
 let cart = JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
 let RAW=[];
@@ -296,6 +298,14 @@ function calculateDeliveryFee(){
 
 /* ================= TIME SLOT & DATE HANDLING ================= */
 const custDate = document.getElementById("custDate");
+const custTime = document.getElementById("custTime");
+const custName = document.getElementById("custName");
+const custEmail = document.getElementById("custEmail");
+const custPhone = document.getElementById("custPhone");
+const custPickupDelivery = document.getElementById("custPickupDelivery");
+const addr1 = document.getElementById("addr1");
+const city = document.getElementById("city");
+const postal = document.getElementById("postal");
 flatpickr("#custDate", {
   minDate: "today",
   dateFormat: "Y-m-d",
@@ -378,6 +388,7 @@ function generateTimeSlots() {
 
 /* ================= SUBMIT ================= */
   // -------- Robust Validation --------
+function submitOrder(){
 if(Object.keys(cart).length === 0){
   alert("Your cart is empty.");
   return;
@@ -437,7 +448,8 @@ if(custPickupDelivery.value === "Delivery"){
 
   localStorage.removeItem(STORAGE_KEY);
   document.getElementById("confirmation-overlay").style.display="flex";
-}
+  } // end submit order
+  }); // endDOMContentLoaded
 </script>
 
 </body>
