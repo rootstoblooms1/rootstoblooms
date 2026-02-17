@@ -385,26 +385,6 @@ body{
 #confirmation-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:12000;}
 .confirmation-card{background:#fff;padding:20px;border-radius:12px;width:min(560px,95%);text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.3);}
 
-/* CUSTOMER FORM IN CART */
-.customer-section{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin-top:12px;
-}
-.customer-section input, .customer-section select, .customer-section textarea{
-  padding:6px 8px;
-  border-radius:6px;
-  border:1px solid #ccc;
-  width:100%;
-  box-sizing:border-box;
-}
-.customer-section label{font-weight:700;}
-.delivery-address{display:none; flex-direction:column; gap:6px; margin-top:6px;}
-.delivery-address input{width:100%;}
-.pickup-time{margin-top:6px;}
-
-/* MOBILE CART */
 /* MOBILE CART */
 @media (max-width:720px){
   #cart-drawer{
@@ -492,62 +472,11 @@ body{
 <div style="font-weight:800;margin-top:6px">Items in cart</div>
 <div id="cartItemsWrap" class="cart-items"></div>
 
-  <!-- CUSTOMER FORM -->
-  <div class="customer-section">
-    <label for="custName">Name</label>
-    <input type="text" id="custName" placeholder="First Last">
-
-    <label for="custEmail">Email</label>
-    <input type="email" id="custEmail">
-
-    <label for="custPhone">Phone</label>
-    <input type="tel" id="custPhone">
-
-    <label for="custContactMethod">Preferred Contact Method</label>
-    <select id="custContactMethod">
-      <option>Call</option>
-      <option>Text</option>
-      <option>Email</option>
-    </select>
-
-    <label for="custPickupDelivery">Pickup or Delivery</label>
-    <select id="custPickupDelivery" onchange="toggleDeliveryAddress(this.value)">
-      <option value="Pickup">Pickup</option>
-      <option value="Delivery">Delivery</option>
-    </select>
-
-    <div class="delivery-address" id="deliveryAddress">
-      <input type="text" placeholder="Address Line 1" id="addr1">
-      <input type="text" placeholder="Address Line 2" id="addr2">
-      <input type="text" placeholder="City" id="city" oninput="calculateDeliveryFee()">
-      <input type="text" placeholder="Postal Code" id="postal" oninput="calculateDeliveryFee()">
-    </div>
-
-    <label for="custDate">Pickup / Delivery Date</label>
-    <input type="text" id="custDate" placeholder="Select a date">
-
-    <label for="custTime">Pickup / Delivery Time</label>
-    <select id="custTime" class="pickup-time"></select>
-
-    <label for="custNotes">Notes / Special Instructions</label>
-    <textarea id="custNotes" rows="2"></textarea>
-
-    <label for="custMarketing">How did you hear about us?</label>
-    <select id="custMarketing">
-      <option>Google Search</option>
-      <option>Facebook</option>
-      <option>Instagram</option>
-      <option>Poster</option>
-      <option>From a Friend/Family Member</option>
-      <option>Other (please specify in Notes/Special Instructions)</option>
-    </select>
-  </div>
-
   <div class="drawer-footer">
   <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
 
   <div class="totals">
-    <div>Products</div>
+    <div>Subtotal</div>
     <div id="cartProducts">$0.00</div>
   </div>
 
