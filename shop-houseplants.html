@@ -540,8 +540,8 @@ function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(ca
 function updateBadges(){
 
   const itemCount = Object.values(cart).reduce((s,q)=>s+q,0);
-  floatBadge.textContent = itemCount;
-  cartCountEl.textContent = itemCount;
+  if(floatBadge) floatBadge.textContent = itemCount;
+  if(cartCountEl) cartCountEl.textContent = itemCount;
 
   const productTotal = Object.entries(cart).reduce((sum,[id,qty])=>{
     const p = getProductById(id);
@@ -550,22 +550,23 @@ function updateBadges(){
 
   const grandTotal = productTotal + deliveryFee;
 
-  cartProductsEl.textContent = `$${productTotal.toFixed(2)}`;
-  cartSubtotalEl.textContent = `$${grandTotal.toFixed(2)}`;
+  if(cartProductsEl) cartProductsEl.textContent = `$${productTotal.toFixed(2)}`;
+  if(cartSubtotalEl) cartSubtotalEl.textContent = `$${grandTotal.toFixed(2)}`;
 
-  if(deliveryFee > 0){
+  if(deliveryFee > 0 && deliveryRowEl && cartDeliveryEl){
     deliveryRowEl.style.display = "flex";
     cartDeliveryEl.textContent = `$${deliveryFee.toFixed(2)}`;
-  } else {
+  } else if(deliveryRowEl){
     deliveryRowEl.style.display = "none";
   }
 
 }
+
 function renderCartItems(){
-
   if(!RAW.length) return;
-
   const wrap = document.getElementById("cartItemsWrap");
+  if(!wrap) return;
+
   wrap.innerHTML = "";
 
   Object.entries(cart).forEach(([id,qty])=>{
@@ -586,6 +587,7 @@ function renderCartItems(){
     `;
   });
 }
+
 function goToCheckout(){
   if(Object.keys(cart).length === 0){
     alert("Your cart is empty.");
@@ -597,39 +599,30 @@ function goToCheckout(){
 /* ================= CART DRAWER ================= */
 const cartDrawer = document.getElementById("cart-drawer");
 function toggleDrawer(){
+  if(!cartDrawer) return;
   cartDrawer.classList.toggle("open");
   renderCartItems();
   updateBadges();
 }
 function clearCart(){cart={}; deliveryFee=0; saveCart(); updateBadges(); renderProducts();}
 function continueShopping(){toggleDrawer();}
-function closeConfirmation(){document.getElementById("confirmation-overlay").style.display = "none";}
+function closeConfirmation(){ const el = document.getElementById("confirmation-overlay"); if(el) el.style.display = "none";}
 
 /* ================= DELIVERY / TIME ================= */
-const custPickupDelivery = document.getElementById("custPickupDelivery");
-// ===== Customer form references =====
-const custName = document.getElementById("custName");
-const custEmail = document.getElementById("custEmail");
-const custPhone = document.getElementById("custPhone");
-const custContactMethod = document.getElementById("custContactMethod");
-const addr1 = document.getElementById("addr1");
-const addr2 = document.getElementById("addr2");
-const city = document.getElementById("city");
-const postal = document.getElementById("postal");
-const custDateEl = document.getElementById("custDate");
-const custNotes = document.getElementById("custNotes");
-const custMarketing = document.getElementById("custMarketing");
 const deliveryAddress = document.getElementById("deliveryAddress");
-const custTime = document.getElementById("custTime");
-
 function toggleDeliveryAddress(val){
+  if(!deliveryAddress) return;
   if(val==="Delivery"){ deliveryAddress.style.display="flex"; calculateDeliveryFee(); }
   else{ deliveryAddress.style.display="none"; deliveryFee=0; updateBadges(); }
 }
 
 function calculateDeliveryFee(){
-  const cityVal = city.value.trim().toLowerCase();
-  const postalVal = postal.value.trim();
+  const cityEl = document.getElementById("city");
+  const postalEl = document.getElementById("postal");
+  if(!cityEl || !postalEl) return;
+
+  const cityVal = cityEl.value.trim().toLowerCase();
+  const postalVal = postalEl.value.trim();
 
   if(["halifax","dartmouth","spryfield"].includes(cityVal)){
     deliveryFee = 5;
@@ -647,28 +640,26 @@ function calculateDeliveryFee(){
 
   updateBadges();
 }
+
 /* ================= TIME SLOT & DATE HANDLING ================= */
-const custDate = document.getElementById("custDate");
-flatpickr("#custDate", {
-  minDate: "today",
-  dateFormat: "Y-m-d",
-  disable: [
-    function(date) {
-      // Return true to disable Thursdays (4 = Thursday)
-      return date.getDay() === 4;
-    }
-  ],
-  onChange: function(selectedDates, dateStr) {
-    if (!dateStr) {
-      custTime.innerHTML = "";
-      return;
-    }
-    generateTimeSlots(); 
-  }
-});
+const custDateEl = document.getElementById("custDate");
+const custTime = document.getElementById("custTime");
 
+if(custDateEl){
+  flatpickr("#custDate", {
+    minDate: "today",
+    dateFormat: "Y-m-d",
+    disable: [
+      function(date) { return date.getDay() === 4; }
+    ],
+    onChange: function(selectedDates, dateStr) {
+      if (!dateStr || !custTime) return;
+      generateTimeSlots(); 
+    }
+  });
+}
 
-const closedDays = ["thu"]; // days the shop is closed
+const closedDays = ["thu"];
 const openHours = {
   mon:[19,21],
   tue:[19,21],
@@ -679,14 +670,12 @@ const openHours = {
   sun:[9,14]
 };
 
-// Set min date to today
-const today = new Date();
-
-// Generate time slots based on selected date
+// Generate time slots
 function generateTimeSlots() {
-  custTime.innerHTML = "";
+  if(!custDateEl || !custTime) return;
 
-  const dateStr = custDate.value;
+  custTime.innerHTML = "";
+  const dateStr = custDateEl.value;
   if (!dateStr) {
     custTime.innerHTML = "<option>Please select a date first</option>";
     return;
@@ -694,10 +683,8 @@ function generateTimeSlots() {
 
   const [year, month, day] = dateStr.split("-").map(Number);
   const selectedDate = new Date(year, month-1, day);
-
   const now = new Date();
-  const isToday =
-    selectedDate.toDateString() === now.toDateString();
+  const isToday = selectedDate.toDateString() === now.toDateString();
 
   const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
   const dayName = dayMap[selectedDate.getDay()];
@@ -710,17 +697,13 @@ function generateTimeSlots() {
 
   for(let h = hours[0]; h < hours[1]; h++){
     for(let m = 0; m < 60; m += 30){
-
       const slot = new Date(year,month-1,day,h,m);
-
-      // Skip past times today
       if(isToday && slot < now) continue;
 
       const raw = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
       const hour12 = h % 12 || 12;
       const ampm = h < 12 ? "AM" : "PM";
       const pretty = `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
-
       custTime.innerHTML += `<option value="${raw}">${pretty}</option>`;
     }
   }
@@ -736,35 +719,25 @@ async function fetchProducts(){
     RAW = await res.json();
 
     RAW.forEach(p=>{
-      // Ensure categories is an array
-      if(typeof p.categories === "string") {
-        p.categories = p.categories.split(',').map(c => c.trim());
-      } else if (!Array.isArray(p.categories)) {
-        p.categories = [];
-      }
-
-      // Ensure numeric values
-      p.stock = Number(p.stock) || 0;
-      p.price = Number(p.price) || 0;
-
-      // Flags
+      if(typeof p.categories === "string") p.categories = p.categories.split(',').map(c => c.trim());
+      else if (!Array.isArray(p.categories)) p.categories = [];
+      p.stock = Number(p.stock)||0;
+      p.price = Number(p.price)||0;
       p.soldOut = p.stock <= 0;
       p.comingSoon = p.categories.map(c => c.toLowerCase()).includes("coming soon");
-
-      // Ensure group exists
-      if(!p.group) p.group = p.name; // fallback if no group
+      if(!p.group) p.group = p.name;
     });
 
     buildGroups();
     renderFilters();
 
-    document.getElementById("filterRow").style.display = "flex"; // show filters now
+    document.getElementById("filterRow").style.display = "flex";
     renderProducts();
     renderCartItems();
     updateBadges();
     document.getElementById("loadingNotice")?.remove();
     productGrid.style.display = "grid";
-  } catch(err) {
+  } catch(err){
     console.error("Error fetching products:", err);
     document.getElementById("loadingNotice").textContent = "⚠️ Failed to load products";
   }
@@ -776,20 +749,12 @@ function buildGroups(){
   const map = {};
 
   RAW.forEach(p=>{
-    // Check if product belongs to current page
     const catsLower = p.categories.map(c => c.toLowerCase());
-    if(!catsLower.includes(pageTag)) return; 
+    if(!catsLower.includes(pageTag)) return;
 
-    // Create group entry if not exists
     if(!map[p.group]) map[p.group] = { base: p, variants: [], categories: new Set() };
-
     map[p.group].variants.push(p);
-
-    // Add other categories (for filter buttons)
-    p.categories.forEach(c=>{
-      const cLower = c.toLowerCase();
-      if(cLower !== pageTag) map[p.group].categories.add(c);
-    });
+    p.categories.forEach(c=>{ const cLower=c.toLowerCase(); if(cLower!==pageTag) map[p.group].categories.add(c); });
   });
 
   GROUPED = Object.values(map);
@@ -798,6 +763,8 @@ function buildGroups(){
 /* ================= FILTERS ================= */
 function renderFilters(){
   const row=document.getElementById("filterRow");
+  if(!row) return;
+
   const cats=new Set();
   GROUPED.forEach(g=>g.categories.forEach(c=>{
     const usable=GROUPED.some(prod=>{
@@ -807,15 +774,19 @@ function renderFilters(){
     });
     if(usable) cats.add(c);
   }));
+
   row.innerHTML=`<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')" data-filter="all">All</button>`+
     [...cats].sort().map(c=>`<button class="filter-btn" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`).join("")+
     `<button class="filter-btn" onclick="toggleSold()" data-filter="sold">hide sold out</button>`;
 }
+
 function toggleSold(){ hideSold=!hideSold; renderProducts(); }
 function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
 
 /* ================= PRODUCTS ================= */
 function renderProducts(){
+  if(!productGrid) return;
+
   productGrid.innerHTML="";
   GROUPED.forEach(group=>{
     if(activeFilter!=="all" && !group.categories.has(activeFilter)) return;
@@ -823,6 +794,7 @@ function renderProducts(){
     if(activeFilter==="all") variants=variants.filter(v=>!v.soldOut);
     if(hideSold) variants=variants.filter(v=>!v.soldOut);
     if(!variants.length) return;
+
     const selected=variants[0], id=selected.id, qty=cart[id]||0;
     const swatches=[...new Map(group.variants.map(v=>[v.swatch,v])).values()];
 
@@ -867,19 +839,15 @@ function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); 
 const hamburger = document.querySelector(".hamburger");
 const navLinks = document.querySelector(".nav-links");
 
-hamburger.addEventListener("click", () => {
-  navLinks.classList.toggle("active");
-});
+hamburger?.addEventListener("click", () => navLinks?.classList.toggle("active"));
 document.querySelectorAll(".nav-links a").forEach(link=>{
-  link.addEventListener("click", ()=>{
-    navLinks.classList.remove("active");
-  });
+  link.addEventListener("click", ()=> navLinks?.classList.remove("active"));
 });
 document.querySelectorAll(".dropbtn").forEach(btn=>{
   btn.addEventListener("click", e=>{
     if(window.innerWidth <= 768){
       e.preventDefault();
-      btn.nextElementSibling.classList.toggle("active");
+      btn.nextElementSibling?.classList.toggle("active");
     }
   });
 });
