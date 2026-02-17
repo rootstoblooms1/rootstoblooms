@@ -232,6 +232,8 @@ h2{
   </div>
 </div>
 
+<iframe name="hidden" style="display:none;"></iframe>
+
 <script>
 const STORAGE_KEY="plant_shop_cart_v8";
 let cart = JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
@@ -375,8 +377,6 @@ function generateTimeSlots() {
 }
 
 /* ================= SUBMIT ================= */
-function submitOrder(){
-  if(!Object.keys(cart).length){alert("Cart empty");return;}
   // -------- Robust Validation --------
 if(Object.keys(cart).length === 0){
   alert("Your cart is empty.");
