@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roots to Blooms — Checkout</title>
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
@@ -15,337 +16,333 @@
   --dark:#254D32;
 }
 
-/* ===================== PAGE LAYOUT ===================== */
 body{
   margin:0;
   font-family:Arial, Helvetica, sans-serif;
   background:#fafafa;
 }
-.container{
-  max-width:800px;
+
+/* ================= NAV ================= */
+.topnav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 24px;
+  background:var(--dark);
+}
+.topnav img{height:48px;}
+.nav-links a{
+  color:#fff;
+  text-decoration:none;
+  font-weight:700;
+  margin-left:18px;
+}
+
+/* ================= LAYOUT ================= */
+.checkout-wrap{
+  max-width:1000px;
   margin:auto;
   padding:20px;
+  display:grid;
+  grid-template-columns: 1fr 420px;
+  gap:20px;
 }
 
-/* ===================== HEADER ===================== */
-h1{
-  color:var(--dark);
-  text-align:center;
-  margin-bottom:20px;
+@media(max-width:900px){
+  .checkout-wrap{
+    grid-template-columns:1fr;
+  }
 }
 
-/* ===================== CART SUMMARY ===================== */
-.cart-summary{
+.card{
   background:#fff;
   border-radius:12px;
   padding:16px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.08);
-  margin-bottom:24px;
-}
-.cart-summary h2{
-  font-weight:800;
-  margin-top:0;
-}
-.cart-summary-line{
-  display:flex;
-  justify-content:space-between;
-  padding:6px 0;
-  font-weight:600;
-}
-.cart-summary-line.total{
-  font-size:18px;
-  font-weight:800;
-  border-top:1px solid #eee;
-  margin-top:8px;
-  padding-top:10px;
+  box-shadow:0 8px 18px rgba(0,0,0,0.06);
 }
 
-/* ===================== FORM ===================== */
-.checkout-form{
-  background:#fff;
-  border-radius:12px;
-  padding:20px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+h2{
+  margin-top:0;
+  color:var(--dark);
+}
+
+/* ================= FORM ================= */
+.customer-section{
   display:flex;
   flex-direction:column;
-  gap:16px;
-}
-.checkout-form label{
-  font-weight:700;
-  margin-bottom:6px;
-}
-.checkout-form input,
-.checkout-form select,
-.checkout-form textarea{
-  padding:10px 12px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  font-size:14px;
-  width:100%;
-  box-sizing:border-box;
-}
-.checkout-form textarea{
-  resize:vertical;
+  gap:10px;
 }
 
-/* Delivery address conditional section */
-#deliveryAddress{
+.customer-section label{
+  font-weight:700;
+}
+
+.customer-section input,
+.customer-section select,
+.customer-section textarea{
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+.delivery-address{
   display:none;
   flex-direction:column;
-  gap:12px;
+  gap:6px;
 }
 
-/* ===================== BUTTONS ===================== */
-.btn{
+/* ================= ORDER SUMMARY ================= */
+.cart-line{
+  display:flex;
+  justify-content:space-between;
+  border-bottom:1px dashed #eee;
+  padding:8px 0;
+}
+
+.totals{
+  display:flex;
+  justify-content:space-between;
+  font-weight:800;
+  margin-top:6px;
+}
+
+/* ================= BUTTON ================= */
+.checkout-btn{
+  margin-top:12px;
   background:var(--dark);
   color:#fff;
   border:none;
-  padding:12px 20px;
-  border-radius:8px;
+  padding:14px;
+  border-radius:10px;
   font-weight:800;
   cursor:pointer;
-  transition:0.2s;
-}
-.btn:hover{background:var(--brand-green);}
-.btn:disabled{
-  opacity:0.5;
-  cursor:not-allowed;
+  font-size:16px;
 }
 
-/* ===================== CONFIRMATION ===================== */
+/* ================= CONFIRMATION ================= */
 #confirmation-overlay{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.6);
+  background:rgba(0,0,0,.6);
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:12000;
+  z-index:9999;
 }
 .confirmation-card{
   background:#fff;
   padding:20px;
   border-radius:12px;
-  width:min(560px,95%);
+  max-width:420px;
   text-align:center;
-  box-shadow:0 12px 40px rgba(0,0,0,0.3);
-}
-
-/* RESPONSIVE */
-@media(max-width:720px){
-  .container{padding:12px;}
-  .checkout-form{padding:16px;}
-  .btn{width:100%;}
 }
 </style>
 </head>
 
 <body>
-<div class="container">
-  <h1>Checkout</h1>
 
-  <!-- CART SUMMARY -->
-  <div class="cart-summary">
-    <h2>Your Cart</h2>
-    <div class="cart-summary-line">
-      <div>Items</div>
-      <div id="cartCount">0</div>
-    </div>
-    <div class="cart-summary-line">
-      <div>Subtotal</div>
-      <div id="cartProducts">$0.00</div>
-    </div>
-    <div class="cart-summary-line" id="deliveryRow" style="display:none;">
-      <div>Delivery</div>
-      <div id="cartDelivery">$0.00</div>
-    </div>
-    <div class="cart-summary-line total">
-      <div>Total</div>
-      <div id="cartTotal">$0.00</div>
-    </div>
+<nav class="topnav">
+  <a href="/"><img src="IMG_1466.PNG" alt="Roots to Blooms"></a>
+  <div class="nav-links">
+    <a href="shop.html">Shop</a>
+    <a href="/">Home</a>
   </div>
+</nav>
 
-  <!-- CHECKOUT FORM -->
-  <form id="checkoutForm" class="checkout-form">
-    <label for="custName">Full Name*</label>
-    <input type="text" id="custName" required>
+<div class="checkout-wrap">
 
-    <label for="custEmail">Email*</label>
-    <input type="email" id="custEmail" required>
+<!-- ================= CUSTOMER INFO ================= -->
+<div class="card">
+  <h2>Your Details</h2>
 
-    <label for="custPhone">Phone*</label>
-    <input type="tel" id="custPhone" required>
+  <div class="customer-section">
+    <label>Name</label>
+    <input id="custName">
 
-    <label for="contactMethod">Preferred Contact Method*</label>
-    <select id="contactMethod" required>
-      <option value="">Select</option>
+    <label>Email</label>
+    <input id="custEmail" type="email">
+
+    <label>Phone</label>
+    <input id="custPhone" type="tel">
+
+    <label>Preferred Contact</label>
+    <select id="custContactMethod">
+      <option>Call</option>
+      <option>Text</option>
       <option>Email</option>
-      <option>Phone</option>
     </select>
 
-    <label for="pickupDelivery">Pickup or Delivery*</label>
-    <select id="pickupDelivery" required onchange="toggleDeliveryAddress(this.value)">
-      <option value="">Select</option>
-      <option>Pickup</option>
-      <option>Delivery</option>
+    <label>Pickup or Delivery</label>
+    <select id="custPickupDelivery" onchange="toggleDeliveryAddress(this.value)">
+      <option value="Pickup">Pickup</option>
+      <option value="Delivery">Delivery</option>
     </select>
 
-    <div id="deliveryAddress">
-      <label for="street">Street Address*</label>
-      <input type="text" id="street">
-
-      <label for="city">City*</label>
-      <input type="text" id="city" oninput="calculateDeliveryFee()">
-
-      <label for="postal">Postal Code*</label>
-      <input type="text" id="postal" oninput="calculateDeliveryFee()">
+    <div class="delivery-address" id="deliveryAddress">
+      <input id="addr1" placeholder="Address Line 1">
+      <input id="addr2" placeholder="Address Line 2">
+      <input id="city" placeholder="City" oninput="calculateDeliveryFee()">
+      <input id="postal" placeholder="Postal Code" oninput="calculateDeliveryFee()">
     </div>
 
-    <label for="custDate">Preferred Date*</label>
-    <input type="text" id="custDate" required>
+    <label>Date</label>
+    <input id="custDate">
 
-    <label for="custTime">Preferred Time*</label>
-    <select id="custTime" required>
-      <option value="">Select a date first</option>
+    <label>Time</label>
+    <select id="custTime"></select>
+
+    <label>Notes</label>
+    <textarea id="custNotes" rows="2"></textarea>
+
+    <label>How did you hear about us?</label>
+    <select id="custMarketing">
+      <option>Google Search</option>
+      <option>Facebook</option>
+      <option>Instagram</option>
+      <option>Poster</option>
+      <option>From a Friend/Family Member</option>
+      <option>Other</option>
     </select>
-
-    <label for="notes">Notes / Special Requests</label>
-    <textarea id="notes" rows="3"></textarea>
-
-    <div>
-      <input type="checkbox" id="marketingConsent">
-      <label for="marketingConsent">Sign me up for updates & promotions</label>
-    </div>
-
-    <button type="submit" class="btn">Submit Order</button>
-  </form>
+  </div>
 </div>
 
-<!-- CONFIRMATION -->
+<!-- ================= ORDER SUMMARY ================= -->
+<div class="card">
+  <h2>Your Order</h2>
+
+  <div id="orderItems"></div>
+
+  <div class="totals"><span>Products</span><span id="productsTotal">$0.00</span></div>
+  <div class="totals" id="deliveryRow" style="display:none">
+    <span>Delivery</span><span id="deliveryTotal">$0.00</span>
+  </div>
+  <div class="totals"><strong>Total</strong><strong id="grandTotal">$0.00</strong></div>
+
+  <button class="checkout-btn" id="checkoutBtn" onclick="submitOrder()">Place Order</button>
+</div>
+
+</div>
+
+<!-- ================= CONFIRMATION ================= -->
 <div id="confirmation-overlay">
   <div class="confirmation-card">
-    <h2>Order Received</h2>
-    <p id="confirmation-text"></p>
-    <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-      <button class="small-btn" onclick="closeConfirmation()">Close</button>
-    </div>
+    <h2>Order Received 🌱</h2>
+    <p>Thank you! Your order has been submitted.</p>
+    <button class="checkout-btn" onclick="location.href='/'">Back Home</button>
   </div>
 </div>
 
 <script>
-// Reuse cart & delivery logic from shop page
 const STORAGE_KEY="plant_shop_cart_v8";
 let cart = JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
+let RAW=[];
 let deliveryFee=0;
 
-// UPDATE CART SUMMARY
-const cartCountEl = document.getElementById("cartCount");
-const cartProductsEl = document.getElementById("cartProducts");
-const cartDeliveryEl = document.getElementById("cartDelivery");
-const cartTotalEl = document.getElementById("cartTotal");
-const deliveryRowEl = document.getElementById("deliveryRow");
+const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
 
-function updateCartSummary(){
-  const itemCount = Object.values(cart).reduce((s,q)=>s+q,0);
-  const productTotal = Object.entries(cart).reduce((sum,[id,qty])=>{
-    const p = JSON.parse(localStorage.getItem("plant_shop_inventory")||"[]").find(x=>x.id===id);
-    return sum + (p ? p.price * qty : 0);
-  },0);
-  const grandTotal = productTotal + deliveryFee;
+/* ================= LOAD PRODUCTS ================= */
+async function loadProducts(){
+  const res = await fetch(SHEET_ENDPOINT);
+  RAW = await res.json();
+  RAW.forEach(p=>{
+    p.price=Number(p.price);
+  });
+  renderSummary();
+}
+loadProducts();
 
-  cartCountEl.textContent=itemCount;
-  cartProductsEl.textContent=`$${productTotal.toFixed(2)}`;
-  cartTotalEl.textContent=`$${grandTotal.toFixed(2)}`;
-  if(deliveryFee>0){deliveryRowEl.style.display="flex"; cartDeliveryEl.textContent=`$${deliveryFee.toFixed(2)}`;}
-  else{deliveryRowEl.style.display="none";}
+/* ================= SUMMARY ================= */
+function renderSummary(){
+  const wrap=document.getElementById("orderItems");
+  wrap.innerHTML="";
+  let total=0;
+
+  Object.entries(cart).forEach(([id,qty])=>{
+    const p=RAW.find(x=>x.id===id);
+    if(!p) return;
+    const line=p.price*qty;
+    total+=line;
+    wrap.innerHTML+=`
+      <div class="cart-line">
+        <span>${p.name} × ${qty}</span>
+        <span>$${line.toFixed(2)}</span>
+      </div>`;
+  });
+
+  document.getElementById("productsTotal").innerText=`$${total.toFixed(2)}`;
+  document.getElementById("grandTotal").innerText=`$${(total+deliveryFee).toFixed(2)}`;
 }
 
-updateCartSummary();
-
-// DELIVERY LOGIC
+/* ================= DELIVERY ================= */
 function toggleDeliveryAddress(val){
-  const deliveryAddress = document.getElementById("deliveryAddress");
-  if(val==="Delivery"){ deliveryAddress.style.display="flex"; calculateDeliveryFee(); }
-  else{ deliveryAddress.style.display="none"; deliveryFee=0; updateCartSummary(); }
+  document.getElementById("deliveryAddress").style.display =
+    val==="Delivery" ? "flex" : "none";
+  if(val!=="Delivery"){ deliveryFee=0; renderSummary(); }
 }
-function calculateDeliveryFee(){
-  const cityEl = document.getElementById("city");
-  const postalEl = document.getElementById("postal");
-  if(!cityEl || !postalEl) return;
-  const cityVal = cityEl.value.trim().toLowerCase();
-  const postalVal = postalEl.value.trim();
 
-  if(["halifax","dartmouth","spryfield"].includes(cityVal)) deliveryFee=5;
-  else if(["bedford","sackville","bayers lake","timberlea","eastern passage"].includes(cityVal)) deliveryFee=8;
-  else if(["porter's lake","lawrencetown","fall river","hammonds plains","hatchet lake"].includes(cityVal)){deliveryFee=20; alert("Orders outside local zone require courier. $20 deposit applied.");}
+function calculateDeliveryFee(){
+  const city=document.getElementById("city").value.toLowerCase();
+  if(["halifax","dartmouth","spryfield"].includes(city)) deliveryFee=5;
+  else if(["bedford","sackville"].includes(city)) deliveryFee=8;
   else deliveryFee=0;
 
-  updateCartSummary();
+  document.getElementById("deliveryRow").style.display =
+    deliveryFee>0 ? "flex":"none";
+  document.getElementById("deliveryTotal").innerText=`$${deliveryFee.toFixed(2)}`;
+  renderSummary();
 }
 
-// FLATPICKR DATE PICKER
-flatpickr("#custDate", {
-  minDate:"today",
-  dateFormat:"Y-m-d",
-  disable:[function(date){return date.getDay()===4;}],
-  onChange:function(selectedDates, dateStr){generateTimeSlots();}
-});
+/* ================= DATE/TIME ================= */
+flatpickr("#custDate",{minDate:"today",disable:[d=>d.getDay()===4],onChange:generateTimeSlots});
 
-// TIME SLOTS
-const custDateEl = document.getElementById("custDate");
-const custTimeEl = document.getElementById("custTime");
-const openHours = {mon:[19,21], tue:[19,21], wed:[19,21], thu:[], fri:[19,21], sat:[9,17], sun:[9,14]};
-
+const openHours={mon:[19,21],tue:[19,21],wed:[19,21],fri:[19,21],sat:[9,17],sun:[9,14]};
 function generateTimeSlots(){
-  if(!custDateEl || !custTimeEl) return;
-  custTimeEl.innerHTML="";
-  const [y,m,d] = custDateEl.value.split("-").map(Number);
-  const selectedDate = new Date(y,m-1,d);
-  const now = new Date();
-  const isToday = selectedDate.toDateString()===now.toDateString();
-  const dayMap=["sun","mon","tue","wed","thu","fri","sat"];
-  const dayName=dayMap[selectedDate.getDay()];
-  const hours=openHours[dayName];
-  if(!hours || hours.length===0){ custTimeEl.innerHTML="<option>No slots available</option>"; return; }
-  for(let h=hours[0]; h<hours[1]; h++){
-    for(let m=0;m<60;m+=30){
-      const slot=new Date(y,m-1,d,h,m);
-      if(isToday && slot<now) continue;
-      const ampm=h<12?"AM":"PM", hr12=h%12||12;
-      custTimeEl.innerHTML+=`<option value="${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}">${hr12}:${String(m).padStart(2,'0')} ${ampm}</option>`;
-    }
-  }
-  if(custTimeEl.innerHTML==="") custTimeEl.innerHTML="<option>No remaining slots today</option>";
+  const d=new Date(document.getElementById("custDate").value);
+  const map=["sun","mon","tue","wed","thu","fri","sat"];
+  const hours=openHours[map[d.getDay()]];
+  const sel=document.getElementById("custTime");
+  sel.innerHTML="";
+  if(!hours) return;
+  for(let h=hours[0];h<hours[1];h++)
+    for(let m=0;m<60;m+=30)
+      sel.innerHTML+=`<option>${(h%12||12)}:${String(m).padStart(2,'0')} ${h<12?"AM":"PM"}</option>`;
 }
 
-// FORM SUBMISSION
-document.getElementById("checkoutForm").addEventListener("submit",function(e){
-  e.preventDefault();
-  // validate required fields
-  const requiredFields=["custName","custEmail","custPhone","contactMethod","pickupDelivery","custDate","custTime"];
-  for(const id of requiredFields){
-    const el=document.getElementById(id);
-    if(!el.value.trim()){ alert("Please fill all required fields."); el.focus(); return; }
+/* ================= SUBMIT ================= */
+function submitOrder(){
+  if(!Object.keys(cart).length){alert("Cart empty");return;}
+  if(!custName.value||!custPhone.value||!custDate.value||!custTime.value){
+    alert("Please complete required fields");return;
   }
 
-  if(document.getElementById("pickupDelivery").value==="Delivery"){
-    const deliveryFields=["street","city","postal"];
-    for(const id of deliveryFields){
-      const el=document.getElementById(id);
-      if(!el.value.trim()){ alert("Please fill delivery address."); el.focus(); return; }
-    }
-  }
+  const items=Object.entries(cart).map(([id,q])=>{
+    const p=RAW.find(x=>x.id===id);
+    return `${p.name} x${q}`;
+  }).join("\n");
 
-  // Normally send to Google Form here via fetch/AJAX
-  // For demo, just show confirmation
-  document.getElementById("confirmation-text").innerHTML=`Thank you, ${document.getElementById("custName").value}! Your order has been received.`;
+  const total=document.getElementById("grandTotal").innerText;
+
+  const formURL="https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse";
+  const data={
+    "entry.1046011819":items,
+    "entry.362516403":total,
+    "entry.991310792":custName.value,
+    "entry.640553104":custPhone.value
+  };
+
+  const f=document.createElement("form");
+  f.method="POST";f.action=formURL;f.target="hidden";
+  Object.entries(data).forEach(([k,v])=>{
+    const i=document.createElement("input");
+    i.type="hidden";i.name=k;i.value=v;f.appendChild(i);
+  });
+  document.body.appendChild(f);
+  f.submit();f.remove();
+
+  localStorage.removeItem(STORAGE_KEY);
   document.getElementById("confirmation-overlay").style.display="flex";
-
-  // clear cart
-  cart={}; deliveryFee=0; localStorage.setItem(STORAGE_KEY,JSON.stringify(cart)); updateCartSummary();
-});
-
-function closeConfirmation(){document.getElementById("confirmation-overlay").style.display="none";}
+}
 </script>
+
 </body>
 </html>
