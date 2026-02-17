@@ -235,48 +235,10 @@ h2{
 <iframe name="hidden" style="display:none;"></iframe>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-
 const STORAGE_KEY="plant_shop_cart_v8";
 let cart = JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
 let RAW=[];
 let deliveryFee=0;
-
-const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
-
-/* ================= LOAD PRODUCTS ================= */
-async function loadProducts(){
-  const res = await fetch(SHEET_ENDPOINT);
-  RAW = await res.json();
-  RAW.forEach(p=>{
-    p.price=Number(p.price);
-  });
-  renderSummary();
-}
-loadProducts();
-
-/* ================= SUMMARY ================= */
-function renderSummary(){
-  const wrap=document.getElementById("orderItems");
-  wrap.innerHTML="";
-  let total=0;
-
-  Object.entries(cart).forEach(([id,qty])=>{
-    const p=RAW.find(x=>x.id===id);
-    if(!p) return;
-    const line=p.price*qty;
-    total+=line;
-    wrap.innerHTML+=`
-      <div class="cart-line">
-        <span>${p.name} × ${qty}</span>
-        <span>$${line.toFixed(2)}</span>
-      </div>`;
-  });
-
-  document.getElementById("productsTotal").innerText=`$${total.toFixed(2)}`;
-  document.getElementById("grandTotal").innerText=`$${(total+deliveryFee).toFixed(2)}`;
-}
-
 /* ================= DELIVERY ================= */
 function toggleDeliveryAddress(val) {
   const deliveryDiv = document.getElementById("deliveryAddress");
@@ -304,6 +266,43 @@ function calculateDeliveryFee(){
   document.getElementById("deliveryTotal").innerText=`$${deliveryFee.toFixed(2)}`;
   renderSummary();
 }
+/* ================= SUMMARY ================= */
+function renderSummary(){
+  const wrap=document.getElementById("orderItems");
+  wrap.innerHTML="";
+  let total=0;
+
+  Object.entries(cart).forEach(([id,qty])=>{
+    const p=RAW.find(x=>x.id===id);
+    if(!p) return;
+    const line=p.price*qty;
+    total+=line;
+    wrap.innerHTML+=`
+      <div class="cart-line">
+        <span>${p.name} × ${qty}</span>
+        <span>$${line.toFixed(2)}</span>
+      </div>`;
+  });
+
+  document.getElementById("productsTotal").innerText=`$${total.toFixed(2)}`;
+  document.getElementById("grandTotal").innerText=`$${(total+deliveryFee).toFixed(2)}`;
+}
+document.addEventListener("DOMContentLoaded", () => {
+
+const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
+
+/* ================= LOAD PRODUCTS ================= */
+async function loadProducts(){
+  const res = await fetch(SHEET_ENDPOINT);
+  RAW = await res.json();
+  RAW.forEach(p=>{
+    p.price=Number(p.price);
+  });
+  renderSummary();
+}
+loadProducts();
+
+
 
 /* ================= TIME SLOT & DATE HANDLING ================= */
 const custDate = document.getElementById("custDate");
