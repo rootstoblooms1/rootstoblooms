@@ -293,27 +293,64 @@ function calculateDeliveryFee(){
 }
 
 /* ================= DATE/TIME ================= */
-flatpickr("#custDate",{minDate:"today",disable:[d=>d.getDay()===4],onChange:generateTimeSlots});
+flatpickr("#custDate", {
+  minDate: "today",
+  dateFormat: "Y-m-d",
+  disable: [
+    function(date) {
+      return date.getDay() === 4; // Disable Thursday
+    }
+  ],
+  onChange: function(selectedDates) {
 
-const openHours={mon:[19,21],tue:[19,21],wed:[19,21],fri:[19,21],sat:[9,17],sun:[9,14]};
-function generateTimeSlots(){
-  const d=new Date(document.getElementById("custDate").value);
-  const map=["sun","mon","tue","wed","thu","fri","sat"];
-  const hours=openHours[map[d.getDay()]];
-  const sel=document.getElementById("custTime");
-  sel.innerHTML="";
-  if(!hours) return;
-  for(let h=hours[0];h<hours[1];h++)
-    for(let m=0;m<60;m+=30)
-      sel.innerHTML+=`<option>${(h%12||12)}:${String(m).padStart(2,'0')} ${h<12?"AM":"PM"}</option>`;
-}
+    if (!selectedDates.length) {
+      custTime.innerHTML = "<option>Select a date first</option>";
+      return;
+    }
+
+    // Force input value update (Safari-safe)
+    custDate.value = selectedDates[0].toISOString().slice(0,10);
+
+    generateTimeSlots();
+  }
+});
 
 /* ================= SUBMIT ================= */
 function submitOrder(){
   if(!Object.keys(cart).length){alert("Cart empty");return;}
-  if(!custName.value||!custPhone.value||!custDate.value||!custTime.value){
-    alert("Please complete required fields");return;
+  // -------- Robust Validation --------
+if(Object.keys(cart).length === 0){
+  alert("Your cart is empty.");
+  return;
+}
+
+if(!custName.value.trim()){
+  alert("Please enter your name.");
+  return;
+}
+
+if(!custPhone.value.trim()){
+  alert("Please enter a phone number.");
+  return;
+}
+
+if(!custDate.value){
+  alert("Please select a date.");
+  return;
+}
+
+if(!custTime.value || custTime.options.length === 0){
+  alert("Please select a time.");
+  return;
+}
+
+// Delivery validation
+if(custPickupDelivery.value === "Delivery"){
+  if(!addr1.value.trim() || !city.value.trim() || !postal.value.trim()){
+    alert("Please complete the delivery address.");
+    return;
   }
+}
 
   const items=Object.entries(cart).map(([id,q])=>{
     const p=RAW.find(x=>x.id===id);
