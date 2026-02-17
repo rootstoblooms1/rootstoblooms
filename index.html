@@ -22,6 +22,7 @@ body {
 }
 
 /* ===================== NAVIGATION ===================== */
+/* ===================== NAVIGATION ===================== */
 .topnav {
   display: flex;
   align-items: center;
@@ -37,13 +38,17 @@ body {
   height: 48px;
 }
 
+/* Links and Dropdown Button */
 .nav-links a,
 .nav-links .dropbtn {
   background: none;
   color: white;
   text-decoration: none;
-  border: none; 
+  border: none;
+  font-family: inherit;   /* match body font */
   font-weight: 700;
+  font-size: 16px;        /* match all links */
+  line-height: 1.2;       /* vertical alignment */
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -57,9 +62,11 @@ body {
   background: var(--brand-green);
 }
 
+/* Dropdown container */
 .nav-links .dropdown {
   position: relative;
   display: inline-block;
+  margin-left: 20px; /* aligns spacing with links */
 }
 
 .nav-links .dropdown-content {
@@ -87,8 +94,8 @@ body {
   color: white;
 }
 
+/* Show dropdown on hover */
 .nav-links .dropdown:hover .dropdown-content { display: block; }
-.nav-links .dropdown:hover .dropbtn { background-color: var(--brand-green); }
 
 /* ===================== MOBILE NAVIGATION ===================== */
 .hamburger {
@@ -104,6 +111,7 @@ body {
   .nav-links .dropdown {
     display: block;
     width: 100%;
+    margin-left: 0;
   }
 
   .topnav {
@@ -142,14 +150,17 @@ body {
   .nav-links .dropdown-content a { color: white; }
 
   .nav-links .dropbtn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font: inherit;
-    color: white;
-    padding: 10px;
-    text-align: left;
-  }
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.2;
+  color: white;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+}
 
 }
 
