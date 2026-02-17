@@ -590,9 +590,13 @@ let deliveryFee=0;
 function getProductById(id){return RAW.find(p=>p.id===id);}
 function saveCart(){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(cart));
-  updateBadges();
-  renderCartItems();
+
+  if(RAW.length){
+    renderCartItems();
+    updateBadges();
+  }
 }
+
 function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
 function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
 function updateBadges(){
@@ -620,6 +624,9 @@ function updateBadges(){
 
 }
 function renderCartItems(){
+
+  if(!RAW.length) return;
+
   const wrap = document.getElementById("cartItemsWrap");
   wrap.innerHTML = "";
 
@@ -791,6 +798,8 @@ async function fetchProducts(){
   renderFilters();
 document.getElementById("filterRow").style.display = "flex"; // show filters now
 renderProducts();
+renderCartItems();
+updateBadges();
 document.getElementById("loadingNotice")?.remove();
 productGrid.style.display="grid";
 }
