@@ -562,7 +562,7 @@ body{
   </div>
     <div style="display:flex;gap:8px;">
       <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
-      <button class="small-btn" id="checkoutBtn" onclick="openCheckoutForm()">Checkout</button>
+      <button class="small-btn" onclick="goToCheckout()">Checkout</button>
     </div>
   </div>
 </div>
@@ -656,6 +656,13 @@ function renderCartItems(){
       </div>
     `;
   });
+}
+function goToCheckout(){
+  if(Object.keys(cart).length === 0){
+    alert("Your cart is empty.");
+    return;
+  }
+  window.location.href = "checkout.html";
 }
 
 /* ================= CART DRAWER ================= */
