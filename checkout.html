@@ -212,7 +212,7 @@ h2{
 
   <div id="orderItems"></div>
 
-  <div class="totals"><span>Products</span><span id="productsTotal">$0.00</span></div>
+  <div class="totals"><span>Subtotal</span><span id="productsTotal">$0.00</span></div>
   <div class="totals" id="deliveryRow" style="display:none">
     <span>Delivery</span><span id="deliveryTotal">$0.00</span>
   </div>
@@ -292,28 +292,87 @@ function calculateDeliveryFee(){
   renderSummary();
 }
 
-/* ================= DATE/TIME ================= */
+/* ================= TIME SLOT & DATE HANDLING ================= */
+const custDate = document.getElementById("custDate");
 flatpickr("#custDate", {
   minDate: "today",
   dateFormat: "Y-m-d",
   disable: [
     function(date) {
-      return date.getDay() === 4; // Disable Thursday
+      // Return true to disable Thursdays (4 = Thursday)
+      return date.getDay() === 4;
     }
   ],
-  onChange: function(selectedDates) {
-
-    if (!selectedDates.length) {
-      custTime.innerHTML = "<option>Select a date first</option>";
+  onChange: function(selectedDates, dateStr) {
+    if (!dateStr) {
+      custTime.innerHTML = "";
       return;
     }
-
-    // Force input value update (Safari-safe)
-    custDate.value = selectedDates[0].toISOString().slice(0,10);
-
-    generateTimeSlots();
+    generateTimeSlots(); 
   }
 });
+
+
+const closedDays = ["thu"]; // days the shop is closed
+const openHours = {
+  mon:[19,21],
+  tue:[19,21],
+  wed:[19,21],
+  thu:[],
+  fri:[19,21],
+  sat:[9,17],
+  sun:[9,14]
+};
+
+// Set min date to today
+const today = new Date();
+
+// Generate time slots based on selected date
+function generateTimeSlots() {
+  custTime.innerHTML = "";
+
+  const dateStr = custDate.value;
+  if (!dateStr) {
+    custTime.innerHTML = "<option>Please select a date first</option>";
+    return;
+  }
+
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const selectedDate = new Date(year, month-1, day);
+
+  const now = new Date();
+  const isToday =
+    selectedDate.toDateString() === now.toDateString();
+
+  const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
+  const dayName = dayMap[selectedDate.getDay()];
+  const hours = openHours[dayName];
+
+  if(!hours || hours.length===0){
+    custTime.innerHTML = "<option>No slots available</option>";
+    return;
+  }
+
+  for(let h = hours[0]; h < hours[1]; h++){
+    for(let m = 0; m < 60; m += 30){
+
+      const slot = new Date(year,month-1,day,h,m);
+
+      // Skip past times today
+      if(isToday && slot < now) continue;
+
+      const raw = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      const hour12 = h % 12 || 12;
+      const ampm = h < 12 ? "AM" : "PM";
+      const pretty = `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
+
+      custTime.innerHTML += `<option value="${raw}">${pretty}</option>`;
+    }
+  }
+
+  if(custTime.innerHTML === "")
+    custTime.innerHTML = "<option>No remaining slots today</option>";
+}
 
 /* ================= SUBMIT ================= */
 function submitOrder(){
