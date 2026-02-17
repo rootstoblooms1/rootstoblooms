@@ -225,6 +225,22 @@ body{
   padding:16px 24px;
 }
 
+  .faq-chat {
+  padding: 70px 20px;
+  background: linear-gradient(180deg,#f4f8f4,#e8f3e8);
+  text-align: center;
+}
+
+.faq-chat h2 {
+  color: var(--dark);
+  margin-bottom: 10px;
+}
+
+.faq-chat p {
+  max-width: 650px;
+  margin: 0 auto 30px auto;
+}
+
 /* FOOTER */
 footer{
   background:var(--dark);
@@ -322,7 +338,29 @@ footer a:hover{text-decoration:underline;}
   </div>
 
 </section>
+  
+<section class="faq-chat">
+  <h2>Still have questions?</h2>
+  <p>
+    No problem! Please use the chatbox below and someone will get back to you shortly.
+  </p>
 
+  <!-- Chatbox Embed -->
+  <!-- Brevo Conversations {literal} -->
+<script>
+    (function(d, w, c) {
+        w.BrevoConversationsID = '6942ea13a812dfcbd50d7124';
+        w[c] = w[c] || function() {
+            (w[c].q = w[c].q || []).push(arguments);
+        };
+        var s = d.createElement('script');
+        s.async = true;
+        s.src = 'https://conversations-widget.brevo.com/brevo-conversations.js';
+        if (d.head) d.head.appendChild(s);
+    })(document, window, 'BrevoConversations');
+</script>
+
+</section>
 <!-- FOOTER -->
 <footer>
   &copy; 2026 Roots to Blooms — <a href="/contact.html">Contact Us</a>
