@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Checkout — Roots to Blooms</title>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -12,24 +11,20 @@
 <style>
 :root{
   --brand-green:#4EA337;
-  --dark:#254D32;
+  --brand-brown:#4A2300;
   --accent:#c6e3d2;
+  --dark:#254D32;
 }
-
 body{
   margin:0;
   font-family:Arial, Helvetica, sans-serif;
   background:#fafafa;
 }
-
-/* PAGE LAYOUT */
 .wrapper{
   max-width:900px;
   margin:auto;
   padding:20px;
 }
-
-/* CART SUMMARY */
 .summary{
   background:white;
   border-radius:12px;
@@ -37,14 +32,12 @@ body{
   box-shadow:0 8px 18px rgba(0,0,0,.06);
   margin-bottom:18px;
 }
-
 .line{
   display:flex;
   justify-content:space-between;
   padding:6px 0;
   border-bottom:1px dashed #eee;
 }
-
 .total{
   font-weight:800;
   font-size:18px;
@@ -52,8 +45,6 @@ body{
   display:flex;
   justify-content:space-between;
 }
-
-/* FORM */
 .form{
   background:white;
   border-radius:12px;
@@ -63,7 +54,6 @@ body{
   flex-direction:column;
   gap:10px;
 }
-
 input,select,textarea{
   padding:8px;
   border-radius:6px;
@@ -71,9 +61,7 @@ input,select,textarea{
   width:100%;
   box-sizing:border-box;
 }
-
 label{font-weight:700;}
-
 button{
   background:var(--dark);
   color:white;
@@ -83,7 +71,6 @@ button{
   font-weight:800;
   cursor:pointer;
 }
-
 .delivery-address{display:none; flex-direction:column; gap:6px;}
 </style>
 </head>
@@ -94,6 +81,7 @@ button{
 
 <h2>Checkout</h2>
 
+<!-- CART SUMMARY -->
 <div class="summary">
   <div id="items"></div>
   <div class="total">
@@ -102,134 +90,178 @@ button{
   </div>
 </div>
 
+<!-- CUSTOMER FORM -->
 <div class="form">
 
-<label>Name</label>
-<input id="name">
+<label for="custName">Name</label>
+<input type="text" id="custName" placeholder="First Last">
 
-<label>Email</label>
-<input id="email">
+<label for="custEmail">Email</label>
+<input type="email" id="custEmail">
 
-<label>Phone *</label>
-<input id="phone">
+<label for="custPhone">Phone *</label>
+<input type="tel" id="custPhone">
 
-<label>Pickup or Delivery</label>
-<select id="method" onchange="toggleAddress(this.value)">
+<label for="custContactMethod">Preferred Contact Method</label>
+<select id="custContactMethod">
+  <option>Call</option>
+  <option>Text</option>
+  <option>Email</option>
+</select>
+
+<label for="custPickupDelivery">Pickup or Delivery</label>
+<select id="custPickupDelivery" onchange="toggleDeliveryAddress(this.value)">
   <option value="Pickup">Pickup</option>
   <option value="Delivery">Delivery</option>
 </select>
 
-<div class="delivery-address" id="addrBox">
-  <input id="addr1" placeholder="Address line 1">
-  <input id="city" placeholder="City">
-  <input id="postal" placeholder="Postal code">
+<div class="delivery-address" id="deliveryAddress">
+  <input type="text" placeholder="Address Line 1" id="addr1">
+  <input type="text" placeholder="Address Line 2" id="addr2">
+  <input type="text" placeholder="City" id="city">
+  <input type="text" placeholder="Postal Code" id="postal">
 </div>
 
-<label>Date</label>
-<input id="date">
+<label for="custDate">Pickup / Delivery Date</label>
+<input type="text" id="custDate" placeholder="Select a date">
 
-<label>Time</label>
-<select id="time"></select>
+<label for="custTime">Pickup / Delivery Time</label>
+<select id="custTime"></select>
 
-<label>Notes</label>
-<textarea id="notes"></textarea>
+<label for="custNotes">Notes / Special Instructions</label>
+<textarea id="custNotes" rows="2"></textarea>
+
+<label for="custMarketing">How did you hear about us?</label>
+<select id="custMarketing">
+  <option>Google Search</option>
+  <option>Facebook</option>
+  <option>Instagram</option>
+  <option>Poster</option>
+  <option>From a Friend/Family Member</option>
+  <option>Other (please specify in Notes/Special Instructions)</option>
+</select>
 
 <button onclick="submitOrder()">Submit Order</button>
-
 </div>
-
 </div>
 
 <script>
 const STORAGE_KEY="plant_shop_cart_v8";
-const ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
+const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
 const FORM="https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse";
 
-let RAW=[], cart={};
+let RAW=[], cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
 
-async function init(){
-  cart = JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
-
-  const res=await fetch(ENDPOINT);
-  RAW=await res.json();
-
-  renderSummary();
+/* ================= FETCH PRODUCTS ================= */
+async function fetchProducts(){
+  try{
+    const res = await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
+    RAW = await res.json();
+    RAW.forEach(p=>{
+      p.stock=Number(p.stock)||0;
+      p.price=Number(p.price)||0;
+      p.soldOut=p.stock<=0;
+    });
+    renderSummary();
+  }catch(err){console.error(err);}
 }
-init();
 
-function getProduct(id){
-  return RAW.find(p=>p.id===id);
-}
-
+/* ================= CART SUMMARY ================= */
+function getProduct(id){return RAW.find(p=>p.id===id);}
 function renderSummary(){
   const wrap=document.getElementById("items");
   wrap.innerHTML="";
-
   let total=0;
-
   Object.entries(cart).forEach(([id,qty])=>{
     const p=getProduct(id);
     if(!p) return;
-
-    const line=p.price*qty;
+    const line = p.price*qty;
     total+=line;
-
-    wrap.innerHTML+=`
-      <div class="line">
-        <div>${p.name} x${qty}</div>
-        <div>$${line.toFixed(2)}</div>
-      </div>
-    `;
+    wrap.innerHTML+=`<div class="line"><div>${p.name} x${qty}</div><div>$${line.toFixed(2)}</div></div>`;
   });
-
   document.getElementById("total").innerText="$"+total.toFixed(2);
 }
 
-function toggleAddress(v){
-  document.getElementById("addrBox").style.display=
-    v==="Delivery"?"flex":"none";
+/* ================= DELIVERY ADDRESS ================= */
+const deliveryAddress = document.getElementById("deliveryAddress");
+function toggleDeliveryAddress(val){
+  deliveryAddress.style.display = val==="Delivery"?"flex":"none";
 }
 
-/* DATE PICKER */
-flatpickr("#date",{minDate:"today"});
+/* ================= TIME & DATE ================= */
+const custDateEl = document.getElementById("custDate");
+const custTimeEl = document.getElementById("custTime");
+flatpickr("#custDate", {
+  minDate:"today",
+  disable:[d=>d.getDay()===4],
+  dateFormat:"Y-m-d",
+  onChange:function(){generateTimeSlots();}
+});
 
-function submitOrder(){
+const openHours = {mon:[19,21], tue:[19,21], wed:[19,21], thu:[], fri:[19,21], sat:[9,17], sun:[9,14]};
 
-  if(Object.keys(cart).length===0){
-    alert("Cart empty");
-    return;
+function generateTimeSlots(){
+  if(!custDateEl || !custTimeEl) return;
+  custTimeEl.innerHTML="";
+  const [y,m,d] = custDateEl.value.split("-").map(Number);
+  if(!y) return;
+  const day=new Date(y,m-1,d), now=new Date(), isToday=day.toDateString()===now.toDateString();
+  const dayMap=["sun","mon","tue","wed","thu","fri","sat"];
+  const hours=openHours[dayMap[day.getDay()]];
+  if(!hours||hours.length===0){custTimeEl.innerHTML="<option>No slots available</option>"; return;}
+  for(let h=hours[0];h<hours[1];h++){
+    for(let min=0;min<60;min+=30){
+      const slot=new Date(y,m-1,d,h,min);
+      if(isToday && slot<now) continue;
+      const raw=`${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
+      const hour12=h%12||12, ampm=h<12?"AM":"PM", pretty=`${hour12}:${String(min).padStart(2,'0')} ${ampm}`;
+      custTimeEl.innerHTML+=`<option value="${raw}">${pretty}</option>`;
+    }
   }
+}
 
-  const items = Object.entries(cart).map(([id,qty])=>{
+/* ================= SUBMIT ORDER ================= */
+function submitOrder(){
+  if(Object.keys(cart).length===0){alert("Cart empty");return;}
+  const items=Object.entries(cart).map(([id,qty])=>`${getProduct(id).name} x${qty}`).join("\n");
+  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
     const p=getProduct(id);
-    return `${p.name} x${qty}`;
-  }).join("\n");
+    return sum + (p ? p.price*qty :0);
+  },0);
 
   const data={
-    "entry.1046011819":items,
-    "entry.991310792":name.value,
-    "entry.640553104":phone.value,
-    "entry.1225481208":date.value,
-    "entry.2009788871":time.value,
-    "entry.2140423836":notes.value
+    "entry.1046011819": items,
+    "entry.362516403": "$"+subtotal.toFixed(2),
+    "entry.991310792": document.getElementById("custName").value,
+    "entry.380963175": document.getElementById("custEmail").value,
+    "entry.640553104": document.getElementById("custPhone").value,
+    "entry.1469637469": document.getElementById("custContactMethod").value,
+    "entry.590490152": document.getElementById("custPickupDelivery").value,
+    "entry.489484198": document.getElementById("addr1").value,
+    "entry.1117374631": document.getElementById("addr2").value,
+    "entry.635395700": document.getElementById("city").value,
+    "entry.2075536009": document.getElementById("postal").value,
+    "entry.1225481208": document.getElementById("custDate").value,
+    "entry.2009788871": document.getElementById("custTime").value,
+    "entry.2140423836": document.getElementById("custNotes").value,
+    "entry.798763112": document.getElementById("custMarketing").value
   };
 
   const form=document.createElement("form");
   form.method="POST";
   form.action=FORM;
-
   Object.entries(data).forEach(([k,v])=>{
     const i=document.createElement("input");
     i.name=k;
     i.value=v;
     form.appendChild(i);
   });
-
   document.body.appendChild(form);
   form.submit();
-
   localStorage.removeItem(STORAGE_KEY);
 }
+
+fetchProducts();
 </script>
 
 </body>
