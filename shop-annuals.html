@@ -32,19 +32,24 @@
   height: 48px;
 }
 
+/* Links and Dropdown Button */
 .nav-links a,
 .nav-links .dropbtn {
+  background: none;
   color: white;
   text-decoration: none;
+  border: none;
+  font-family: inherit;
   font-weight: 700;
+  font-size: 16px;
+  line-height: 1.2;
   padding: 8px 12px;
   border-radius: 6px;
+  cursor: pointer;
   transition: 0.2s;
 }
 
-.nav-links a {
-  margin-left: 20px;
-}
+.nav-links a { margin-left: 20px; }
 
 .nav-links a:hover,
 .nav-links .dropbtn:hover {
@@ -55,9 +60,9 @@
 .nav-links .dropdown {
   position: relative;
   display: inline-block;
+  margin-left: 20px;
 }
 
-/* Dropdown content (desktop) */
 .nav-links .dropdown-content {
   display: none;
   position: absolute;
@@ -83,14 +88,8 @@
   color: white;
 }
 
-/* Show dropdown on hover (desktop) */
 .nav-links .dropdown:hover .dropdown-content {
   display: block;
-}
-
-/* Optional hover effect on dropdown button */
-.nav-links .dropdown:hover .dropbtn {
-  background-color: var(--brand-green);
 }
 
 /* ===================== MOBILE NAVIGATION ===================== */
@@ -107,6 +106,7 @@
   .nav-links .dropdown {
     display: block;
     width: 100%;
+    margin-left: 0;
   }
 
   .topnav {
@@ -125,7 +125,6 @@
 
   .nav-links.active { display: flex; }
 
-  /* ⭐ SAFARI-FRIENDLY DROPDOWN */
   .nav-links .dropdown-content {
     max-height: 0;
     overflow: hidden;
@@ -147,13 +146,15 @@
   .nav-links .dropbtn {
     background: none;
     border: none;
-    cursor: pointer;
-    font: inherit;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.2;
     color: white;
-    padding: 10px;
+    padding: 10px 12px;
     text-align: left;
+    cursor: pointer;
   }
-
 }
 
 /* ================= PAGE & SHOP LAYOUT ================= */
@@ -454,8 +455,8 @@ body{
 
     <!-- Dropdown for Shop -->
     <div class="dropdown">
-      <a href="shop.html" class="dropbtn">Shop</a>
-      <div class="dropdown-content">
+  <button class="dropbtn">Shop</button>
+  <div class="dropdown-content">
         <a href="shop-houseplants.html">Houseplants</a>
         <a href="shop-annuals.html">Annuals</a>
         <a href="shop-vegetable-starters.html">Vegetable Starters</a>
@@ -858,21 +859,28 @@ ${addArea}
 function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
 function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
 
-/* ================= MOBILE NAV TOGGLE ================= */
-const hamburger = document.querySelector(".hamburger");
-const navLinks = document.querySelector(".nav-links");
+/* ================= NAV LOGIC — MATCH CODE A ================= */
+const hamburger = document.querySelector('.hamburger');
+const navLinks = document.querySelector('.nav-links');
+const shopDropdown = document.querySelector('.dropdown');
+const shopButton = shopDropdown.querySelector('.dropbtn');
+const shopMenu = shopDropdown.querySelector('.dropdown-content');
 
-hamburger?.addEventListener("click", () => navLinks?.classList.toggle("active"));
-document.querySelectorAll(".nav-links a").forEach(link=>{
-  link.addEventListener("click", ()=> navLinks?.classList.remove("active"));
+hamburger.addEventListener('click', () => {
+  navLinks.classList.toggle('active');
 });
-document.querySelectorAll(".dropbtn").forEach(btn=>{
-  btn.addEventListener("click", e=>{
-    if(window.innerWidth <= 768){
-      e.preventDefault();
-      btn.nextElementSibling?.classList.toggle("active");
-    }
-  });
+
+shopButton.addEventListener('click', (e) => {
+  if (window.innerWidth <= 768) {
+    e.preventDefault();
+    shopMenu.classList.toggle('active');
+  }
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) {
+    shopMenu.classList.remove('active');
+  }
 });
 
 /* ================= INIT ================= */
