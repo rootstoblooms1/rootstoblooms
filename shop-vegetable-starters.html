@@ -368,35 +368,50 @@ body{
   box-sizing:border-box;
 }
 #cart-drawer.open{ right:0; }
-.cart-items{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.cart-items{
+  flex:0 0 auto;
+  max-height:180px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  border-bottom:1px solid #eee;
+  margin-bottom:8px;
+}
+
 .cart-line{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed #eee;}
 .small-btn{background:#eee;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;}
-.drawer-footer{flex-shrink:0;background:#fff;border-top:1px solid #f0f0f0;padding-top:12px;display:flex;flex-direction:column;gap:8px;}
-.drawer-footer > div{flex-wrap:wrap;}
+/* CART DRAWER FOOTER BUTTONS */
+.drawer-footer > div {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center; /* center buttons */
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 720px) {
+  /* Make buttons bigger and stack them full-width */
+  .drawer-footer > div button {
+    flex: 1 1 100%;       /* full width */
+    padding: 16px 0;      /* taller for easy tapping */
+    font-size: 18px;      /* bigger text */
+    border-radius: 12px;  /* slightly rounded */
+  }
+
+  /* Add space from bottom to avoid Siri / home gesture */
+  #cart-drawer.open {
+    bottom: 12%;          /* lifts drawer up a bit */
+  }
+
+  /* Optional: add extra spacing between stacked buttons */
+  .drawer-footer > div button + button {
+    margin-top: 8px;
+  }
+}
+
 .totals{display:flex;justify-content:space-between;font-weight:800;}
 #confirmation-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:12000;}
 .confirmation-card{background:#fff;padding:20px;border-radius:12px;width:min(560px,95%);text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.3);}
 
-/* CUSTOMER FORM IN CART */
-.customer-section{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin-top:12px;
-}
-.customer-section input, .customer-section select, .customer-section textarea{
-  padding:6px 8px;
-  border-radius:6px;
-  border:1px solid #ccc;
-  width:100%;
-  box-sizing:border-box;
-}
-.customer-section label{font-weight:700;}
-.delivery-address{display:none; flex-direction:column; gap:6px; margin-top:6px;}
-.delivery-address input{width:100%;}
-.pickup-time{margin-top:6px;}
-
-/* MOBILE CART */
 /* MOBILE CART */
 @media (max-width:720px){
   #cart-drawer{
@@ -481,64 +496,14 @@ body{
     </div>
   </div>
 
-  <div id="cartItemsWrap" class="cart-items"></div>
-
-  <!-- CUSTOMER FORM -->
-  <div class="customer-section">
-    <label for="custName">Name</label>
-    <input type="text" id="custName" placeholder="First Last">
-
-    <label for="custEmail">Email</label>
-    <input type="email" id="custEmail">
-
-    <label for="custPhone">Phone</label>
-    <input type="tel" id="custPhone">
-
-    <label for="custContactMethod">Preferred Contact Method</label>
-    <select id="custContactMethod">
-      <option>Call</option>
-      <option>Text</option>
-      <option>Email</option>
-    </select>
-
-    <label for="custPickupDelivery">Pickup or Delivery</label>
-    <select id="custPickupDelivery" onchange="toggleDeliveryAddress(this.value)">
-      <option value="Pickup">Pickup</option>
-      <option value="Delivery">Delivery</option>
-    </select>
-
-    <div class="delivery-address" id="deliveryAddress">
-      <input type="text" placeholder="Address Line 1" id="addr1">
-      <input type="text" placeholder="Address Line 2" id="addr2">
-      <input type="text" placeholder="City" id="city" oninput="calculateDeliveryFee()">
-      <input type="text" placeholder="Postal Code" id="postal" oninput="calculateDeliveryFee()">
-    </div>
-
-    <label for="custDate">Pickup / Delivery Date</label>
-    <input type="text" id="custDate" placeholder="Select a date">
-
-    <label for="custTime">Pickup / Delivery Time</label>
-    <select id="custTime" class="pickup-time"></select>
-
-    <label for="custNotes">Notes / Special Instructions</label>
-    <textarea id="custNotes" rows="2"></textarea>
-
-    <label for="custMarketing">How did you hear about us?</label>
-    <select id="custMarketing">
-      <option>Google Search</option>
-      <option>Facebook</option>
-      <option>Instagram</option>
-      <option>Poster</option>
-      <option>From a Friend/Family Member</option>
-      <option>Other (please specify in Notes/Special Instructions)</option>
-    </select>
-  </div>
+<div style="font-weight:800;margin-top:6px">Items in cart</div>
+<div id="cartItemsWrap" class="cart-items"></div>
 
   <div class="drawer-footer">
   <div class="totals"><div>Items</div><div id="cartCount">0</div></div>
 
   <div class="totals">
-    <div>Products</div>
+    <div>Subtotal</div>
     <div id="cartProducts">$0.00</div>
   </div>
 
@@ -547,13 +512,9 @@ body{
     <div id="cartDelivery">$0.00</div>
   </div>
 
-  <div class="totals">
-    <div><strong>Total</strong></div>
-    <div id="cartSubtotal"><strong>$0.00</strong></div>
-  </div>
     <div style="display:flex;gap:8px;">
       <button class="small-btn" onclick="continueShopping()">Continue Shopping</button>
-      <button class="small-btn" id="checkoutBtn" onclick="openCheckoutForm()">Checkout</button>
+      <button class="small-btn" onclick="goToCheckout()">Checkout</button>
     </div>
   </div>
 </div>
@@ -590,16 +551,20 @@ let deliveryFee=0;
 function getProductById(id){return RAW.find(p=>p.id===id);}
 function saveCart(){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(cart));
-  updateBadges();
-  renderCartItems();
+
+  if(RAW.length){
+    renderCartItems();
+    updateBadges();
+  }
 }
+
 function firstAdd(id){const p=getProductById(id); if(!p||p.soldOut||p.comingSoon) return; cart[id]=1; saveCart(); renderProducts();}
 function updateQty(id,c){const p=getProductById(id); if(!p) return; cart[id]=(cart[id]||0)+c; if(cart[id]<=0) delete cart[id]; if(cart[id]>p.stock) cart[id]=p.stock; saveCart(); renderProducts();}
 function updateBadges(){
 
   const itemCount = Object.values(cart).reduce((s,q)=>s+q,0);
-  floatBadge.textContent = itemCount;
-  cartCountEl.textContent = itemCount;
+  if(floatBadge) floatBadge.textContent = itemCount;
+  if(cartCountEl) cartCountEl.textContent = itemCount;
 
   const productTotal = Object.entries(cart).reduce((sum,[id,qty])=>{
     const p = getProductById(id);
@@ -608,19 +573,23 @@ function updateBadges(){
 
   const grandTotal = productTotal + deliveryFee;
 
-  cartProductsEl.textContent = `$${productTotal.toFixed(2)}`;
-  cartSubtotalEl.textContent = `$${grandTotal.toFixed(2)}`;
+  if(cartProductsEl) cartProductsEl.textContent = `$${productTotal.toFixed(2)}`;
+  if(cartSubtotalEl) cartSubtotalEl.textContent = `$${grandTotal.toFixed(2)}`;
 
-  if(deliveryFee > 0){
+  if(deliveryFee > 0 && deliveryRowEl && cartDeliveryEl){
     deliveryRowEl.style.display = "flex";
     cartDeliveryEl.textContent = `$${deliveryFee.toFixed(2)}`;
-  } else {
+  } else if(deliveryRowEl){
     deliveryRowEl.style.display = "none";
   }
 
 }
+
 function renderCartItems(){
+  if(!RAW.length) return;
   const wrap = document.getElementById("cartItemsWrap");
+  if(!wrap) return;
+
   wrap.innerHTML = "";
 
   Object.entries(cart).forEach(([id,qty])=>{
@@ -642,42 +611,41 @@ function renderCartItems(){
   });
 }
 
+function goToCheckout(){
+  if(Object.keys(cart).length === 0){
+    alert("Your cart is empty.");
+    return;
+  }
+  window.location.href = "checkout.html";
+}
+
 /* ================= CART DRAWER ================= */
 const cartDrawer = document.getElementById("cart-drawer");
 function toggleDrawer(){
+  if(!cartDrawer) return;
   cartDrawer.classList.toggle("open");
   renderCartItems();
   updateBadges();
 }
 function clearCart(){cart={}; deliveryFee=0; saveCart(); updateBadges(); renderProducts();}
 function continueShopping(){toggleDrawer();}
-function closeConfirmation(){document.getElementById("confirmation-overlay").style.display = "none";}
+function closeConfirmation(){ const el = document.getElementById("confirmation-overlay"); if(el) el.style.display = "none";}
 
 /* ================= DELIVERY / TIME ================= */
-const custPickupDelivery = document.getElementById("custPickupDelivery");
-// ===== Customer form references =====
-const custName = document.getElementById("custName");
-const custEmail = document.getElementById("custEmail");
-const custPhone = document.getElementById("custPhone");
-const custContactMethod = document.getElementById("custContactMethod");
-const addr1 = document.getElementById("addr1");
-const addr2 = document.getElementById("addr2");
-const city = document.getElementById("city");
-const postal = document.getElementById("postal");
-const custDateEl = document.getElementById("custDate");
-const custNotes = document.getElementById("custNotes");
-const custMarketing = document.getElementById("custMarketing");
 const deliveryAddress = document.getElementById("deliveryAddress");
-const custTime = document.getElementById("custTime");
-
 function toggleDeliveryAddress(val){
+  if(!deliveryAddress) return;
   if(val==="Delivery"){ deliveryAddress.style.display="flex"; calculateDeliveryFee(); }
   else{ deliveryAddress.style.display="none"; deliveryFee=0; updateBadges(); }
 }
 
 function calculateDeliveryFee(){
-  const cityVal = city.value.trim().toLowerCase();
-  const postalVal = postal.value.trim();
+  const cityEl = document.getElementById("city");
+  const postalEl = document.getElementById("postal");
+  if(!cityEl || !postalEl) return;
+
+  const cityVal = cityEl.value.trim().toLowerCase();
+  const postalVal = postalEl.value.trim();
 
   if(["halifax","dartmouth","spryfield"].includes(cityVal)){
     deliveryFee = 5;
@@ -695,28 +663,26 @@ function calculateDeliveryFee(){
 
   updateBadges();
 }
+
 /* ================= TIME SLOT & DATE HANDLING ================= */
-const custDate = document.getElementById("custDate");
-flatpickr("#custDate", {
-  minDate: "today",
-  dateFormat: "Y-m-d",
-  disable: [
-    function(date) {
-      // Return true to disable Thursdays (4 = Thursday)
-      return date.getDay() === 4;
-    }
-  ],
-  onChange: function(selectedDates, dateStr) {
-    if (!dateStr) {
-      custTime.innerHTML = "";
-      return;
-    }
-    generateTimeSlots(); 
-  }
-});
+const custDateEl = document.getElementById("custDate");
+const custTime = document.getElementById("custTime");
 
+if(custDateEl){
+  flatpickr("#custDate", {
+    minDate: "today",
+    dateFormat: "Y-m-d",
+    disable: [
+      function(date) { return date.getDay() === 4; }
+    ],
+    onChange: function(selectedDates, dateStr) {
+      if (!dateStr || !custTime) return;
+      generateTimeSlots(); 
+    }
+  });
+}
 
-const closedDays = ["thu"]; // days the shop is closed
+const closedDays = ["thu"];
 const openHours = {
   mon:[19,21],
   tue:[19,21],
@@ -727,14 +693,12 @@ const openHours = {
   sun:[9,14]
 };
 
-// Set min date to today
-const today = new Date();
-
-// Generate time slots based on selected date
+// Generate time slots
 function generateTimeSlots() {
-  custTime.innerHTML = "";
+  if(!custDateEl || !custTime) return;
 
-  const dateStr = custDate.value;
+  custTime.innerHTML = "";
+  const dateStr = custDateEl.value;
   if (!dateStr) {
     custTime.innerHTML = "<option>Please select a date first</option>";
     return;
@@ -742,10 +706,8 @@ function generateTimeSlots() {
 
   const [year, month, day] = dateStr.split("-").map(Number);
   const selectedDate = new Date(year, month-1, day);
-
   const now = new Date();
-  const isToday =
-    selectedDate.toDateString() === now.toDateString();
+  const isToday = selectedDate.toDateString() === now.toDateString();
 
   const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
   const dayName = dayMap[selectedDate.getDay()];
@@ -758,17 +720,13 @@ function generateTimeSlots() {
 
   for(let h = hours[0]; h < hours[1]; h++){
     for(let m = 0; m < 60; m += 30){
-
       const slot = new Date(year,month-1,day,h,m);
-
-      // Skip past times today
       if(isToday && slot < now) continue;
 
       const raw = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
       const hour12 = h % 12 || 12;
       const ampm = h < 12 ? "AM" : "PM";
       const pretty = `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
-
       custTime.innerHTML += `<option value="${raw}">${pretty}</option>`;
     }
   }
@@ -779,37 +737,57 @@ function generateTimeSlots() {
 
 /* ================= FETCH PRODUCTS ================= */
 async function fetchProducts(){
-  const res=await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
-  RAW=await res.json();
-  RAW.forEach(p=>{
-    p.stock=Number(p.stock);
-    p.price=Number(p.price);
-    p.soldOut=p.stock<=0;
-    p.comingSoon=(p.categories||[]).map(c=>c.toLowerCase()).includes("coming soon");
-  });
-  buildGroups();
-  renderFilters();
-document.getElementById("filterRow").style.display = "flex"; // show filters now
-renderProducts();
-document.getElementById("loadingNotice")?.remove();
-productGrid.style.display="grid";
+  try {
+    const res = await fetch(`${SHEET_ENDPOINT}?ts=${Date.now()}`);
+    RAW = await res.json();
+
+    RAW.forEach(p=>{
+      if(typeof p.categories === "string") p.categories = p.categories.split(',').map(c => c.trim());
+      else if (!Array.isArray(p.categories)) p.categories = [];
+      p.stock = Number(p.stock)||0;
+      p.price = Number(p.price)||0;
+      p.soldOut = p.stock <= 0;
+      p.comingSoon = p.categories.map(c => c.toLowerCase()).includes("coming soon");
+      if(!p.group) p.group = p.name;
+    });
+
+    buildGroups();
+    renderFilters();
+
+    document.getElementById("filterRow").style.display = "flex";
+    renderProducts();
+    renderCartItems();
+    updateBadges();
+    document.getElementById("loadingNotice")?.remove();
+    productGrid.style.display = "grid";
+  } catch(err){
+    console.error("Error fetching products:", err);
+    document.getElementById("loadingNotice").textContent = "⚠️ Failed to load products";
+  }
 }
 
+/* ================= BUILD GROUPS ================= */
 function buildGroups(){
-  const pageTag=PAGE_CATEGORY.toLowerCase().trim();
-  const filtered=RAW.filter(p=>(p.categories||[]).map(c=>c.toLowerCase().trim()).includes(pageTag));
-  const map={};
-  filtered.forEach(p=>{
-    if(!map[p.group]) map[p.group]={base:p, variants:[], categories:new Set()};
+  const pageTag = PAGE_CATEGORY.toLowerCase().trim();
+  const map = {};
+
+  RAW.forEach(p=>{
+    const catsLower = p.categories.map(c => c.toLowerCase());
+    if(!catsLower.includes(pageTag)) return;
+
+    if(!map[p.group]) map[p.group] = { base: p, variants: [], categories: new Set() };
     map[p.group].variants.push(p);
-    p.categories.forEach(c=>{if(c.toLowerCase()!==pageTag) map[p.group].categories.add(c);});
+    p.categories.forEach(c=>{ const cLower=c.toLowerCase(); if(cLower!==pageTag) map[p.group].categories.add(c); });
   });
-  GROUPED=Object.values(map);
+
+  GROUPED = Object.values(map);
 }
 
 /* ================= FILTERS ================= */
 function renderFilters(){
   const row=document.getElementById("filterRow");
+  if(!row) return;
+
   const cats=new Set();
   GROUPED.forEach(g=>g.categories.forEach(c=>{
     const usable=GROUPED.some(prod=>{
@@ -819,15 +797,19 @@ function renderFilters(){
     });
     if(usable) cats.add(c);
   }));
+
   row.innerHTML=`<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')" data-filter="all">All</button>`+
     [...cats].sort().map(c=>`<button class="filter-btn" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`).join("")+
     `<button class="filter-btn" onclick="toggleSold()" data-filter="sold">hide sold out</button>`;
 }
+
 function toggleSold(){ hideSold=!hideSold; renderProducts(); }
 function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
 
 /* ================= PRODUCTS ================= */
 function renderProducts(){
+  if(!productGrid) return;
+
   productGrid.innerHTML="";
   GROUPED.forEach(group=>{
     if(activeFilter!=="all" && !group.categories.has(activeFilter)) return;
@@ -835,6 +817,7 @@ function renderProducts(){
     if(activeFilter==="all") variants=variants.filter(v=>!v.soldOut);
     if(hideSold) variants=variants.filter(v=>!v.soldOut);
     if(!variants.length) return;
+
     const selected=variants[0], id=selected.id, qty=cart[id]||0;
     const swatches=[...new Map(group.variants.map(v=>[v.swatch,v])).values()];
 
@@ -875,114 +858,19 @@ ${addArea}
 function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
 function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
 
-/* ================= CHECKOUT ================= */
-/* ================= SILENT GOOGLE FORM SUBMIT ================= */
-function openCheckoutForm(){
-
-  const btn = document.getElementById("checkoutBtn");
-
-  // Validate BEFORE disabling button
-  if(Object.keys(cart).length === 0){
-    alert("Your cart is empty.");
-    return;
-  }
-
-  if(!custName.value || !custPhone.value || !custDateEl.value || !custTime.value){
-    alert("Please complete name, phone, date, and time.");
-    return;
-  }
-
-  btn.disabled = true;
-  btn.innerText = "Submitting...";
-
-  const items = Object.entries(cart).map(([id, qty])=>{
-    const p = getProductById(id);
-    if(!p) return "";
-    const line = p.price * qty;
-    return `${p.name} x${qty} — $${line.toFixed(2)}`;
-  }).filter(Boolean).join("\n");
-
-  const subtotal = Object.entries(cart).reduce((sum,[id,qty])=>{
-    const p=getProductById(id);
-    return sum + (p ? p.price*qty : 0);
-  },0) + deliveryFee;
-
-  const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse";
-
-  const formData = {
-    "entry.1046011819": items,
-    "entry.362516403": "$"+subtotal.toFixed(2),
-    "entry.991310792": custName.value,
-    "entry.380963175": custEmail.value,
-    "entry.640553104": custPhone.value,
-    "entry.1469637469": custContactMethod.value,
-    "entry.590490152": custPickupDelivery.value,
-    "entry.489484198": addr1.value,
-    "entry.1117374631": addr2.value,
-    "entry.635395700": city.value,
-    "entry.2075536009": postal.value,
-    "entry.1225481208": custDate.value,
-    "entry.2009788871": custTime.value,
-    "entry.2140423836": custNotes.value,
-    "entry.798763112": custMarketing.value
-  };
-
-  const hiddenForm = document.createElement("form");
-  hiddenForm.action = formURL;
-  hiddenForm.method = "POST";
-  hiddenForm.target = "hidden_iframe";
-
-  Object.entries(formData).forEach(([k,v])=>{
-    const input = document.createElement("input");
-    input.type="hidden";
-    input.name=k;
-    input.value=v;
-    hiddenForm.appendChild(input);
-  });
-
-  document.body.appendChild(hiddenForm);
-
-  let iframe = document.getElementById("hidden_iframe");
-  if(!iframe){
-    iframe = document.createElement("iframe");
-    iframe.name="hidden_iframe";
-    iframe.id="hidden_iframe";
-    iframe.style.display="none";
-    document.body.appendChild(iframe);
-  }
-
-  hiddenForm.submit();
-  hiddenForm.remove();
-
-  document.getElementById("confirmation-text").innerText =
-    "Thank you! Your order has been submitted successfully.";
-
-  document.getElementById("confirmation-overlay").style.display = "flex";
-
-  clearCart();
-
-  setTimeout(()=>{
-    btn.disabled = false;
-    btn.innerText = "Checkout";
-  },2000);
-}
 /* ================= MOBILE NAV TOGGLE ================= */
 const hamburger = document.querySelector(".hamburger");
 const navLinks = document.querySelector(".nav-links");
 
-hamburger.addEventListener("click", () => {
-  navLinks.classList.toggle("active");
-});
+hamburger?.addEventListener("click", () => navLinks?.classList.toggle("active"));
 document.querySelectorAll(".nav-links a").forEach(link=>{
-  link.addEventListener("click", ()=>{
-    navLinks.classList.remove("active");
-  });
+  link.addEventListener("click", ()=> navLinks?.classList.remove("active"));
 });
 document.querySelectorAll(".dropbtn").forEach(btn=>{
   btn.addEventListener("click", e=>{
     if(window.innerWidth <= 768){
       e.preventDefault();
-      btn.nextElementSibling.classList.toggle("active");
+      btn.nextElementSibling?.classList.toggle("active");
     }
   });
 });
