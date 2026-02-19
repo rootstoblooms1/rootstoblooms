@@ -547,6 +547,7 @@ const PAGE_CATEGORY="annuals";
 let RAW=[], GROUPED=[], cart=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
 let hideSold=false, activeFilter="all";
 let deliveryFee=0;
+let selectedVariants = {};
 
 /* ================= CART FUNCTIONS ================= */
 function getProductById(id){return RAW.find(p=>p.id===id);}
@@ -819,7 +820,16 @@ function renderProducts(){
     if(hideSold) variants=variants.filter(v=>!v.soldOut);
     if(!variants.length) return;
 
-    const selected=variants[0], id=selected.id, qty=cart[id]||0;
+    let selectedId = selectedVariants[group.base.group];
+let selected = variants.find(v => v.id === selectedId);
+
+if(!selected){
+  selected = variants[0];
+  selectedVariants[group.base.group] = selected.id;
+}
+
+const id = selected.id;
+const qty = cart[id] || 0;
     const swatches=[...new Map(group.variants.map(v=>[v.swatch,v])).values()];
 
     let addArea;
@@ -857,7 +867,10 @@ ${addArea}
   updateBadges();
 }
 function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
-function selectVariant(group,id){const g=GROUPED.find(x=>x.base.group===group); const idx=g.variants.findIndex(v=>v.id===id); if(idx>-1){g.variants.unshift(g.variants.splice(idx,1)[0]); renderProducts();}}
+function selectVariant(group, id){
+  selectedVariants[group] = id;
+  renderProducts();
+}
 
 /* ================= NAV LOGIC — MATCH CODE A ================= */
 const hamburger = document.querySelector('.hamburger');
