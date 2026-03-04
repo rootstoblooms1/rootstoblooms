@@ -1186,9 +1186,15 @@ function renderCareBadges(p){
       : "";
 
   const petSafe = safeText(p.petSafe).toLowerCase();
+
+  const petIcon =
+    petSafe === "yes" ? "🐾" :
+    petSafe === "no"  ? "🚫" :
+    "🐾"; // fallback icon
+
   const petLabel =
     petSafe === "yes" ? "Pet friendly" :
-    petSafe === "no" ? "Not pet friendly" :
+    petSafe === "no"  ? "Not pet friendly" :
     petSafe ? safeText(p.petSafe) : "Pet status unknown";
 
   return `
@@ -1227,7 +1233,7 @@ function renderCareBadges(p){
         valueText: tempText
       })}
 
-      ${badge("🐾", petLabel, `Pet friendly: ${safeText(p.petSafe) || "Unknown"}`)}
+        ${badge(petIcon, petLabel, `Pet friendly: ${safeText(p.petSafe) || "Unknown"}`)}
     </div>
   `;
 }
