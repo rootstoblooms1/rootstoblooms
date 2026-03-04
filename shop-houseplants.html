@@ -351,18 +351,22 @@ body{
   border-color: rgba(0,0,0,0.18);
 }
 
-/* Triangle marker BELOW the bar (points UP) */
+/* Triangle marker attached to the pill (below, touching) */
 .meter-marker{
   position:absolute;
-  top:100%
   left: var(--pos, 50%);
   transform: translateX(-50%);
+
+  bottom: -1px;               /* touch the bar edge */
   width:0;
   height:0;
+
   border-left:7px solid transparent;
   border-right:7px solid transparent;
-  border-bottom:10px solid #000; /* points UP */
+  border-bottom:10px solid #000;  /* ▲ points UP */
+
   pointer-events:none;
+  z-index: 3;                 /* above segments/border */
 }
 
 /* Optional: make the whole meter badge slightly tinted per type */
