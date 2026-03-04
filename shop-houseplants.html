@@ -280,17 +280,6 @@ body{
 
   margin-left:10px; /* 👈 controls how close it is to "Light" */
 }
-.meter-bar{
-  display:flex;
-  gap:4px;
-  width:100%;
-  margin-top:6px;
-
-  padding:3px;
-  border-radius:999px;
-  background:rgba(0,0,0,0.04);
-  border:1px solid rgba(0,0,0,0.08);
-}
 
 .meter-legend .low{ color:#6b7280; }
 .meter-legend .med{ color:#374151; }
@@ -327,25 +316,53 @@ body{
   white-space: nowrap;
 }
 
+/* ================== NEW METER VISUALS ================== */
+
+/* Meter bar needs to be relative so marker can be positioned */
+.meter-bar{
+  position:relative;
+  display:flex;
+  gap:4px;
+  width:100%;
+  margin-top:6px;
+
+  padding:3px;
+  border-radius:999px;
+  background:rgba(0,0,0,0.04);
+  border:1px solid rgba(0,0,0,0.08);
+
+  overflow:visible;
+}
+
+/* Segments always visible (no greying) */
 .meter-seg{
   height:10px;
   flex:1;
   border-radius:999px;
   border:1px solid rgba(0,0,0,0.08);
-  background:#e8ecea; /* fallback */
+  opacity:1;
+  filter:none;
+  box-shadow:none;
 }
 
-/* Make OFF segments clearly muted */
-.meter-seg.off{
-  opacity: 0.12;
-  filter: grayscale(1) saturate(0.6);
+/* Optional: subtle highlight on the selected segment */
+.meter-seg.selected{
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.12) inset;
+  border-color: rgba(0,0,0,0.18);
 }
 
-/* Make ON segments pop */
-.meter-seg.on{
-  opacity: 1;
-  filter: none;
-  box-shadow: 0 0 0 2px rgba(0,0,0,0.10) inset;
+/* Triangle marker */
+.meter-marker{
+  position:absolute;
+  top:-9px;
+  left: var(--pos, 50%);
+  transform: translateX(-50%);
+  width:0;
+  height:0;
+  border-left:7px solid transparent;
+  border-right:7px solid transparent;
+  border-bottom:10px solid #000;
+  pointer-events:none;
 }
 
 /* Optional: make the whole meter badge slightly tinted per type */
@@ -1104,21 +1121,45 @@ function badge(icon,label,fullText){
     </div>
   `;
 }
+const HUMIDITY_BUCKETS = {
+  1: { label: "35–50%", tooltip: "Average home humidity (35–50%)" },
+  2: { label: "50–65%", tooltip: "Moderate humidity (50–65%)" },
+  3: { label: "65–80%+", tooltip: "High/tropical humidity (65–80%+)" },
+};
+
+const TEMP_BUCKETS = {
+  1: { label: "10–16°C", tooltip: "Cool (10–16°C)" },
+  2: { label: "16–21°C", tooltip: "Typical indoor (16–21°C)" },
+  3: { label: "21–27°C", tooltip: "Warm (21–27°C)" },
+  4: { label: "27–32°C", tooltip: "Hot/greenhouse (27–32°C)" },
+};
 
 /* -------- RANGE METER FUNCTION -------- */
+
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+// Converts a 1..5 selected segment to triangle position (%)
+function segToPos(seg){
+  // centers: 10, 30, 50, 70, 90
+  return (seg - 0.5) * 20;
+}
 
 function rangeMeterBadge({ type, icon, title, min, max, titleText, valueText }) {
   const mi = parseInt(min, 10);
   const ma = parseInt(max, 10);
   if (Number.isNaN(mi) || Number.isNaN(ma)) return "";
 
-  const lo = Math.max(1, Math.min(5, Math.min(mi, ma)));
-  const hi = Math.max(1, Math.min(5, Math.max(mi, ma)));
+  const lo = clamp(Math.min(mi, ma), 1, 5);
+  const hi = clamp(Math.max(mi, ma), 1, 5);
+
+  // Triangle selects ONE segment: midpoint of your min/max range
+  const selectedSeg = clamp(Math.round((lo + hi) / 2), 1, 5);
+  const pos = segToPos(selectedSeg);
 
   const segs = Array.from({ length: 5 }, (_, i) => {
     const idx = i + 1;
-    const on = idx >= lo && idx <= hi;
-    return `<div class="meter-seg seg-${idx} ${on ? "on" : "off"}" aria-hidden="true"></div>`;
+    const selected = idx === selectedSeg ? "selected" : "";
+    return `<div class="meter-seg seg-${idx} ${selected}" aria-hidden="true"></div>`;
   }).join("");
 
   const tooltip = safeText(titleText) || `${safeText(title)}: ${lo}-${hi}`;
@@ -1143,7 +1184,10 @@ function rangeMeterBadge({ type, icon, title, min, max, titleText, valueText }) 
         ${val ? `<span class="meter-value">${escapeHtml(val)}</span>` : ``}
       </div>
 
-      <div class="meter-bar">${segs}</div>
+      <div class="meter-bar" style="--pos:${pos}%">
+        <div class="meter-marker" aria-hidden="true"></div>
+        ${segs}
+      </div>
     </div>
   `;
 }
