@@ -1174,6 +1174,30 @@ function lightLabel(min, max){
   if (lo === 3) return "Medium to full sun";
   return "Bright";
 }
+function humidityLabel(minPct, maxPct){
+  const b = humidityBucketFromPct(minPct, maxPct);
+  if (!b) return "";
+  return HUMIDITY_BUCKETS[b]?.label || "";
+}
+
+function humidityTooltip(minPct, maxPct){
+  const b = humidityBucketFromPct(minPct, maxPct);
+  if (!b) return "";
+  return HUMIDITY_BUCKETS[b]?.tooltip || "";
+}
+function humidityBucketFromPct(minPct, maxPct){
+  const a = Number(minPct);
+  const b = Number(maxPct);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+
+  const pct = Math.round((a + b) / 2);
+
+  if (pct <= 32) return 1;
+  if (pct <= 45) return 2;
+  if (pct <= 58) return 3;
+  if (pct <= 71) return 4;
+  return 5;
+}
 function renderCareBadges(p){
   const level = safeText(p.careLevel);
 
@@ -1216,14 +1240,14 @@ function renderCareBadges(p){
       ${badge("💧", safeText(p.water), `Water: ${safeText(p.water)}`)}
 
       ${rangeMeterBadge({
-        type:"humidity",
-        icon:"💦",
-        title:"Humidity",
-        min:p.humidityMin,
-        max:p.humidityMax,
-        titleText:p.humidity,
-        valueText: humText
-      })}
+  type:"humidity",
+  icon:"💦",
+  title:"Humidity",
+  min: humidityBucketFromPct(p.humidityMinPct, p.humidityMaxPct),
+  max: humidityBucketFromPct(p.humidityMinPct, p.humidityMaxPct),
+  titleText: humidityTooltip(p.humidityMinPct, p.humidityMaxPct),
+  valueText: humidityLabel(p.humidityMinPct, p.humidityMaxPct)  // or keep humText if you prefer
+})}
 
       ${rangeMeterBadge({
         type:"temp",
