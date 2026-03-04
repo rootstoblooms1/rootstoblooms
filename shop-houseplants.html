@@ -218,6 +218,105 @@ body{
   grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
   gap:18px;
 }
+/* ================= CARE BADGES + METERS ================= */
+
+.care-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+
+.care-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#f4f6f5;
+  color:var(--dark);
+  font-size:12px;
+  font-weight:800;
+  line-height:1;
+  border:1px solid rgba(0,0,0,0.06);
+  max-width:100%;
+}
+
+.care-badge .icon{
+  font-size:13px;
+  line-height:1;
+}
+
+.care-badge span{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:190px;
+}
+
+/* Meter badge layout */
+.care-badge.meter{
+  padding:8px 10px;
+}
+
+.meter-top{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+}
+
+.meter-title{
+  font-weight:900;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.meter-bar{
+  display:flex;
+  gap:4px;
+  flex:1;
+  min-width:120px;
+}
+
+.meter-seg{
+  height:10px;
+  flex:1;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,0.08);
+  background:#e8ecea; /* fallback */
+}
+
+/* Preferred range = stronger */
+.meter-seg.on{ opacity: 1; }
+.meter-seg.off{ opacity: 0.35; }
+
+/* LIGHT palette: gray -> white -> yellow */
+.meter--light .meter-seg.seg-1{ background:#9aa0a6; }
+.meter--light .meter-seg.seg-2{ background:#cfd4d9; }
+.meter--light .meter-seg.seg-3{ background:#ffffff; border-color: rgba(0,0,0,0.18); }
+.meter--light .meter-seg.seg-4{ background:#fff2b3; }
+.meter--light .meter-seg.seg-5{ background:#ffd54a; }
+
+/* TEMP palette: blue -> red */
+.meter--temp .meter-seg.seg-1{ background:#2d7ff9; }
+.meter--temp .meter-seg.seg-2{ background:#7fc4ff; }
+.meter--temp .meter-seg.seg-3{ background:#e9eef3; }
+.meter--temp .meter-seg.seg-4{ background:#ffb35c; }
+.meter--temp .meter-seg.seg-5{ background:#ff4d4d; }
+
+/* Optional HUMIDITY palette (if you want it colored too) */
+.meter--humidity .meter-seg.seg-1{ background:#d8c3a5; }
+.meter--humidity .meter-seg.seg-2{ background:#cfe8d6; }
+.meter--humidity .meter-seg.seg-3{ background:#bfe7f2; }
+.meter--humidity .meter-seg.seg-4{ background:#7ed6f6; }
+.meter--humidity .meter-seg.seg-5{ background:#2bb7ff; }
+
+@media (max-width: 420px){
+  .meter-bar{ min-width: 100px; }
+  .meter-title{ font-size:11px; }
+  .care-badge span{ max-width:150px; }
+}
 
 /* PRODUCT CARD */
 .product-card{
@@ -916,6 +1015,119 @@ function renderFilters(){
 function toggleSold(){ hideSold=!hideSold; renderProducts(); }
 function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
 
+/* ================= CARE BADGE HELPERS ================= */
+
+function safeText(v){
+  return (v ?? "").toString().trim();
+}
+
+function escapeHtml(str){
+  return safeText(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function badge(icon,label,fullText){
+  const l = safeText(label);
+  if(!l) return "";
+  const t = safeText(fullText) || l;
+
+  return `
+    <div class="care-badge" title="${escapeHtml(t)}">
+      <span class="icon">${icon}</span>
+      <span>${escapeHtml(l)}</span>
+    </div>
+  `;
+}
+
+/* -------- RANGE METER FUNCTION -------- */
+
+function rangeMeterBadge({ type, icon, title, min, max, titleText }) {
+  const mi = parseInt(min,10);
+  const ma = parseInt(max,10);
+  if (Number.isNaN(mi) || Number.isNaN(ma)) return "";
+
+  const lo = Math.min(mi, ma);
+  const hi = Math.max(mi, ma);
+
+  // Keep in 1..5 so bad data doesn't break UI
+  const loC = Math.max(1, Math.min(5, lo));
+  const hiC = Math.max(1, Math.min(5, hi));
+
+  const segs = Array.from({length:5}, (_, i) => {
+    const idx = i + 1;
+    const on = idx >= loC && idx <= hiC;
+    return `<div class="meter-seg seg-${idx} ${on ? "on" : "off"}" aria-hidden="true"></div>`;
+  }).join("");
+
+  const tooltip = safeText(titleText) || `${safeText(title)}: ${loC}-${hiC}`;
+
+  // limit type to a safe class name
+  const tClass = safeText(type).toLowerCase().replace(/[^a-z0-9_-]/g, "") || "generic";
+
+  return `
+    <div class="care-badge meter meter--${tClass}" title="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">
+      <div class="meter-top">
+        <span class="icon">${icon}</span>
+        <span class="meter-title">${escapeHtml(title)}</span>
+        <div class="meter-bar">${segs}</div>
+      </div>
+    </div>
+  `;
+}
+
+/* -------- RENDER ALL BADGES -------- */
+
+function renderCareBadges(p){
+  const level = safeText(p.careLevel);
+
+  const petSafe = safeText(p.petSafe).toLowerCase();
+  const petLabel =
+    petSafe === "yes" ? "Pet friendly" :
+    petSafe === "no" ? "Not pet friendly" :
+    petSafe ? safeText(p.petSafe) : "Pet status unknown";
+
+  return `
+    <div class="care-badges">
+      ${badge("🧠", level, `Experience level: ${level}`)}
+
+      ${rangeMeterBadge({
+        type:"light",
+        icon:"☀️",
+        title:"Light",
+        min:p.lightMin,
+        max:p.lightMax,
+        titleText:p.light
+      })}
+
+      ${badge("💧", safeText(p.water), `Water: ${safeText(p.water)}`)}
+
+      ${rangeMeterBadge({
+        type:"humidity",
+        icon:"💦",
+        title:"Humidity",
+        min:p.humidityMin,
+        max:p.humidityMax,
+        titleText:p.humidity
+      })}
+
+      ${rangeMeterBadge({
+        type:"temp",
+        icon:"🌡️",
+        title:"Temp",
+        min:p.tempMin,
+        max:p.tempMax,
+        titleText:p.temp
+      })}
+
+      ${badge("🐾", petLabel, `Pet friendly: ${safeText(p.petSafe) || "Unknown"}`)}
+    </div>
+  `;
+}
+
 /* ================= PRODUCTS ================= */
 function renderProducts(){
   if(!productGrid) return;
@@ -961,6 +1173,7 @@ ${selected.comingSoon?overlay("COMING SOON","#777"):""}
 <div>
 <div class="product-title">${selected.name}</div>
 <div class="product-latin">${selected.latin||""}</div>
+${renderCareBadges(selected)}
 <div class="product-price">$${selected.price.toFixed(2)}</div>
 <div class="swatches">
 ${group.variants.filter(v=>v.swatch && v.swatch.trim()!=="").map(v=>{
