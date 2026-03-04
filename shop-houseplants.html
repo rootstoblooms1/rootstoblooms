@@ -258,18 +258,57 @@ body{
 .care-badge.meter{
   padding:8px 10px;
 }
+.meter-top{ flex-wrap: wrap; }
+.meter-bar{ flex: 1 1 100%; }
 
+.meter-legend{
+  display:flex;
+  justify-content: space-between;
+  width:100%;
+  font-size:11px;
+  font-weight:900;
+  margin-top:4px;
+  opacity:0.9;
+}
+
+.meter-legend .low{ color:#6b7280; }
+.meter-legend .med{ color:#374151; }
+.meter-legend .sun{ color:#b45309; }
 .meter-top{
   display:flex;
   align-items:center;
   gap:8px;
   width:100%;
 }
+.meter-legend .leg{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.meter-legend .leg::before{
+  content:"";
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,0.2);
+  display:inline-block;
+}
+
+.meter-legend .low::before{ background:#9aa0a6; }
+.meter-legend .med::before{ background:#ffffff; }
+.meter-legend .sun::before{ background:#ffd54a; }
 
 .meter-title{
   font-weight:900;
   font-size:12px;
   white-space:nowrap;
+}
+.meter-value{
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(0,0,0,0.72);
+  white-space: nowrap;
 }
 
 .meter-bar{
@@ -287,9 +326,31 @@ body{
   background:#e8ecea; /* fallback */
 }
 
-/* Preferred range = stronger */
-.meter-seg.on{ opacity: 1; }
-.meter-seg.off{ opacity: 0.35; }
+/* Make OFF segments clearly muted */
+.meter-seg.off{
+  opacity: 0.12;
+  filter: grayscale(1) saturate(0.6);
+}
+
+/* Make ON segments pop */
+.meter-seg.on{
+  opacity: 1;
+  filter: none;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.10) inset;
+}
+
+/* Give the whole meter a subtle frame so it's easier to read */
+.meter-bar{
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+/* Optional: make the whole meter badge slightly tinted per type */
+.meter--light { background: #f7f7f7; }
+.meter--temp  { background: #f7f7f7; }
+.meter--humidity { background: #f7f7f7; }
 
 /* LIGHT palette: gray -> white -> yellow */
 .meter--light .meter-seg.seg-1{ background:#9aa0a6; }
@@ -1045,36 +1106,41 @@ function badge(icon,label,fullText){
 
 /* -------- RANGE METER FUNCTION -------- */
 
-function rangeMeterBadge({ type, icon, title, min, max, titleText }) {
+function rangeMeterBadge({ type, icon, title, min, max, titleText, valueText }) {
   const mi = parseInt(min,10);
   const ma = parseInt(max,10);
   if (Number.isNaN(mi) || Number.isNaN(ma)) return "";
 
-  const lo = Math.min(mi, ma);
-  const hi = Math.max(mi, ma);
-
-  // Keep in 1..5 so bad data doesn't break UI
-  const loC = Math.max(1, Math.min(5, lo));
-  const hiC = Math.max(1, Math.min(5, hi));
+  const lo = Math.max(1, Math.min(5, Math.min(mi, ma)));
+  const hi = Math.max(1, Math.min(5, Math.max(mi, ma)));
 
   const segs = Array.from({length:5}, (_, i) => {
     const idx = i + 1;
-    const on = idx >= loC && idx <= hiC;
+    const on = idx >= lo && idx <= hi;
     return `<div class="meter-seg seg-${idx} ${on ? "on" : "off"}" aria-hidden="true"></div>`;
   }).join("");
 
-  const tooltip = safeText(titleText) || `${safeText(title)}: ${loC}-${hiC}`;
-
-  // limit type to a safe class name
+  const tooltip = safeText(titleText) || `${safeText(title)}: ${lo}-${hi}`;
   const tClass = safeText(type).toLowerCase().replace(/[^a-z0-9_-]/g, "") || "generic";
+  const val = safeText(valueText);
+  const showLegend = tClass === "light";
 
   return `
     <div class="care-badge meter meter--${tClass}" title="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">
       <div class="meter-top">
         <span class="icon">${icon}</span>
         <span class="meter-title">${escapeHtml(title)}</span>
+        ${val ? `<span class="meter-value">${escapeHtml(val)}</span>` : ``}
         <div class="meter-bar">${segs}</div>
       </div>
+
+      ${showLegend ? `
+        <div class="meter-legend" aria-hidden="true">
+          <span class="leg low">Low</span>
+          <span class="leg med">Med</span>
+          <span class="leg sun">Sun</span>
+        </div>
+      ` : ``}
     </div>
   `;
 }
@@ -1083,6 +1149,15 @@ function rangeMeterBadge({ type, icon, title, min, max, titleText }) {
 
 function renderCareBadges(p){
   const level = safeText(p.careLevel);
+    const humText =
+    (p.humidityMinPct != null && p.humidityMaxPct != null)
+      ? `${p.humidityMinPct}-${p.humidityMaxPct}%`
+      : "";
+
+  const tempText =
+    (p.tempMinC != null && p.tempMaxC != null)
+      ? `${p.tempMinC}-${p.tempMaxC}°C`
+      : "";
 
   const petSafe = safeText(p.petSafe).toLowerCase();
   const petLabel =
@@ -1106,22 +1181,24 @@ function renderCareBadges(p){
       ${badge("💧", safeText(p.water), `Water: ${safeText(p.water)}`)}
 
       ${rangeMeterBadge({
-        type:"humidity",
-        icon:"💦",
-        title:"Humidity",
-        min:p.humidityMin,
-        max:p.humidityMax,
-        titleText:p.humidity
-      })}
+  type:"humidity",
+  icon:"💦",
+  title:"Humidity",
+  min:p.humidityMin,
+  max:p.humidityMax,
+  titleText:p.humidity,
+  valueText: humText
+})}
 
-      ${rangeMeterBadge({
-        type:"temp",
-        icon:"🌡️",
-        title:"Temp",
-        min:p.tempMin,
-        max:p.tempMax,
-        titleText:p.temp
-      })}
+${rangeMeterBadge({
+  type:"temp",
+  icon:"🌡️",
+  title:"Temp",
+  min:p.tempMin,
+  max:p.tempMax,
+  titleText:p.temp,
+  valueText: tempText
+})}
 
       ${badge("🐾", petLabel, `Pet friendly: ${safeText(p.petSafe) || "Unknown"}`)}
     </div>
