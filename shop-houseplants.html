@@ -1164,12 +1164,12 @@ function lightLabel(min, max){
   const hi = Math.max(mi, ma);
 
   // Text buckets (edit wording anytime)
-  if (hi <= 2) return "Low light";
+  if (hi <= 2) return "Low";
   if (lo >= 4) return "Full sun";
   if (lo === 3 && hi === 3) return "Medium";
-  if (lo <= 2 && hi >= 4) return "Flexible";
-  if (hi === 3) return "Low–Med";
-  if (lo === 3) return "Med–Sun";
+  if (lo <= 2 && hi >= 4) return "Low to full sun";
+  if (hi === 3) return "Low to Medium";
+  if (lo === 3) return "Medium to full sun";
   return "Bright";
 }
 function renderCareBadges(p){
