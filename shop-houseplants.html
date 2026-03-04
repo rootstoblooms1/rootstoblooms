@@ -1093,9 +1093,11 @@ function badge(icon,label,fullText){
   `;
 }
 const HUMIDITY_BUCKETS = {
-  1: { label: "35–50%", tooltip: "Average home humidity (35–50%)" },
-  2: { label: "50–65%", tooltip: "Moderate humidity (50–65%)" },
-  3: { label: "65–80%+", tooltip: "High/tropical humidity (65–80%+)" },
+  1: { label: "20-32%", tooltip: "Arid (20-32%)" },
+  2: { label: "33-45%", tooltip: "Semi-arid (33-45%)" },
+  3: { label: "46-58%", tooltip: "Average (46-58%)" },
+  4: { label: "59-71%", tooltip: "Semi-tropical (59-71%)" },
+  5: { label: "72–80%", tooltip: "Tropical (72-80%)" },
 };
 
 const TEMP_BUCKETS = {
