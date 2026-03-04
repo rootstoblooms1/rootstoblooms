@@ -258,38 +258,54 @@ body{
 .care-badge.meter{
   padding:8px 10px;
 }
-.meter-top{ flex-wrap: wrap; }
-.meter-bar{ flex: 1 1 100%; }
+.meter-title{
+  font-weight:900;
+  font-size:12px;
+  white-space:nowrap;
+}
+.meter-top{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:100%;
+}
 
 .meter-legend{
   display:flex;
-  justify-content: space-between;
-  width:100%;
+  align-items:center;
+  gap:10px;
   font-size:11px;
-  font-weight:900;
-  margin-top:4px;
-  opacity:0.9;
+  font-weight:800;
+  white-space:nowrap;
+
+  margin-left:10px; /* 👈 controls how close it is to "Light" */
+}
+.meter-bar{
+  display:flex;
+  gap:4px;
+  width:100%;
+  margin-top:6px;
+
+  padding:3px;
+  border-radius:999px;
+  background:rgba(0,0,0,0.04);
+  border:1px solid rgba(0,0,0,0.08);
 }
 
 .meter-legend .low{ color:#6b7280; }
 .meter-legend .med{ color:#374151; }
 .meter-legend .sun{ color:#b45309; }
-.meter-top{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  width:100%;
-}
+
 .meter-legend .leg{
   display:inline-flex;
   align-items:center;
-  gap:6px;
+  gap:5px;
 }
 
 .meter-legend .leg::before{
   content:"";
-  width:10px;
-  height:10px;
+  width:9px;
+  height:9px;
   border-radius:999px;
   border:1px solid rgba(0,0,0,0.2);
   display:inline-block;
@@ -311,13 +327,6 @@ body{
   white-space: nowrap;
 }
 
-.meter-bar{
-  display:flex;
-  gap:4px;
-  flex:1;
-  min-width:120px;
-}
-
 .meter-seg{
   height:10px;
   flex:1;
@@ -337,14 +346,6 @@ body{
   opacity: 1;
   filter: none;
   box-shadow: 0 0 0 2px rgba(0,0,0,0.10) inset;
-}
-
-/* Give the whole meter a subtle frame so it's easier to read */
-.meter-bar{
-  padding: 3px;
-  border-radius: 999px;
-  background: rgba(0,0,0,0.04);
-  border: 1px solid rgba(0,0,0,0.08);
 }
 
 /* Optional: make the whole meter badge slightly tinted per type */
@@ -1107,14 +1108,14 @@ function badge(icon,label,fullText){
 /* -------- RANGE METER FUNCTION -------- */
 
 function rangeMeterBadge({ type, icon, title, min, max, titleText, valueText }) {
-  const mi = parseInt(min,10);
-  const ma = parseInt(max,10);
+  const mi = parseInt(min, 10);
+  const ma = parseInt(max, 10);
   if (Number.isNaN(mi) || Number.isNaN(ma)) return "";
 
   const lo = Math.max(1, Math.min(5, Math.min(mi, ma)));
   const hi = Math.max(1, Math.min(5, Math.max(mi, ma)));
 
-  const segs = Array.from({length:5}, (_, i) => {
+  const segs = Array.from({ length: 5 }, (_, i) => {
     const idx = i + 1;
     const on = idx >= lo && idx <= hi;
     return `<div class="meter-seg seg-${idx} ${on ? "on" : "off"}" aria-hidden="true"></div>`;
@@ -1130,17 +1131,19 @@ function rangeMeterBadge({ type, icon, title, min, max, titleText, valueText }) 
       <div class="meter-top">
         <span class="icon">${icon}</span>
         <span class="meter-title">${escapeHtml(title)}</span>
+
+        ${showLegend ? `
+          <div class="meter-legend" aria-hidden="true">
+            <span class="leg low">Low</span>
+            <span class="leg med">Med</span>
+            <span class="leg sun">Sun</span>
+          </div>
+        ` : ``}
+
         ${val ? `<span class="meter-value">${escapeHtml(val)}</span>` : ``}
-        <div class="meter-bar">${segs}</div>
       </div>
 
-      ${showLegend ? `
-        <div class="meter-legend" aria-hidden="true">
-          <span class="leg low">Low</span>
-          <span class="leg med">Med</span>
-          <span class="leg sun">Sun</span>
-        </div>
-      ` : ``}
+      <div class="meter-bar">${segs}</div>
     </div>
   `;
 }
