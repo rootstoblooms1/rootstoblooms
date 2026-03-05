@@ -1100,6 +1100,7 @@ const HUMIDITY_BUCKETS = {
   5: { label: "72–80% (Tropical)", tooltip: "Tropical (72-80%)" },
 };
 
+// --- TEMP BUCKETS (keep yours as-is) ---
 const TEMP_BUCKETS = {
   1: { label: "15–18.4°C (Cool)", tooltip: "Cool (15–18.4°C)" },
   2: { label: "18.5–21.9°C (Mild)", tooltip: "Mild (18.5–21.9°C)" },
@@ -1107,6 +1108,31 @@ const TEMP_BUCKETS = {
   4: { label: "25.5–28.9°C (Sub-tropical)", tooltip: "Sub-tropical (25.5–28.9°C)" },
   5: { label: "29–32°C (Tropical)", tooltip: "Tropical (29–32°C)" },
 };
+
+// --- NEW: one-bucket temp logic (midpoint of min/max) ---
+function tempBucketFromRange(minC, maxC){
+  const a = Number(minC);
+  const b = Number(maxC);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+
+  const mid = (a + b) / 2;
+
+  if (mid <= 18.4) return 1;
+  if (mid <= 21.9) return 2;
+  if (mid <= 25.4) return 3;
+  if (mid <= 28.9) return 4;
+  return 5; // 29–32 (and anything above)
+}
+
+function tempLabelFromRange(minC, maxC){
+  const bucket = tempBucketFromRange(minC, maxC);
+  return bucket ? (TEMP_BUCKETS[bucket]?.label || "") : "";
+}
+
+function tempTooltipFromRange(minC, maxC){
+  const bucket = tempBucketFromRange(minC, maxC);
+  return bucket ? (TEMP_BUCKETS[bucket]?.tooltip || "") : "";
+}
 
 /* -------- RANGE METER FUNCTION -------- */
 
@@ -1277,17 +1303,16 @@ function renderCareBadges(p){
 })}
 
       ${(() => {
-  const tMinB = tempBucketFromC(p.tempMinC);
-  const tMaxB = tempBucketFromC(p.tempMaxC);
+  const tB = tempBucketFromRange(p.tempMinC, p.tempMaxC);
 
   return rangeMeterBadge({
     type: "temp",
     icon: "🌡️",
     title: "Temp",
-    min: tMinB,
-    max: tMaxB,
-    titleText: tempTooltipFromBuckets(tMinB, tMaxB),
-    valueText: tempLabelFromBuckets(tMinB, tMaxB) // or tempText if you prefer exact numbers
+    min: tB,
+    max: tB, // ✅ force ONE segment/range
+    titleText: tempTooltipFromRange(p.tempMinC, p.tempMaxC),
+    valueText: tempLabelFromRange(p.tempMinC, p.tempMaxC)
   });
 })()}
 
