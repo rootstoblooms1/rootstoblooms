@@ -1093,18 +1093,19 @@ function badge(icon,label,fullText){
   `;
 }
 const HUMIDITY_BUCKETS = {
-  1: { label: "20-32%", tooltip: "Arid (20-32%)" },
-  2: { label: "33-45%", tooltip: "Semi-arid (33-45%)" },
-  3: { label: "46-58%", tooltip: "Average (46-58%)" },
-  4: { label: "59-71%", tooltip: "Semi-tropical (59-71%)" },
-  5: { label: "72–80%", tooltip: "Tropical (72-80%)" },
+  1: { label: "20-32% (Arid)", tooltip: "Arid (20-32%)" },
+  2: { label: "33-45% (Semi-arid)", tooltip: "Semi-arid (33-45%)" },
+  3: { label: "46-58% (Average)", tooltip: "Average (46-58%)" },
+  4: { label: "59-71% (Semi-tropical)", tooltip: "Semi-tropical (59-71%)" },
+  5: { label: "72–80% (Tropical)", tooltip: "Tropical (72-80%)" },
 };
 
 const TEMP_BUCKETS = {
-  1: { label: "10–16°C", tooltip: "Cool (10–16°C)" },
-  2: { label: "16–21°C", tooltip: "Typical indoor (16–21°C)" },
-  3: { label: "21–27°C", tooltip: "Warm (21–27°C)" },
-  4: { label: "27–32°C", tooltip: "Hot/greenhouse (27–32°C)" },
+  1: { label: "15–18.4°C (Cool)", tooltip: "Cool (15–18.4°C)" },
+  2: { label: "18.5–21.9°C (Mild)", tooltip: "Mild (18.5–21.9°C)" },
+  3: { label: "22–25.4°C (Room temp.)", tooltip: "Room temp. (22–25.4°C)" },
+  4: { label: "25.5–28.9°C (Sub-tropical)", tooltip: "Sub-tropical (25.5–28.9°C)" },
+  5: { label: "29–32°C (Tropical)", tooltip: "Tropical (29–32°C)" },
 };
 
 /* -------- RANGE METER FUNCTION -------- */
@@ -1198,6 +1199,32 @@ function humidityBucketFromPct(minPct, maxPct){
   if (pct <= 71) return 4;
   return 5;
 }
+function tempBucketFromC(c){
+  const n = Number(c);
+  if (!Number.isFinite(n)) return null;
+
+  if (n <= 18.4) return 1;
+  if (n <= 21.9) return 2;
+  if (n <= 25.4) return 3;
+  if (n <= 28.9) return 4;
+  return 5; // 29–32 (and anything above)
+}
+
+function tempLabelFromBuckets(minB, maxB){
+  if (!minB || !maxB) return "";
+  const lo = Math.min(minB, maxB);
+  const hi = Math.max(minB, maxB);
+  if (lo === hi) return TEMP_BUCKETS[lo]?.label || "";
+  return `${TEMP_BUCKETS[lo]?.label || ""}–${TEMP_BUCKETS[hi]?.label || ""}`;
+}
+
+function tempTooltipFromBuckets(minB, maxB){
+  if (!minB || !maxB) return "";
+  const lo = Math.min(minB, maxB);
+  const hi = Math.max(minB, maxB);
+  if (lo === hi) return TEMP_BUCKETS[lo]?.tooltip || "";
+  return `${TEMP_BUCKETS[lo]?.tooltip || ""} → ${TEMP_BUCKETS[hi]?.tooltip || ""}`;
+}
 function renderCareBadges(p){
   const level = safeText(p.careLevel);
 
@@ -1249,15 +1276,20 @@ function renderCareBadges(p){
   valueText: humidityLabel(p.humidityMinPct, p.humidityMaxPct)  // or keep humText if you prefer
 })}
 
-      ${rangeMeterBadge({
-        type:"temp",
-        icon:"🌡️",
-        title:"Temp",
-        min:p.tempMin,
-        max:p.tempMax,
-        titleText:p.temp,
-        valueText: tempText
-      })}
+      ${(() => {
+  const tMinB = tempBucketFromC(p.tempMinC);
+  const tMaxB = tempBucketFromC(p.tempMaxC);
+
+  return rangeMeterBadge({
+    type: "temp",
+    icon: "🌡️",
+    title: "Temp",
+    min: tMinB,
+    max: tMaxB,
+    titleText: tempTooltipFromBuckets(tMinB, tMaxB),
+    valueText: tempLabelFromBuckets(tMinB, tMaxB) // or tempText if you prefer exact numbers
+  });
+})()}
 
         ${badge(petIcon, petLabel, `Pet friendly: ${safeText(p.petSafe) || "Unknown"}`)}
     </div>
