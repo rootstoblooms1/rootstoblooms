@@ -218,6 +218,155 @@ body{
   grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
   gap:18px;
 }
+/* ================= CARE BADGES + METERS ================= */
+
+.care-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+
+.care-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#f4f6f5;
+  color:var(--dark);
+  font-size:12px;
+  font-weight:800;
+  line-height:1;
+  border:1px solid rgba(0,0,0,0.06);
+  max-width:100%;
+}
+
+.care-badge .icon{
+  font-size:13px;
+  line-height:1;
+}
+
+.care-badge span{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:190px;
+}
+
+/* Meter badge layout */
+.care-badge.meter{
+  padding:8px 10px;
+}
+.meter-title{
+  font-weight:900;
+  font-size:12px;
+  white-space:nowrap;
+}
+.meter-top{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:100%;
+}
+
+.meter-title{
+  font-weight:900;
+  font-size:12px;
+  white-space:nowrap;
+}
+.meter-value{
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(0,0,0,0.72);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ================== NEW METER VISUALS ================== */
+
+/* Meter bar needs to be relative so marker can be positioned */
+.meter-bar{
+  position:relative;
+  display:flex;
+  gap:4px;
+  width:100%;
+  margin-top:6px;
+
+  padding:3px;
+  border-radius:999px;
+  background:rgba(0,0,0,0.04);
+  border:1px solid rgba(0,0,0,0.08);
+
+  overflow:visible;
+}
+
+/* Segments always visible (no greying) */
+.meter-seg{
+  height:10px;
+  flex:1;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,0.08);
+  opacity:1;
+  filter:none;
+  box-shadow:none;
+}
+
+/* Optional: subtle highlight on the selected segment */
+.meter-seg.selected{
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.12) inset;
+  border-color: rgba(0,0,0,0.18);
+}
+
+/* Triangle marker attached to the pill (below, touching) */
+.meter-marker{
+  position:absolute;
+  left: var(--pos, 50%);
+  transform: translateX(-50%);
+
+  bottom: -1px;               /* touch the bar edge */
+  width:0;
+  height:0;
+
+  border-left:7px solid transparent;
+  border-right:7px solid transparent;
+  border-bottom:10px solid #000;  /* ▲ points UP */
+
+  pointer-events:none;
+  z-index: 3;                 /* above segments/border */
+}
+
+/* Optional: make the whole meter badge slightly tinted per type */
+.meter--light { background: #f7f7f7; }
+.meter--temp  { background: #f7f7f7; }
+.meter--humidity { background: #f7f7f7; }
+
+/* LIGHT palette: gray -> white -> yellow */
+.meter--light .meter-seg.seg-1{ background:#9aa0a6; }
+.meter--light .meter-seg.seg-2{ background:#cfd4d9; }
+.meter--light .meter-seg.seg-3{ background:#ffffff; border-color: rgba(0,0,0,0.18); }
+.meter--light .meter-seg.seg-4{ background:#fff2b3; }
+.meter--light .meter-seg.seg-5{ background:#ffd54a; }
+
+/* TEMP palette: blue -> red */
+.meter--temp .meter-seg.seg-1{ background:#2d7ff9; }
+.meter--temp .meter-seg.seg-2{ background:#7fc4ff; }
+.meter--temp .meter-seg.seg-3{ background:#e9eef3; }
+.meter--temp .meter-seg.seg-4{ background:#ffb35c; }
+.meter--temp .meter-seg.seg-5{ background:#ff4d4d; }
+
+/* Optional HUMIDITY palette (if you want it colored too) */
+.meter--humidity .meter-seg.seg-1{ background:#d8c3a5; }
+.meter--humidity .meter-seg.seg-2{ background:#cfe8d6; }
+.meter--humidity .meter-seg.seg-3{ background:#bfe7f2; }
+.meter--humidity .meter-seg.seg-4{ background:#7ed6f6; }
+.meter--humidity .meter-seg.seg-5{ background:#2bb7ff; }
+
+@media (max-width: 420px){
+  .meter-bar{ min-width: 100px; }
+  .meter-title{ font-size:11px; }
+  .care-badge span{ max-width:150px; }
+}
 
 /* PRODUCT CARD */
 .product-card{
@@ -648,7 +797,7 @@ const cartProductsEl = document.getElementById("cartProducts");
 const cartDeliveryEl = document.getElementById("cartDelivery");
 const deliveryRowEl = document.getElementById("deliveryRow"); 
 
-const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
+const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxpdX1qzIl4Eu8UbsuyEB8W0M09eIfbrTiV2x5yanCWK1AhFd0EwYkm5f7Zmmu_AKnXaw/exec";
 const STORAGE_KEY="plant_shop_cart_v8";
 const PAGE_CATEGORY="vegetable starters";
 
@@ -916,6 +1065,262 @@ function renderFilters(){
 function toggleSold(){ hideSold=!hideSold; renderProducts(); }
 function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
 
+/* ================= CARE BADGE HELPERS ================= */
+
+function safeText(v){
+  return (v ?? "").toString().trim();
+}
+
+function escapeHtml(str){
+  return safeText(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function badge(icon,label,fullText){
+  const l = safeText(label);
+  if(!l) return "";
+  const t = safeText(fullText) || l;
+
+  return `
+    <div class="care-badge" title="${escapeHtml(t)}">
+      <span class="icon">${icon}</span>
+      <span>${escapeHtml(l)}</span>
+    </div>
+  `;
+}
+const HUMIDITY_BUCKETS = {
+  1: { label: "20-32% (Arid)", tooltip: "Arid (20-32%)" },
+  2: { label: "33-45% (Semi-arid)", tooltip: "Semi-arid (33-45%)" },
+  3: { label: "46-58% (Average)", tooltip: "Average (46-58%)" },
+  4: { label: "59-71% (Semi-tropical)", tooltip: "Semi-tropical (59-71%)" },
+  5: { label: "72–80% (Tropical)", tooltip: "Tropical (72-80%)" },
+};
+
+// --- TEMP BUCKETS (keep yours as-is) ---
+const TEMP_BUCKETS = {
+  1: { label: "15–18.4°C (Cool)", tooltip: "Cool (15–18.4°C)" },
+  2: { label: "18.5–21.9°C (Mild)", tooltip: "Mild (18.5–21.9°C)" },
+  3: { label: "22–25.4°C (Room temp.)", tooltip: "Room temp. (22–25.4°C)" },
+  4: { label: "25.5–28.9°C (Sub-tropical)", tooltip: "Sub-tropical (25.5–28.9°C)" },
+  5: { label: "29–32°C (Tropical)", tooltip: "Tropical (29–32°C)" },
+};
+
+// --- NEW: one-bucket temp logic (midpoint of min/max) ---
+function tempBucketFromRange(minC, maxC){
+  const a = Number(minC);
+  const b = Number(maxC);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+
+  const mid = (a + b) / 2;
+
+  if (mid <= 18.4) return 1;
+  if (mid <= 21.9) return 2;
+  if (mid <= 25.4) return 3;
+  if (mid <= 28.9) return 4;
+  return 5; // 29–32 (and anything above)
+}
+
+function tempLabelFromRange(minC, maxC){
+  const bucket = tempBucketFromRange(minC, maxC);
+  return bucket ? (TEMP_BUCKETS[bucket]?.label || "") : "";
+}
+
+function tempTooltipFromRange(minC, maxC){
+  const bucket = tempBucketFromRange(minC, maxC);
+  return bucket ? (TEMP_BUCKETS[bucket]?.tooltip || "") : "";
+}
+
+/* -------- RANGE METER FUNCTION -------- */
+
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+// Converts a 1..5 selected segment to triangle position (%)
+function segToPos(seg){
+  // centers: 10, 30, 50, 70, 90
+  return (seg - 0.5) * 20;
+}
+
+function rangeMeterBadge({ type, icon, title, min, max, titleText, valueText }) {
+  const mi = parseInt(min, 10);
+  const ma = parseInt(max, 10);
+  if (Number.isNaN(mi) || Number.isNaN(ma)) return "";
+
+  const lo = clamp(Math.min(mi, ma), 1, 5);
+  const hi = clamp(Math.max(mi, ma), 1, 5);
+
+  // Triangle selects ONE segment: midpoint of your min/max range
+  const selectedSeg = clamp(Math.round((lo + hi) / 2), 1, 5);
+  const pos = segToPos(selectedSeg);
+
+  const segs = Array.from({ length: 5 }, (_, i) => {
+    const idx = i + 1;
+    const selected = idx === selectedSeg ? "selected" : "";
+    return `<div class="meter-seg seg-${idx} ${selected}" aria-hidden="true"></div>`;
+  }).join("");
+
+  const tooltip = safeText(titleText) || `${safeText(title)}: ${lo}-${hi}`;
+  const tClass = safeText(type).toLowerCase().replace(/[^a-z0-9_-]/g, "") || "generic";
+  const val = safeText(valueText);
+
+  return `
+    <div class="care-badge meter meter--${tClass}" title="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">
+      <div class="meter-top">
+        <span class="icon">${icon}</span>
+        <span class="meter-title">${escapeHtml(title)}</span>
+
+        ${val ? `<span class="meter-value">${escapeHtml(val)}</span>` : ``}
+      </div>
+
+      <div class="meter-bar" style="--pos:${pos}%">
+        <div class="meter-marker" aria-hidden="true"></div>
+        ${segs}
+      </div>
+    </div>
+  `;
+}
+
+/* -------- RENDER ALL BADGES -------- */
+function lightLabel(min, max){
+  const mi = parseInt(min, 10);
+  const ma = parseInt(max, 10);
+  if (Number.isNaN(mi) || Number.isNaN(ma)) return "";
+
+  const lo = Math.min(mi, ma);
+  const hi = Math.max(mi, ma);
+
+  // Text buckets (edit wording anytime)
+  if (hi <= 2) return "Low";
+  if (lo >= 4) return "Full sun";
+  if (lo === 3 && hi === 3) return "Medium";
+  if (lo <= 2 && hi >= 4) return "Low to full sun";
+  if (hi === 3) return "Low to Medium";
+  if (lo === 3) return "Medium to full sun";
+  return "Bright";
+}
+function humidityLabel(minPct, maxPct){
+  const b = humidityBucketFromPct(minPct, maxPct);
+  if (!b) return "";
+  return HUMIDITY_BUCKETS[b]?.label || "";
+}
+
+function humidityTooltip(minPct, maxPct){
+  const b = humidityBucketFromPct(minPct, maxPct);
+  if (!b) return "";
+  return HUMIDITY_BUCKETS[b]?.tooltip || "";
+}
+function humidityBucketFromPct(minPct, maxPct){
+  const a = Number(minPct);
+  const b = Number(maxPct);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+
+  const pct = Math.round((a + b) / 2);
+
+  if (pct <= 32) return 1;
+  if (pct <= 45) return 2;
+  if (pct <= 58) return 3;
+  if (pct <= 71) return 4;
+  return 5;
+}
+function tempBucketFromC(c){
+  const n = Number(c);
+  if (!Number.isFinite(n)) return null;
+
+  if (n <= 18.4) return 1;
+  if (n <= 21.9) return 2;
+  if (n <= 25.4) return 3;
+  if (n <= 28.9) return 4;
+  return 5; // 29–32 (and anything above)
+}
+
+function tempLabelFromBuckets(minB, maxB){
+  if (!minB || !maxB) return "";
+  const lo = Math.min(minB, maxB);
+  const hi = Math.max(minB, maxB);
+  if (lo === hi) return TEMP_BUCKETS[lo]?.label || "";
+  return `${TEMP_BUCKETS[lo]?.label || ""}–${TEMP_BUCKETS[hi]?.label || ""}`;
+}
+
+function tempTooltipFromBuckets(minB, maxB){
+  if (!minB || !maxB) return "";
+  const lo = Math.min(minB, maxB);
+  const hi = Math.max(minB, maxB);
+  if (lo === hi) return TEMP_BUCKETS[lo]?.tooltip || "";
+  return `${TEMP_BUCKETS[lo]?.tooltip || ""} → ${TEMP_BUCKETS[hi]?.tooltip || ""}`;
+}
+function renderCareBadges(p){
+  const level = safeText(p.careLevel);
+
+  const humText =
+    (p.humidityMinPct != null && p.humidityMaxPct != null)
+      ? `${p.humidityMinPct}-${p.humidityMaxPct}%`
+      : "";
+
+  const tempText =
+    (p.tempMinC != null && p.tempMaxC != null)
+      ? `${p.tempMinC}-${p.tempMaxC}°C`
+      : "";
+
+  const petSafe = safeText(p.petSafe).toLowerCase();
+
+  const petIcon =
+    petSafe === "yes" ? "🐾" :
+    petSafe === "no"  ? "🚫" :
+    "🐾"; // fallback icon
+
+  const petLabel =
+    petSafe === "yes" ? "Pet friendly" :
+    petSafe === "no"  ? "Not pet friendly" :
+    petSafe ? safeText(p.petSafe) : "Pet status unknown";
+
+  return `
+    <div class="care-badges">
+      ${badge("🧠", level, `Experience level: ${level}`)}
+
+      ${rangeMeterBadge({
+        type:"light",
+        icon:"☀️",
+        title:"Light",
+        min:p.lightMin,
+        max:p.lightMax,
+        titleText:p.light,
+        valueText: lightLabel(p.lightMin, p.lightMax)   // ✅ use text label
+      })}
+
+      ${badge("💧", safeText(p.water), `Water: ${safeText(p.water)}`)}
+
+      ${rangeMeterBadge({
+  type:"humidity",
+  icon:"💦",
+  title:"Humidity",
+  min: humidityBucketFromPct(p.humidityMinPct, p.humidityMaxPct),
+  max: humidityBucketFromPct(p.humidityMinPct, p.humidityMaxPct),
+  titleText: humidityTooltip(p.humidityMinPct, p.humidityMaxPct),
+  valueText: humidityLabel(p.humidityMinPct, p.humidityMaxPct)  // or keep humText if you prefer
+})}
+
+      ${(() => {
+  const tB = tempBucketFromRange(p.tempMinC, p.tempMaxC);
+
+  return rangeMeterBadge({
+    type: "temp",
+    icon: "🌡️",
+    title: "Temp",
+    min: tB,
+    max: tB, // ✅ force ONE segment/range
+    titleText: tempTooltipFromRange(p.tempMinC, p.tempMaxC),
+    valueText: tempLabelFromRange(p.tempMinC, p.tempMaxC)
+  });
+})()}
+
+        ${badge(petIcon, petLabel, `Pet friendly: ${safeText(p.petSafe) || "Unknown"}`)}
+    </div>
+  `;
+}
+
 /* ================= PRODUCTS ================= */
 function renderProducts(){
   if(!productGrid) return;
@@ -961,6 +1366,7 @@ ${selected.comingSoon?overlay("COMING SOON","#777"):""}
 <div>
 <div class="product-title">${selected.name}</div>
 <div class="product-latin">${selected.latin||""}</div>
+${renderCareBadges(selected)}
 <div class="product-price">$${selected.price.toFixed(2)}</div>
 <div class="swatches">
 ${group.variants.filter(v=>v.swatch && v.swatch.trim()!=="").map(v=>{
