@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roots to Blooms — Checkout</title>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://assets.calendly.com/assets/external/widget.js" async></script>
 
 <style>
 :root{
@@ -22,7 +21,6 @@ body{
   background:#fafafa;
 }
 
-/* ================= NAV ================= */
 .topnav{
   display:flex;
   justify-content:space-between;
@@ -38,13 +36,12 @@ body{
   margin-left:18px;
 }
 
-/* ================= LAYOUT ================= */
 .checkout-wrap{
   max-width:1000px;
   margin:auto;
   padding:20px;
   display:grid;
-  grid-template-columns: 1fr 420px;
+  grid-template-columns:1fr 420px;
   gap:20px;
 }
 
@@ -66,7 +63,6 @@ h2{
   color:var(--dark);
 }
 
-/* ================= FORM ================= */
 .customer-section{
   display:flex;
   flex-direction:column;
@@ -83,6 +79,7 @@ h2{
   padding:8px;
   border-radius:6px;
   border:1px solid #ccc;
+  font:inherit;
 }
 
 .delivery-address{
@@ -91,12 +88,29 @@ h2{
   gap:6px;
 }
 
-/* ================= ORDER SUMMARY ================= */
+.notice{
+  background:#f7f7f7;
+  border-left:4px solid var(--brand-green);
+  padding:10px 12px;
+  border-radius:8px;
+  font-size:14px;
+  line-height:1.4;
+}
+
+.notice.delivery{
+  border-left-color:var(--brand-brown);
+}
+
 .cart-line{
   display:flex;
   justify-content:space-between;
   border-bottom:1px dashed #eee;
   padding:8px 0;
+  gap:10px;
+}
+
+.cart-line span:first-child{
+  flex:1;
 }
 
 .totals{
@@ -106,7 +120,6 @@ h2{
   margin-top:6px;
 }
 
-/* ================= BUTTON ================= */
 .checkout-btn{
   margin-top:12px;
   background:var(--dark);
@@ -117,9 +130,24 @@ h2{
   font-weight:800;
   cursor:pointer;
   font-size:16px;
+  width:100%;
 }
 
-/* ================= CONFIRMATION ================= */
+.checkout-btn:hover{
+  opacity:.96;
+}
+
+.checkout-btn.secondary{
+  background:var(--brand-green);
+}
+
+#bookingStatus{
+  margin-top:10px;
+  font-weight:700;
+  color:var(--dark);
+  font-size:14px;
+}
+
 #confirmation-overlay{
   position:fixed;
   inset:0;
@@ -129,12 +157,19 @@ h2{
   justify-content:center;
   z-index:9999;
 }
+
 .confirmation-card{
   background:#fff;
   padding:20px;
   border-radius:12px;
   max-width:420px;
+  width:calc(100% - 32px);
   text-align:center;
+}
+
+.small-muted{
+  color:#666;
+  font-size:13px;
 }
 </style>
 </head>
@@ -151,102 +186,143 @@ h2{
 
 <div class="checkout-wrap">
 
-<!-- ================= CUSTOMER INFO ================= -->
-<div class="card">
-  <h2>Your Details</h2>
+  <div class="card">
+    <h2>Your Details</h2>
 
-  <div class="customer-section">
-    <label>Name</label>
-    <input id="custName">
+    <div class="customer-section">
+      <label for="custName">Name</label>
+      <input id="custName" autocomplete="name">
 
-    <label>Email</label>
-    <input id="custEmail" type="email">
+      <label for="custEmail">Email</label>
+      <input id="custEmail" type="email" autocomplete="email">
 
-    <label>Phone</label>
-    <input id="custPhone" type="tel">
+      <label for="custPhone">Phone</label>
+      <input id="custPhone" type="tel" autocomplete="tel">
 
-    <label>Preferred Contact</label>
-    <select id="custContactMethod">
-      <option>Call</option>
-      <option>Text</option>
-      <option>Email</option>
-    </select>
+      <label for="custContactMethod">Preferred Contact</label>
+      <select id="custContactMethod">
+        <option>Call</option>
+        <option>Text</option>
+        <option>Email</option>
+      </select>
 
-    <label>Pickup or Delivery</label>
-    <select id="custPickupDelivery" onchange="toggleDeliveryAddress(this.value)">
-      <option value="Pickup">Pickup</option>
-      <option value="Delivery">Delivery</option>
-    </select>
+      <label for="custPickupDelivery">Pickup or Delivery</label>
+      <select id="custPickupDelivery">
+        <option value="Pickup" selected>Pickup</option>
+        <option value="Delivery">Delivery Request</option>
+      </select>
 
-    <div class="delivery-address" id="deliveryAddress">
-      <input id="addr1" placeholder="Address Line 1">
-      <input id="addr2" placeholder="Address Line 2">
-      <input id="city" placeholder="City" oninput="calculateDeliveryFee()">
-      <input id="postal" placeholder="Postal Code" oninput="calculateDeliveryFee()">
+      <div class="delivery-address" id="deliveryAddress">
+        <input id="addr1" placeholder="Address Line 1" autocomplete="address-line1">
+        <input id="addr2" placeholder="Address Line 2" autocomplete="address-line2">
+        <input id="city" placeholder="City" autocomplete="address-level2">
+        <input id="postal" placeholder="Postal Code" autocomplete="postal-code">
+      </div>
+
+      <div class="notice" id="pickupNotice">
+        Pickup is the default. Please book your pickup time before placing your order.
+      </div>
+
+      <div class="notice delivery" id="deliveryNotice" style="display:none;">
+        Delivery is not self-scheduled. If delivery is possible, I’ll confirm it with you directly after your order is submitted.
+      </div>
+
+      <div id="pickupSchedulerWrap">
+        <label>Pickup Appointment</label>
+        <button type="button" class="checkout-btn secondary" id="bookCalendlyBtn">
+          Book Pickup Time
+        </button>
+        <div id="bookingStatus">No pickup appointment booked yet.</div>
+        <div class="small-muted">
+          Please enter your name and email before booking so they can be pre-filled in Calendly.
+        </div>
+      </div>
+
+      <label for="custNotes">Notes / Special Instructions</label>
+      <textarea id="custNotes" rows="3"></textarea>
+
+      <label for="custMarketing">How did you hear about us?</label>
+      <select id="custMarketing">
+        <option>Google Search</option>
+        <option>Facebook</option>
+        <option>Instagram</option>
+        <option>Poster</option>
+        <option>From a Friend/Family Member</option>
+        <option>Other (please specify in Notes/Special Instructions)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Your Order</h2>
+
+    <div id="orderItems"></div>
+
+    <div class="totals">
+      <span>Subtotal</span>
+      <span id="productsTotal">$0.00</span>
     </div>
 
-    <label>Date</label>
-    <input id="custDate">
+    <div class="totals" id="deliveryRow" style="display:none;">
+      <span>Delivery</span>
+      <span id="deliveryTotal">$0.00</span>
+    </div>
 
-    <label>Time</label>
-    <select id="custTime"></select>
+    <div class="totals">
+      <strong>Total</strong>
+      <strong id="grandTotal">$0.00</strong>
+    </div>
 
-    <label>Notes/Special Instructions</label>
-    <textarea id="custNotes" rows="2"></textarea>
-
-    <label>How did you hear about us?</label>
-    <select id="custMarketing">
-      <option>Google Search</option>
-      <option>Facebook</option>
-      <option>Instagram</option>
-      <option>Poster</option>
-      <option>From a Friend/Family Member</option>
-      <option>Other (please specify in Notes/Special Instructions)</option>
-    </select>
+    <button class="checkout-btn" id="checkoutBtn" type="button">Place Order</button>
   </div>
-</div>
-
-<!-- ================= ORDER SUMMARY ================= -->
-<div class="card">
-  <h2>Your Order</h2>
-
-  <div id="orderItems"></div>
-
-  <div class="totals"><span>Subtotal</span><span id="productsTotal">$0.00</span></div>
-  <div class="totals" id="deliveryRow" style="display:none">
-    <span>Delivery</span><span id="deliveryTotal">$0.00</span>
-  </div>
-  <div class="totals"><strong>Total</strong><strong id="grandTotal">$0.00</strong></div>
-
-  <button class="checkout-btn" id="checkoutBtn" onclick="submitOrder()">Place Order</button>
-</div>
 
 </div>
 
-<!-- ================= CONFIRMATION ================= -->
 <div id="confirmation-overlay">
   <div class="confirmation-card">
     <h2>Order Received 🌱</h2>
     <p>Thank you! Your order has been submitted.</p>
-    <button class="checkout-btn" onclick="location.href='/'">Back Home</button>
+    <button class="checkout-btn" type="button" onclick="location.href='/'">Back Home</button>
   </div>
 </div>
 
-<iframe name="hidden" style="display:none;"></iframe>
+<iframe name="hiddenSubmitFrame" style="display:none;"></iframe>
 
 <script>
-const STORAGE_KEY="plant_shop_cart_v8";
-let cart = JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
-let RAW=[];
-let deliveryFee=0;
-/* ================= DELIVERY ================= */
+const STORAGE_KEY = "plant_shop_cart_v8";
+const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse";
+const CALENDLY_PICKUP_URL = "https://calendly.com/rootstoblooms1/30min";
+
+let cart = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+let RAW = [];
+let deliveryFee = 0;
+let calendlyBooking = null;
+
+function getEl(id){
+  return document.getElementById(id);
+}
+
+function currency(n){
+  return `$${Number(n).toFixed(2)}`;
+}
+
+function escapeHtml(str){
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function toggleDeliveryAddress(val) {
-  const deliveryDiv = document.getElementById("deliveryAddress");
-  const deliveryRow = document.getElementById("deliveryRow");
+  const deliveryDiv = getEl("deliveryAddress");
+  const deliveryRow = getEl("deliveryRow");
 
   if (val === "Delivery") {
     deliveryDiv.style.display = "flex";
-    calculateDeliveryFee(); // ensure delivery row and total update immediately
+    calculateDeliveryFee();
   } else {
     deliveryDiv.style.display = "none";
     deliveryFee = 0;
@@ -256,208 +332,273 @@ function toggleDeliveryAddress(val) {
 }
 
 function calculateDeliveryFee(){
-  const city=document.getElementById("city").value.toLowerCase();
-  if(["halifax","dartmouth","spryfield"].includes(city)) deliveryFee=5;
-  else if(["bedford","sackville"].includes(city)) deliveryFee=8;
-  else deliveryFee=0;
+  const cityVal = getEl("city").value.trim().toLowerCase();
 
-  document.getElementById("deliveryRow").style.display =
-    deliveryFee>0 ? "flex":"none";
-  document.getElementById("deliveryTotal").innerText=`$${deliveryFee.toFixed(2)}`;
+  if(["halifax","dartmouth","spryfield"].includes(cityVal)) deliveryFee = 5;
+  else if(["bedford","sackville"].includes(cityVal)) deliveryFee = 8;
+  else deliveryFee = 0;
+
+  getEl("deliveryRow").style.display = deliveryFee > 0 ? "flex" : "none";
+  getEl("deliveryTotal").innerText = currency(deliveryFee);
   renderSummary();
 }
-/* ================= SUMMARY ================= */
+
 function renderSummary(){
-  const wrap=document.getElementById("orderItems");
-  wrap.innerHTML="";
-  let total=0;
+  const wrap = getEl("orderItems");
+  wrap.innerHTML = "";
+  let subtotal = 0;
 
-  Object.entries(cart).forEach(([id,qty])=>{
-    const p=RAW.find(x=>x.id===id);
-    if(!p) return;
-    const line=p.price*qty;
-    total+=line;
-    wrap.innerHTML+=`
+  const entries = Object.entries(cart);
+
+  if (entries.length === 0) {
+    wrap.innerHTML = `<p class="small-muted">Your cart is empty.</p>`;
+  }
+
+  entries.forEach(([id, qty]) => {
+    const p = RAW.find(x => String(x.id) === String(id));
+    if (!p) return;
+
+    const line = Number(p.price) * Number(qty);
+    subtotal += line;
+
+    wrap.innerHTML += `
       <div class="cart-line">
-        <span>${p.name} × ${qty}</span>
-        <span>$${line.toFixed(2)}</span>
-      </div>`;
+        <span>${escapeHtml(p.name)} × ${qty}</span>
+        <span>${currency(line)}</span>
+      </div>
+    `;
   });
 
-  document.getElementById("productsTotal").innerText=`$${total.toFixed(2)}`;
-  document.getElementById("grandTotal").innerText=`$${(total+deliveryFee).toFixed(2)}`;
+  getEl("productsTotal").innerText = currency(subtotal);
+  getEl("grandTotal").innerText = currency(subtotal + deliveryFee);
 }
-document.addEventListener("DOMContentLoaded", () => {
 
-const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
-
-/* ================= LOAD PRODUCTS ================= */
 async function loadProducts(){
-  const res = await fetch(SHEET_ENDPOINT);
-  RAW = await res.json();
-  RAW.forEach(p=>{
-    p.price=Number(p.price);
-  });
-  renderSummary();
+  try {
+    const res = await fetch(SHEET_ENDPOINT, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to load products.");
+
+    RAW = await res.json();
+    RAW.forEach(p => {
+      p.price = Number(p.price);
+    });
+
+    renderSummary();
+  } catch (err) {
+    console.error(err);
+    renderSummary();
+  }
 }
-loadProducts();
 
+function updateSchedulingUI(){
+  const method = getEl("custPickupDelivery").value;
+  const pickupSchedulerWrap = getEl("pickupSchedulerWrap");
+  const pickupNotice = getEl("pickupNotice");
+  const deliveryNotice = getEl("deliveryNotice");
 
+  toggleDeliveryAddress(method);
 
-/* ================= TIME SLOT & DATE HANDLING ================= */
-const custDate = document.getElementById("custDate");
-const custTime = document.getElementById("custTime");
-const custName = document.getElementById("custName");
-const custEmail = document.getElementById("custEmail");
-const custPhone = document.getElementById("custPhone");
-const custPickupDelivery = document.getElementById("custPickupDelivery");
-const addr1 = document.getElementById("addr1");
-const city = document.getElementById("city");
-const postal = document.getElementById("postal");
-flatpickr("#custDate", {
-  minDate: "today",
-  dateFormat: "Y-m-d",
-  disable: [
-    function(date) {
-      // Return true to disable Thursdays (4 = Thursday)
-      return date.getDay() === 4;
+  if (method === "Pickup") {
+    pickupSchedulerWrap.style.display = "block";
+    pickupNotice.style.display = "block";
+    deliveryNotice.style.display = "none";
+  } else {
+    pickupSchedulerWrap.style.display = "none";
+    pickupNotice.style.display = "none";
+    deliveryNotice.style.display = "block";
+    calendlyBooking = null;
+    getEl("bookingStatus").textContent = "No pickup appointment booked yet.";
+  }
+}
+
+function openCalendly(){
+  const custName = getEl("custName").value.trim();
+  const custEmail = getEl("custEmail").value.trim();
+  const method = getEl("custPickupDelivery").value;
+
+  if (method !== "Pickup") return;
+
+  if (!custName) {
+    alert("Please enter your name before booking.");
+    return;
+  }
+
+  if (!custEmail) {
+    alert("Please enter your email before booking.");
+    return;
+  }
+
+  if (typeof Calendly === "undefined" || !Calendly.initPopupWidget) {
+    alert("Calendly did not load. Please refresh the page and try again.");
+    return;
+  }
+
+  Calendly.initPopupWidget({
+    url: CALENDLY_PICKUP_URL,
+    prefill: {
+      name: custName,
+      email: custEmail
     }
-  ],
-  onChange: function(selectedDates, dateStr) {
-    if (!dateStr) {
-      custTime.innerHTML = "";
+  });
+}
+
+function getCartItemsText(){
+  return Object.entries(cart).map(([id, qty]) => {
+    const p = RAW.find(x => String(x.id) === String(id));
+    return p ? `${p.name} x${qty}` : `Unknown item (${id}) x${qty}`;
+  }).join("\n");
+}
+
+function buildCalendlyDateField(){
+  const method = getEl("custPickupDelivery").value;
+
+  if (method === "Delivery") {
+    return "Not self-scheduled - delivery arranged manually if available";
+  }
+
+  if (!calendlyBooking) {
+    return "";
+  }
+
+  if (calendlyBooking.scheduledText) {
+    return calendlyBooking.scheduledText;
+  }
+
+  return "Booked via Calendly - see event URI";
+}
+
+function buildCalendlyEventField(){
+  const method = getEl("custPickupDelivery").value;
+
+  if (method === "Delivery") {
+    return "Not applicable - delivery arranged manually";
+  }
+
+  if (!calendlyBooking) {
+    return "";
+  }
+
+  return calendlyBooking.eventUri || calendlyBooking.inviteeUri || "Calendly booking recorded";
+}
+
+function submitOrder(){
+  const custName = getEl("custName").value.trim();
+  const custEmail = getEl("custEmail").value.trim();
+  const custPhone = getEl("custPhone").value.trim();
+  const custContactMethod = getEl("custContactMethod").value;
+  const custPickupDelivery = getEl("custPickupDelivery").value;
+  const addr1 = getEl("addr1").value.trim();
+  const addr2 = getEl("addr2").value.trim();
+  const city = getEl("city").value.trim();
+  const postal = getEl("postal").value.trim();
+  const custNotes = getEl("custNotes").value.trim();
+  const custMarketing = getEl("custMarketing").value;
+  const items = getCartItemsText();
+
+  const subtotalText = getEl("productsTotal").innerText;
+  const deliveryText = currency(deliveryFee);
+  const grandTotalText = getEl("grandTotal").innerText;
+
+  if (Object.keys(cart).length === 0) {
+    alert("Your cart is empty.");
+    return;
+  }
+
+  if (!custName) {
+    alert("Please enter your name.");
+    return;
+  }
+
+  if (!custEmail) {
+    alert("Please enter your email.");
+    return;
+  }
+
+  if (!custPhone) {
+    alert("Please enter your phone number.");
+    return;
+  }
+
+  if (custPickupDelivery === "Pickup" && !calendlyBooking) {
+    alert("Please book a pickup time before placing your order.");
+    return;
+  }
+
+  if (custPickupDelivery === "Delivery") {
+    if (!addr1 || !city || !postal) {
+      alert("Please complete the delivery address.");
       return;
     }
-    generateTimeSlots(); 
-  }
-});
-
-
-const closedDays = ["thu"]; // days the shop is closed
-const openHours = {
-  mon:[19,21],
-  tue:[19,21],
-  wed:[19,21],
-  thu:[],
-  fri:[19,21],
-  sat:[9,17],
-  sun:[9,14]
-};
-
-// Set min date to today
-const today = new Date();
-
-// Generate time slots based on selected date
-function generateTimeSlots() {
-  custTime.innerHTML = "";
-
-  const dateStr = custDate.value;
-  if (!dateStr) {
-    custTime.innerHTML = "<option>Please select a date first</option>";
-    return;
   }
 
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const selectedDate = new Date(year, month-1, day);
-
-  const now = new Date();
-  const isToday =
-    selectedDate.toDateString() === now.toDateString();
-
-  const dayMap = ["sun","mon","tue","wed","thu","fri","sat"];
-  const dayName = dayMap[selectedDate.getDay()];
-  const hours = openHours[dayName];
-
-  if(!hours || hours.length===0){
-    custTime.innerHTML = "<option>No slots available</option>";
-    return;
-  }
-
-  for(let h = hours[0]; h < hours[1]; h++){
-    for(let m = 0; m < 60; m += 30){
-
-      const slot = new Date(year,month-1,day,h,m);
-
-      // Skip past times today
-      if(isToday && slot < now) continue;
-
-      const raw = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-      const hour12 = h % 12 || 12;
-      const ampm = h < 12 ? "AM" : "PM";
-      const pretty = `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
-
-      custTime.innerHTML += `<option value="${raw}">${pretty}</option>`;
-    }
-  }
-
-  if(custTime.innerHTML === "")
-    custTime.innerHTML = "<option>No remaining slots today</option>";
-}
-
-/* ================= SUBMIT ================= */
-  // -------- Robust Validation --------
-function submitOrder(){
-if(Object.keys(cart).length === 0){
-  alert("Your cart is empty.");
-  return;
-}
-
-if(!custName.value.trim()){
-  alert("Please enter your name.");
-  return;
-}
-
-if(!custPhone.value.trim()){
-  alert("Please enter a phone number.");
-  return;
-}
-
-if(!custDate.value){
-  alert("Please select a date.");
-  return;
-}
-
-if(!custTime.value || custTime.options.length === 0){
-  alert("Please select a time.");
-  return;
-}
-
-// Delivery validation
-if(custPickupDelivery.value === "Delivery"){
-  if(!addr1.value.trim() || !city.value.trim() || !postal.value.trim()){
-    alert("Please complete the delivery address.");
-    return;
-  }
-}
-
-  const items=Object.entries(cart).map(([id,q])=>{
-    const p=RAW.find(x=>x.id===id);
-    return `${p.name} x${q}`;
-  }).join("\n");
-
-  const total=document.getElementById("grandTotal").innerText;
-
-  const formURL="https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse";
-  const data={
-    "entry.1046011819":items,
-    "entry.362516403":total,
-    "entry.991310792":custName.value,
-    "entry.640553104":custPhone.value
+  const formData = {
+    "entry.991310792": custName,
+    "entry.380963175": custEmail,
+    "entry.640553104": custPhone,
+    "entry.1469637469": custContactMethod,
+    "entry.590490152": custPickupDelivery === "Delivery" ? "Delivery Request" : "Pickup",
+    "entry.489484198": addr1,
+    "entry.1117374631": addr2,
+    "entry.635395700": city,
+    "entry.2075536009": postal,
+    "entry.1225481208": buildCalendlyDateField(),
+    "entry.2009788871": buildCalendlyEventField(),
+    "entry.1046011819": items,
+    "entry.2140423836": subtotalText,
+    "entry.1820627548": deliveryText,
+    "entry.362516403": grandTotalText,
+    "entry.440295629": custNotes,
+    "entry.798763112": custMarketing
   };
 
-  const f=document.createElement("form");
-  f.method="POST";f.action=formURL;f.target="hidden";
-  Object.entries(data).forEach(([k,v])=>{
-    const i=document.createElement("input");
-    i.type="hidden";i.name=k;i.value=v;f.appendChild(i);
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = GOOGLE_FORM_URL;
+  form.target = "hiddenSubmitFrame";
+
+  Object.entries(formData).forEach(([name, value]) => {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
   });
-  document.body.appendChild(f);
-  f.submit();f.remove();
+
+  document.body.appendChild(form);
+  form.submit();
+  form.remove();
 
   localStorage.removeItem(STORAGE_KEY);
-  document.getElementById("confirmation-overlay").style.display="flex";
-  } // end submit order
-  }); // endDOMContentLoaded
+  cart = {};
+  renderSummary();
+
+  getEl("confirmation-overlay").style.display = "flex";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadProducts();
+
+  getEl("custPickupDelivery").addEventListener("change", updateSchedulingUI);
+  getEl("city").addEventListener("input", calculateDeliveryFee);
+  getEl("postal").addEventListener("input", calculateDeliveryFee);
+  getEl("bookCalendlyBtn").addEventListener("click", openCalendly);
+  getEl("checkoutBtn").addEventListener("click", submitOrder);
+
+  updateSchedulingUI();
+});
+
+window.addEventListener("message", function(e) {
+  if (!e.data || e.data.event !== "calendly.event_scheduled") return;
+
+  calendlyBooking = {
+    eventUri: e.data?.payload?.event?.uri || "",
+    inviteeUri: e.data?.payload?.invitee?.uri || "",
+    scheduledText: "Booked via Calendly - see event URI",
+    capturedAt: new Date().toISOString()
+  };
+
+  getEl("bookingStatus").textContent = "Pickup booked successfully.";
+});
 </script>
 
 </body>
