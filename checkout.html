@@ -14,6 +14,8 @@
   --brand-brown:#4A2300;
   --accent:#c6e3d2;
   --dark:#254D32;
+  --danger:#b42318;
+  --muted-btn:#b9b9b9;
 }
 
 body{
@@ -102,6 +104,28 @@ h2{
   border-left-color:var(--brand-brown);
 }
 
+.steps-wrap{
+  margin-top:6px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.step-label{
+  font-weight:800;
+  color:var(--dark);
+  margin-bottom:2px;
+}
+
+.step-arrow{
+  text-align:center;
+  font-size:28px;
+  line-height:1;
+  color:var(--brand-green);
+  font-weight:900;
+  user-select:none;
+}
+
 .cart-line{
   display:flex;
   justify-content:space-between;
@@ -132,21 +156,45 @@ h2{
   cursor:pointer;
   font-size:16px;
   width:100%;
+  transition:opacity .15s ease, transform .05s ease, background .15s ease;
 }
 
 .checkout-btn:hover{
   opacity:.96;
 }
 
+.checkout-btn:active{
+  transform:translateY(1px);
+}
+
 .checkout-btn.secondary{
   background:var(--brand-green);
 }
 
+.checkout-btn.disabled,
+.checkout-btn:disabled{
+  background:var(--muted-btn);
+  color:#fff;
+  cursor:not-allowed;
+  opacity:1;
+}
+
 #bookingStatus{
   margin-top:10px;
-  font-weight:700;
-  color:var(--dark);
   font-size:14px;
+  font-weight:800;
+}
+
+#bookingStatus.pending{
+  color:var(--danger);
+}
+
+#bookingStatus.success{
+  color:var(--brand-green);
+}
+
+.status-check{
+  margin-right:6px;
 }
 
 #confirmation-overlay{
@@ -216,7 +264,7 @@ h2{
       <div class="delivery-address" id="deliveryAddress">
         <input id="addr1" placeholder="Address Line 1" autocomplete="address-line1">
         <input id="addr2" placeholder="Address Line 2" autocomplete="address-line2">
-        <input id="city" placeholder="City" autocomplete="address-level2">
+        <input id="city" placeholder="City / Area" autocomplete="address-level2">
         <input id="postal" placeholder="Postal Code" autocomplete="postal-code">
       </div>
 
@@ -228,14 +276,22 @@ h2{
         Delivery is not self-scheduled. If delivery is possible, I’ll confirm it with you directly after your order is submitted.
       </div>
 
-      <div id="pickupSchedulerWrap">
-        <label>Pickup Appointment</label>
-        <button type="button" class="checkout-btn secondary" id="bookCalendlyBtn">
-          Book Pickup Time
-        </button>
-        <div id="bookingStatus">No pickup appointment booked yet.</div>
-        <div class="small-muted">
-          Please enter your name and email before booking so they can be pre-filled in Calendly.
+      <div id="pickupSchedulerWrap" class="steps-wrap">
+        <div>
+          <div class="step-label">Step 1 — Book Pickup Time</div>
+          <button type="button" class="checkout-btn secondary" id="bookCalendlyBtn">
+            Book Pickup Time
+          </button>
+          <div id="bookingStatus" class="pending">No pickup appointment booked yet.</div>
+          <div class="small-muted">
+            Please enter your name and email before booking so they can be pre-filled in Calendly.
+          </div>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true">↓</div>
+
+        <div>
+          <div class="step-label">Step 2 — Place Order</div>
         </div>
       </div>
 
@@ -274,7 +330,7 @@ h2{
       <strong id="grandTotal">$0.00</strong>
     </div>
 
-    <button class="checkout-btn" id="checkoutBtn" type="button">Place Order</button>
+    <button class="checkout-btn disabled" id="checkoutBtn" type="button" disabled>Place Order</button>
   </div>
 
 </div>
@@ -293,7 +349,7 @@ h2{
 const STORAGE_KEY = "plant_shop_cart_v8";
 const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse";
-const CALENDLY_PICKUP_URL = "https://calendly.com/rootstoblooms1/30min";
+const CALENDLY_PICKUP_URL = "https://calendly.com/rootstoblooms1/pickup";
 
 let cart = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 let RAW = [];
@@ -317,6 +373,76 @@ function escapeHtml(str){
     .replace(/'/g, "&#039;");
 }
 
+function normalizeArea(text){
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function calculateDeliveryFee(){
+  const cityVal = normalizeArea(getEl("city").value);
+
+  const rate5 = [
+    "halifax peninsula",
+    "downtown halifax",
+    "downtown",
+    "south end",
+    "north end",
+    "west end"
+  ];
+
+  const rate8 = [
+    "dartmouth",
+    "urban dartmouth",
+    "downtown dartmouth"
+  ];
+
+  const rate10 = [
+    "bedford",
+    "lower sackville",
+    "middle sackville",
+    "upper sackville",
+    "sackville",
+    "clayton park",
+    "bayers lake",
+    "bayer s lake",
+    "cole harbour",
+    "cole harbor"
+  ];
+
+  const rate12 = [
+    "timberlea",
+    "eastern passage",
+    "shearwater",
+    "woodside",
+    "westphal",
+    "fall river",
+    "waverley",
+    "porters lake",
+    "porter s lake",
+    "lake loon",
+    "mineville",
+    "lawrencetown",
+    "terence bay",
+    "prospect",
+    "hatchet lake",
+    "hubbards"
+  ];
+
+  if (rate5.includes(cityVal)) deliveryFee = 5;
+  else if (rate8.includes(cityVal)) deliveryFee = 8;
+  else if (rate10.includes(cityVal)) deliveryFee = 10;
+  else if (rate12.includes(cityVal)) deliveryFee = 12;
+  else deliveryFee = 12;
+
+  getEl("deliveryRow").style.display = "flex";
+  getEl("deliveryTotal").innerText = currency(deliveryFee);
+  renderSummary();
+}
+
 function toggleDeliveryAddress(val) {
   const deliveryDiv = getEl("deliveryAddress");
   const deliveryRow = getEl("deliveryRow");
@@ -330,18 +456,6 @@ function toggleDeliveryAddress(val) {
     deliveryRow.style.display = "none";
     renderSummary();
   }
-}
-
-function calculateDeliveryFee(){
-  const cityVal = getEl("city").value.trim().toLowerCase();
-
-  if(["halifax","dartmouth","spryfield"].includes(cityVal)) deliveryFee = 5;
-  else if(["bedford","sackville"].includes(cityVal)) deliveryFee = 8;
-  else deliveryFee = 0;
-
-  getEl("deliveryRow").style.display = deliveryFee > 0 ? "flex" : "none";
-  getEl("deliveryTotal").innerText = currency(deliveryFee);
-  renderSummary();
 }
 
 function renderSummary(){
@@ -391,6 +505,31 @@ async function loadProducts(){
   }
 }
 
+function setBookingStatusPending(){
+  const el = getEl("bookingStatus");
+  el.className = "pending";
+  el.textContent = "No pickup appointment booked yet.";
+}
+
+function setBookingStatusSuccess(){
+  const el = getEl("bookingStatus");
+  el.className = "success";
+  el.innerHTML = `<span class="status-check">✅</span>Pickup booked successfully.`;
+}
+
+function updateCheckoutButtonState(){
+  const method = getEl("custPickupDelivery").value;
+  const btn = getEl("checkoutBtn");
+
+  if (method === "Pickup" && !calendlyBooking) {
+    btn.disabled = true;
+    btn.classList.add("disabled");
+  } else {
+    btn.disabled = false;
+    btn.classList.remove("disabled");
+  }
+}
+
 function updateSchedulingUI(){
   const method = getEl("custPickupDelivery").value;
   const pickupSchedulerWrap = getEl("pickupSchedulerWrap");
@@ -400,16 +539,19 @@ function updateSchedulingUI(){
   toggleDeliveryAddress(method);
 
   if (method === "Pickup") {
-    pickupSchedulerWrap.style.display = "block";
+    pickupSchedulerWrap.style.display = "flex";
     pickupNotice.style.display = "block";
     deliveryNotice.style.display = "none";
+    if (!calendlyBooking) setBookingStatusPending();
   } else {
     pickupSchedulerWrap.style.display = "none";
     pickupNotice.style.display = "none";
     deliveryNotice.style.display = "block";
     calendlyBooking = null;
-    getEl("bookingStatus").textContent = "No pickup appointment booked yet.";
+    setBookingStatusPending();
   }
+
+  updateCheckoutButtonState();
 }
 
 function openCalendly(){
@@ -435,7 +577,7 @@ function openCalendly(){
   }
 
   Calendly.initPopupWidget({
-    url: "https://calendly.com/rootstoblooms1/pickup",
+    url: CALENDLY_PICKUP_URL,
     prefill: {
       name: custName,
       email: custEmail
@@ -585,6 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
   getEl("bookCalendlyBtn").addEventListener("click", openCalendly);
   getEl("checkoutBtn").addEventListener("click", submitOrder);
 
+  setBookingStatusPending();
   updateSchedulingUI();
 });
 
@@ -598,9 +741,9 @@ window.addEventListener("message", function(e) {
     capturedAt: new Date().toISOString()
   };
 
-  getEl("bookingStatus").textContent = "Pickup booked successfully.";
+  setBookingStatusSuccess();
+  updateCheckoutButtonState();
 });
 </script>
-
 </body>
 </html>
