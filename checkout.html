@@ -340,12 +340,10 @@ h2{
   </div>
 </div>
 
-<iframe name="hiddenSubmitFrame" style="display:none;"></iframe>
-
 <script>
 const STORAGE_KEY = "plant_shop_cart_v8";
 const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
-const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfgHhLNX1C2ucFehf8xHBs-2a3YhaXfNnkbWZ4QS16UlJSpdQ/formResponse";
+const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycbzYgu7VHcPmnMcGTMJwuN1Q1f166byrd9urO5u2cpxOLVZ3O2qjwZfa7LObEuDLTh0Z5g/exec";
 const CALENDLY_PICKUP_URL = "https://calendly.com/rootstoblooms1/pickup";
 
 let cart = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
@@ -621,7 +619,7 @@ function buildCalendlyEventField(){
   return calendlyBooking.eventUri || calendlyBooking.inviteeUri || "Calendly booking recorded";
 }
 
-function submitOrder(){
+async function submitOrder() {
   const custName = getEl("custName").value.trim();
   const custEmail = getEl("custEmail").value.trim();
   const custPhone = getEl("custPhone").value.trim();
@@ -632,7 +630,7 @@ function submitOrder(){
   const city = getEl("city").value.trim();
   const postal = getEl("postal").value.trim();
   const custNotes = getEl("custNotes").value.trim();
-  const custMarketing = getEl("custMarketing").value;
+  const custMarketing = getEl("custMarketing").value.trim();
   const items = getCartItemsText();
 
   const subtotalText = getEl("productsTotal").innerText;
@@ -671,48 +669,63 @@ function submitOrder(){
     }
   }
 
-  const formData = {
-    "entry.991310792": custName,
-    "entry.380963175": custEmail,
-    "entry.640553104": custPhone,
-    "entry.1469637469": custContactMethod,
-    "entry.590490152": custPickupDelivery === "Delivery" ? "Delivery Request" : "Pickup",
-    "entry.489484198": addr1,
-    "entry.1117374631": addr2,
-    "entry.635395700": city,
-    "entry.2075536009": postal,
-    "entry.1225481208": buildCalendlyDateField(),
-    "entry.2009788871": buildCalendlyEventField(),
-    "entry.1046011819": items,
-    "entry.2140423836": subtotalText,
-    "entry.1820627548": deliveryText,
-    "entry.362516403": grandTotalText,
-    "entry.440295629": custNotes,
-    "entry.798763112": custMarketing
+  const payload = {
+    name: custName,
+    email: custEmail,
+    phone: custPhone,
+    preferredContact: custContactMethod,
+    fulfillmentMethod: custPickupDelivery === "Delivery" ? "Delivery Request" : "Pickup",
+    address1: addr1,
+    address2: addr2,
+    city: city,
+    postal: postal,
+    bookingDate: buildCalendlyDateField(),
+    bookingUri: buildCalendlyEventField(),
+    items: items,
+    subtotal: subtotalText,
+    deliveryFee: deliveryText,
+    total: grandTotalText,
+    notes: custNotes,
+    marketing: custMarketing
   };
 
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.action = GOOGLE_FORM_URL;
-  form.target = "hiddenSubmitFrame";
+  const btn = getEl("checkoutBtn");
+  const originalText = btn.textContent;
 
-  Object.entries(formData).forEach(([name, value]) => {
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = name;
-    input.value = value;
-    form.appendChild(input);
-  });
+  try {
+    btn.disabled = true;
+    btn.classList.add("disabled");
+    btn.textContent = "Submitting...";
 
-  document.body.appendChild(form);
-  form.submit();
-  form.remove();
+    const res = await fetch(ORDER_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
 
-  localStorage.removeItem(STORAGE_KEY);
-  cart = {};
-  renderSummary();
+    const result = await res.json();
 
-  getEl("confirmation-overlay").style.display = "flex";
+    if (!result.ok) {
+      throw new Error(result.error || "Order submission failed.");
+    }
+
+    localStorage.removeItem(STORAGE_KEY);
+    cart = {};
+    renderSummary();
+
+    getEl("confirmation-overlay").style.display = "flex";
+
+  } catch (err) {
+    console.error("Order submission error:", err);
+    alert("Sorry — your order could not be submitted. Please try again.");
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("disabled");
+    btn.textContent = originalText;
+    updateCheckoutButtonState();
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
