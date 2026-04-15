@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roots to Blooms — Annuals</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+ <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon.png"> 
 <!-- Flatpickr Datepicker -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -158,7 +158,7 @@
     cursor: pointer;
   }
 }
-  /* ===================== HERO ===================== */
+ /* ===================== HERO ===================== */
 .hero {
   background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('hero-annuals.jpg') center/cover no-repeat;
   color: white;
@@ -717,8 +717,8 @@ footer a:hover{
     <a href="faq.html">FAQ</a>
   </div>
 </nav>
-
-  <!-- HERO -->
+ 
+ <!-- HERO -->
 <section class="hero">
   <h1>Shop Annuals</h1>
   <p>Browse gorgeous annuals to brighten any space.</p>
@@ -785,6 +785,50 @@ footer a:hover{
   </div>
 </div>
 
+<div id="notify-modal" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  z-index:13000;
+  align-items:center;
+  justify-content:center;
+">
+  <div style="
+    background:#fff;
+    width:min(460px,92%);
+    border-radius:12px;
+    padding:20px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.25);
+  ">
+    <h3 style="margin-top:0;">Notify me when back in stock</h3>
+    <p id="notifyProductName" style="margin-bottom:12px;color:#555;"></p>
+
+    <input
+  id="notifyEmail"
+  type="email"
+  placeholder="Enter your email"
+  style="
+    width:100%;
+    box-sizing:border-box;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    margin-bottom:8px;
+  "
+/>
+
+<p style="font-size:12px;color:#666;margin:0 0 12px 0;">
+  We’ll only use your email for this restock notification.
+</p>
+
+<div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button class="small-btn" onclick="closeNotifyModal()">Cancel</button>
+      <button class="small-btn" onclick="submitBackInStockRequest()">Submit</button>
+    </div>
+  </div>
+</div>
+
 <section class="social-connect">
   <h2>Connect with us on Social Media</h2>
   <p>Follow along for plant tips, restocks, and seasonal updates.</p>
@@ -817,12 +861,13 @@ footer a:hover{
 const productGrid = document.getElementById("productGrid");
 const floatBadge = document.getElementById("floatBadge");
 const cartCountEl = document.getElementById("cartCount");
-const cartSubtotalEl = document.getElementById("cartSubtotal");
 const cartProductsEl = document.getElementById("cartProducts");
 const cartDeliveryEl = document.getElementById("cartDelivery");
 const deliveryRowEl = document.getElementById("deliveryRow"); 
 
 const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxpdX1qzIl4Eu8UbsuyEB8W0M09eIfbrTiV2x5yanCWK1AhFd0EwYkm5f7Zmmu_AKnXaw/exec";
+const NOTIFY_ENDPOINT = "https://script.google.com/macros/s/AKfycbxpdX1qzIl4Eu8UbsuyEB8W0M09eIfbrTiV2x5yanCWK1AhFd0EwYkm5f7Zmmu_AKnXaw/exec";
+let notifyProduct = null;
 const STORAGE_KEY="plant_shop_cart_v8";
 const PAGE_CATEGORY="annuals";
 
@@ -855,10 +900,7 @@ function updateBadges(){
     return sum + (p ? p.price * qty : 0);
   },0);
 
-  const grandTotal = productTotal + deliveryFee;
-
   if(cartProductsEl) cartProductsEl.textContent = `$${productTotal.toFixed(2)}`;
-  if(cartSubtotalEl) cartSubtotalEl.textContent = `$${grandTotal.toFixed(2)}`;
 
   if(deliveryFee > 0 && deliveryRowEl && cartDeliveryEl){
     deliveryRowEl.style.display = "flex";
@@ -868,7 +910,72 @@ function updateBadges(){
   }
 
 }
+function openNotifyModal(productId){
+  const p = getProductById(productId);
+  if(!p) return;
 
+  notifyProduct = p;
+
+  const modal = document.getElementById("notify-modal");
+  const nameEl = document.getElementById("notifyProductName");
+  const emailEl = document.getElementById("notifyEmail");
+
+  if(nameEl) nameEl.textContent = `${p.name}${p.latin ? " (" + p.latin + ")" : ""}`;
+  if(emailEl) emailEl.value = "";
+
+  if(modal) modal.style.display = "flex";
+}
+
+function closeNotifyModal(){
+  const modal = document.getElementById("notify-modal");
+  if(modal) modal.style.display = "none";
+  notifyProduct = null;
+}
+
+async function submitBackInStockRequest(){
+  const emailEl = document.getElementById("notifyEmail");
+  const email = emailEl?.value.trim();
+
+  if(!notifyProduct){
+    alert("No product selected.");
+    return;
+  }
+
+  if(!email){
+    alert("Please enter your email.");
+    return;
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!emailPattern.test(email)){
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  try {
+    await fetch(NOTIFY_ENDPOINT, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        productId: notifyProduct.id,
+        productName: notifyProduct.name,
+        latin: notifyProduct.latin || "",
+        email: email,
+        pageCategory: PAGE_CATEGORY,
+        timestamp: new Date().toISOString()
+      })
+    });
+
+    alert(`Thanks! We'll let you know when ${notifyProduct.name} is back in stock.`);
+    closeNotifyModal();
+  } catch (err) {
+    console.error("Back in stock request failed:", err);
+    alert("Sorry, something went wrong. Please try again.");
+  }
+}
 function renderCartItems(){
   if(!RAW.length) return;
   const wrap = document.getElementById("cartItemsWrap");
@@ -1069,25 +1176,25 @@ function buildGroups(){
 
 /* ================= FILTERS ================= */
 function renderFilters(){
-  const row=document.getElementById("filterRow");
+  const row = document.getElementById("filterRow");
   if(!row) return;
 
-  const cats=new Set();
-  GROUPED.forEach(g=>g.categories.forEach(c=>{
-    const usable=GROUPED.some(prod=>{
-      if(!prod.categories.has(c)) return false;
-      if(activeFilter==="all") return prod.variants.some(v=>!v.soldOut);
-      return true;
-    });
-    if(usable) cats.add(c);
-  }));
+  const cats = new Set();
+  GROUPED.forEach(g => g.categories.forEach(c => cats.add(c)));
 
-  row.innerHTML=`<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')" data-filter="all">All</button>`+
-    [...cats].sort().map(c=>`<button class="filter-btn" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`).join("")+
-    `<button class="filter-btn" onclick="toggleSold()" data-filter="sold">hide sold out</button>`;
+  row.innerHTML =
+    `<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')" data-filter="all">All</button>` +
+    [...cats].sort().map(c =>
+      `<button class="filter-btn ${activeFilter===c?'active':''}" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`
+    ).join("") +
+    `<button class="filter-btn" onclick="toggleSold()" data-filter="sold">${hideSold ? 'show sold out' : 'hide sold out'}</button>`;
 }
 
-function toggleSold(){ hideSold=!hideSold; renderProducts(); }
+function toggleSold(){
+  hideSold = !hideSold;
+  renderFilters();
+  renderProducts();
+}
 function applyFilter(f){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f)); renderProducts(); }
 
 /* ================= CARE BADGE HELPERS ================= */
@@ -1350,59 +1457,74 @@ function renderCareBadges(p){
 function renderProducts(){
   if(!productGrid) return;
 
-  productGrid.innerHTML="";
-  GROUPED.forEach(group=>{
-    if(activeFilter!=="all" && !group.categories.has(activeFilter)) return;
-    let variants=group.variants;
-    if(activeFilter==="all") variants=variants.filter(v=>!v.soldOut);
-    if(hideSold) variants=variants.filter(v=>!v.soldOut);
-    if(!variants.length) return;
+  productGrid.innerHTML = "";
 
-    let selectedId = selectedVariants[group.base.group];
-let selected = variants.find(v => v.id === selectedId);
+  GROUPED.forEach(group => {
+    let variants = group.variants;
 
-if(!selected){
-  selected = variants[0];
-  selectedVariants[group.base.group] = selected.id;
-}
-
-const id = selected.id;
-const qty = cart[id] || 0;
-    const swatches=[...new Map(group.variants.map(v=>[v.swatch,v])).values()];
-
-    let addArea;
-    if(qty>0){
-      addArea=`<div class="qty-row">
-        <button class="qty-btn" onclick="updateQty('${id}',-1)">-</button>
-        <div class="qty-num">${qty}</div>
-        <button class="qty-btn" onclick="updateQty('${id}',1)" ${qty>=selected.stock?'disabled':''}>+</button>
-      </div>`;
-    } else {
-      addArea=`<button class="add-btn" onclick="firstAdd('${id}')" ${selected.soldOut||selected.comingSoon?'disabled':''}>Add</button>`;
+    if (activeFilter !== "all") {
+      variants = variants.filter(v =>
+        v.categories.some(c => c.toLowerCase() === activeFilter.toLowerCase())
+      );
     }
 
-    productGrid.innerHTML+=`
-<div class="product-card ${selected.soldOut?'sold-out':''} ${selected.comingSoon?'coming-soon':''}">
-<div class="product-image-wrap">
-<img class="product-image" src="${selected.photo}">
-${selected.soldOut?overlay("SOLD OUT","#c33"):""}
-${selected.comingSoon?overlay("COMING SOON","#777"):""}
-</div>
-<div>
-<div class="product-title">${selected.name}</div>
-<div class="product-latin">${selected.latin||""}</div>
-${renderCareBadges(selected)}
-<div class="product-price">$${selected.price.toFixed(2)}</div>
-<div class="swatches">
-${group.variants.filter(v=>v.swatch && v.swatch.trim()!=="").map(v=>{
-  let color=v.swatch.trim(); if(!color.startsWith("#") && !color.startsWith("rgb") && !color.startsWith("hsl")) color="#"+color;
-  return `<div class="swatch ${v.id===selected.id?'selected':''}" style="background-color:${color}" onclick="selectVariant('${group.base.group}','${v.id}')"></div>`;
-}).join("")}
-</div>
-</div>
-${addArea}
-</div>`;
+    if (hideSold) {
+      variants = variants.filter(v => !v.soldOut);
+    }
+
+    if (!variants.length) return;
+
+    let selectedId = selectedVariants[group.base.group];
+    let selected = variants.find(v => v.id === selectedId);
+
+    if (!selected) {
+      selected = variants[0];
+      selectedVariants[group.base.group] = selected.id;
+    }
+
+    const id = selected.id;
+    const qty = cart[id] || 0;
+
+    let addArea;
+
+    if (selected.comingSoon) {
+      addArea = `<button class="add-btn" disabled>Coming Soon</button>`;
+    } else if (selected.soldOut) {
+      addArea = `<button class="add-btn" onclick="openNotifyModal('${id}')">Notify When Back in Stock</button>`;
+    } else if (qty > 0) {
+      addArea = `<div class="qty-row">
+        <button class="qty-btn" onclick="updateQty('${id}',-1)">-</button>
+        <div class="qty-num">${qty}</div>
+        <button class="qty-btn" onclick="updateQty('${id}',1)" ${qty >= selected.stock ? 'disabled' : ''}>+</button>
+      </div>`;
+    } else {
+      addArea = `<button class="add-btn" onclick="firstAdd('${id}')">Add</button>`;
+    }
+
+    productGrid.innerHTML += `
+      <div class="product-card ${selected.soldOut ? 'sold-out' : ''} ${selected.comingSoon ? 'coming-soon' : ''}">
+        <div class="product-image-wrap">
+          <img class="product-image" src="${selected.photo}">
+          ${selected.soldOut ? overlay("SOLD OUT","#c33") : ""}
+          ${selected.comingSoon ? overlay("COMING SOON","#777") : ""}
+        </div>
+        <div>
+          <div class="product-title">${selected.name}</div>
+          <div class="product-latin">${selected.latin || ""}</div>
+          ${renderCareBadges(selected)}
+          <div class="product-price">$${selected.price.toFixed(2)}</div>
+          <div class="swatches">
+            ${group.variants.filter(v => v.swatch && v.swatch.trim() !== "").map(v => {
+              let color = v.swatch.trim();
+              if (!color.startsWith("#") && !color.startsWith("rgb") && !color.startsWith("hsl")) color = "#" + color;
+              return `<div class="swatch ${v.id === selected.id ? 'selected' : ''}" style="background-color:${color}" onclick="selectVariant('${group.base.group}','${v.id}')"></div>`;
+            }).join("")}
+          </div>
+        </div>
+        ${addArea}
+      </div>`;
   });
+
   updateBadges();
 }
 function overlay(txt,color){return `<div class="sold-out-overlay"><span style="background:${color}">${txt}</span></div>`;}
@@ -1432,6 +1554,18 @@ shopButton.addEventListener('click', (e) => {
 window.addEventListener('resize', () => {
   if (window.innerWidth > 768) {
     shopMenu.classList.remove('active');
+  }
+});
+ document.getElementById("notify-modal")?.addEventListener("click", (e) => {
+  if (e.target.id === "notify-modal") {
+    closeNotifyModal();
+  }
+});
+
+document.getElementById("notifyEmail")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    submitBackInStockRequest();
   }
 });
 
