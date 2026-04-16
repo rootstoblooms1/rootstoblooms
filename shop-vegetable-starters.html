@@ -230,6 +230,25 @@ body{
   color:#fff;
   transform:scale(1.02);
 }
+ .filter-btn.filter-special-sold {
+  background: #e7f3eb;
+  color: var(--dark);
+  border: 1px solid rgba(37, 77, 50, 0.18);
+}
+
+.filter-btn.filter-special-sold:hover {
+  background: #d8ebdf;
+}
+
+.filter-btn.filter-special-sale {
+  background: #e8d9b5;  /* slightly richer */
+  color: var(--brand-brown);
+  border: 1px solid rgba(74, 35, 0, 0.25);
+}
+
+.filter-btn.filter-special-sale:hover {
+  background: #efe2c8;
+}
 
 /* PRODUCT GRID */
 .product-grid{
@@ -721,7 +740,7 @@ footer a:hover{
  <!-- HERO -->
 <section class="hero">
   <h1>Shop Vegetable Starters</h1>
-  <p>Browse vegetable starters to extend your growing season.</p>
+  <p>Browse affordable vegetable starters to extend your growing season.</p>
 </section>
 
 <!-- SHOP CONTAINER -->
@@ -1182,12 +1201,15 @@ function renderFilters(){
   const cats = new Set();
   GROUPED.forEach(g => g.categories.forEach(c => cats.add(c)));
 
+  const sortedCats = [...cats].sort().filter(c => c.toLowerCase() !== "on sale");
+
   row.innerHTML =
     `<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="applyFilter('all')" data-filter="all">All</button>` +
-    [...cats].sort().map(c =>
+    `<button class="filter-btn filter-special-sold" onclick="toggleSold()" data-filter="sold">${hideSold ? 'Show Sold Out' : 'Hide Sold Out'}</button>` +
+    `<button class="filter-btn filter-special-sale ${activeFilter==='On Sale' ? 'active' : ''}" onclick="applyFilter('On Sale')" data-filter="On Sale">On Sale</button>` +
+    sortedCats.map(c =>
       `<button class="filter-btn ${activeFilter===c?'active':''}" data-filter="${c}" onclick="applyFilter('${c.replace(/'/g,"")}')">${c}</button>`
-    ).join("") +
-    `<button class="filter-btn" onclick="toggleSold()" data-filter="sold">${hideSold ? 'show sold out' : 'hide sold out'}</button>`;
+    ).join("");
 }
 
 function toggleSold(){
@@ -1459,7 +1481,20 @@ function renderProducts(){
 
   productGrid.innerHTML = "";
 
-  GROUPED.forEach(group => {
+  let groupsToRender = [...GROUPED];
+
+  // 🔥 PRIORITIZE ON SALE
+  if (activeFilter === "all") {
+    groupsToRender.sort((a, b) => {
+      const aOnSale = [...a.categories].some(c => c.toLowerCase() === "on sale");
+      const bOnSale = [...b.categories].some(c => c.toLowerCase() === "on sale");
+
+      if (aOnSale === bOnSale) return 0;
+      return aOnSale ? -1 : 1;
+    });
+  }
+
+  groupsToRender.forEach(group => {
     let variants = group.variants;
 
     if (activeFilter !== "all") {
@@ -1505,6 +1540,9 @@ function renderProducts(){
       <div class="product-card ${selected.soldOut ? 'sold-out' : ''} ${selected.comingSoon ? 'coming-soon' : ''}">
         <div class="product-image-wrap">
           <img class="product-image" src="${selected.photo}">
+${selected.categories.some(c => c.toLowerCase() === "on sale") 
+  ? `<div class="sold-out-overlay"><span style="background:#4EA337">SALE</span></div>` 
+  : ""}
           ${selected.soldOut ? overlay("SOLD OUT","#c33") : ""}
           ${selected.comingSoon ? overlay("COMING SOON","#777") : ""}
         </div>
