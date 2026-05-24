@@ -178,6 +178,92 @@ body{
 }
 
 /* FAQ SECTION */
+.delivery-zone-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 16px;
+}
+
+.delivery-zone-list .zone {
+  position: relative;
+  padding: 10px 12px 10px 42px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: #f8f8f8;
+  line-height: 1.45;
+  border-left: 6px solid transparent;
+}
+
+.delivery-zone-list .zone::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 16px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px white, 0 0 0 3px rgba(0,0,0,0.08);
+}
+
+.zone-5 { border-left-color: #2e8b57; }
+.zone-8 { border-left-color: #d9a900; }
+.zone-10 { border-left-color: #f39c12; }
+.zone-12 { border-left-color: #e67e22; }
+.zone-15 { border-left-color: #c0392b; }
+.zone-20 { border-left-color: #8e44ad; }
+
+.zone-5::before, .zone-5-bg { background: #2e8b57; }
+.zone-8::before, .zone-8-bg { background: #d9a900; }
+.zone-10::before, .zone-10-bg { background: #f39c12; }
+.zone-12::before, .zone-12-bg { background: #e67e22; }
+.zone-15::before, .zone-15-bg { background: #c0392b; }
+.zone-20::before, .zone-20-bg { background: #8e44ad; }
+
+.delivery-map-wrap {
+  margin-top: 16px;
+}
+
+.delivery-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px;
+  background: #f7f7f7;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 2px white, 0 0 0 3px rgba(0,0,0,0.08);
+}
+
+.delivery-map {
+  width: 100%;
+  display: block;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.delivery-map-note {
+  font-size: 13px;
+  color: #666;
+  margin-top: 6px;
+}
 .faq-section{
   max-width:900px;
   margin:60px auto;
@@ -223,7 +309,7 @@ body{
   transition:max-height 0.3s ease, padding 0.3s ease;
 }
 .faq-item.active .faq-answer{
-  max-height:1000px;
+  max-height:2200px;
   padding:16px 24px;
 }
 
@@ -355,27 +441,39 @@ footer a:hover{text-decoration:underline;}
     <div class="faq-question">How much is delivery?</div>
     <div class="faq-answer">
       <p>Delivery fees depend on your location:</p>
-      <ul>
-        <li><strong>$5</strong> Halifax Peninsula <em>(Downtown, North End, South End, West End)</em></li>
-        <li><strong>$8</strong> Dartmouth <em>(Urban Areas)</em>, Spryfield, Fairview, Purcell's Cove</li>
-        <li><strong>$10</strong> Burnside, Clayton Park, Bayer's Lake</li>
-        <li><strong>$12</strong> Eastern Passage, Cole Harbour, Portobello, Bedford, Timberlea, Harrietsfield, Herring Cove</li>
-        <li><strong>$15</strong> Lawrencetown, Preston, Waverley, Fall River, Sackville, Hammonds Plains, Sambro, Portuguese Cove</li>
-        <li><strong>$20</strong> East Lawrencetown, Porter's Lake, Prospect, Terence Bay</li>
-      </ul>
-      <p><strong>Delivery zones are shown below:</strong></p>
-      <div style="margin-top:16px;">
+      <ul class="delivery-zone-list">
+  <li class="zone zone-5"><strong>$5</strong> Halifax Peninsula <em>(Downtown, North End, South End, West End)</em></li>
+  <li class="zone zone-8"><strong>$8</strong> Dartmouth <em>(Urban Areas)</em>, Spryfield, Fairview, Purcell's Cove</li>
+  <li class="zone zone-10"><strong>$10</strong> Burnside, Clayton Park, Bayer's Lake</li>
+  <li class="zone zone-12"><strong>$12</strong> Eastern Passage, Cole Harbour, Portobello, Bedford, Timberlea, Harrietsfield, Herring Cove</li>
+  <li class="zone zone-15"><strong>$15</strong> Lawrencetown, Preston, Waverley, Fall River, Sackville, Hammonds Plains, Sambro, Portuguese Cove</li>
+  <li class="zone zone-20"><strong>$20</strong> East Lawrencetown, Porter's Lake, Prospect, Terence Bay</li>
+</ul>
+     <p><strong>Delivery zones are shown below:</strong></p>
+
+<div class="delivery-map-wrap">
+
+  <div class="delivery-legend">
+    <div class="legend-item"><span class="legend-dot zone-5-bg"></span>$5 Halifax Peninsula</div>
+    <div class="legend-item"><span class="legend-dot zone-8-bg"></span>$8 Nearby urban areas</div>
+    <div class="legend-item"><span class="legend-dot zone-10-bg"></span>$10 Local extended areas</div>
+    <div class="legend-item"><span class="legend-dot zone-12-bg"></span>$12 Extended delivery areas</div>
+    <div class="legend-item"><span class="legend-dot zone-15-bg"></span>$15 Outer HRM areas</div>
+    <div class="legend-item"><span class="legend-dot zone-20-bg"></span>$20 Furthest delivery areas</div>
+  </div>
+
   <iframe 
     src="https://www.google.com/maps/d/u/0/embed?mid=16-Syw84qzrnMKk5mTrK12_HLCOwzHZQ&ehbc=2E312F"
     width="100%"
     height="350"
-    style="border:0; border-radius:12px; box-shadow:0 6px 12px rgba(0,0,0,0.1);"
+    class="delivery-map"
     loading="lazy">
   </iframe>
 
-  <p style="font-size:13px; color:#666; margin-top:6px;">
-    Delivery zones are shown above. Not sure which zone you're in? Just ask 🙂
+  <p class="delivery-map-note">
+    Not sure which zone you're in? Just ask 🙂
   </p>
+
 </div>
       <p>We will confirm a specific delivery time after receiving your order. If you need to reschedule, please contact us as soon as possible.</p>
       <p>When we arrive, we will wait 15 minutes for you to respond. If no response, your order will be returned and delivery fees may apply for each delivery attempt.</p>
