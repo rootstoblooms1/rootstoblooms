@@ -843,7 +843,7 @@ footer a:hover{
 
 <div style="display:flex; gap:8px; justify-content:flex-end;">
       <button class="small-btn" onclick="closeNotifyModal()">Cancel</button>
-      <button class="small-btn" onclick="submitBackInStockRequest()">Submit</button>
+      <button class="small-btn" id="notifySubmitBtn" onclick="submitBackInStockRequest()">Submit</button>
     </div>
   </div>
 </div>
@@ -887,6 +887,7 @@ const deliveryRowEl = document.getElementById("deliveryRow");
 const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxpdX1qzIl4Eu8UbsuyEB8W0M09eIfbrTiV2x5yanCWK1AhFd0EwYkm5f7Zmmu_AKnXaw/exec";
 const NOTIFY_ENDPOINT = "https://script.google.com/macros/s/AKfycbxpdX1qzIl4Eu8UbsuyEB8W0M09eIfbrTiV2x5yanCWK1AhFd0EwYkm5f7Zmmu_AKnXaw/exec";
 let notifyProduct = null;
+let notifyRequestInFlight = false;
 const STORAGE_KEY="plant_shop_cart_v8";
 const PAGE_CATEGORY="annuals";
 
@@ -951,11 +952,22 @@ function closeNotifyModal(){
   notifyProduct = null;
 }
 
+function createRequestId(prefix){
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return prefix + "_" + window.crypto.randomUUID();
+  }
+
+  return prefix + "_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+}
+
 async function submitBackInStockRequest(){
+  if(notifyRequestInFlight) return;
+
   const emailEl = document.getElementById("notifyEmail");
   const email = emailEl?.value.trim();
+  const product = notifyProduct;
 
-  if(!notifyProduct){
+  if(!product){
     alert("No product selected.");
     return;
   }
@@ -971,6 +983,15 @@ async function submitBackInStockRequest(){
     return;
   }
 
+  const submitBtn = document.getElementById("notifySubmitBtn");
+  const originalText = submitBtn?.textContent || "Submit";
+  notifyRequestInFlight = true;
+
+  if(submitBtn){
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
+  }
+
   try {
     await fetch(NOTIFY_ENDPOINT, {
       method: "POST",
@@ -979,20 +1000,29 @@ async function submitBackInStockRequest(){
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        productId: notifyProduct.id,
-        productName: notifyProduct.name,
-        latin: notifyProduct.latin || "",
+        payloadVersion: 2,
+        requestId: createRequestId("restock"),
+        productId: product.id,
+        productName: product.name,
+        latin: product.latin || "",
         email: email,
         pageCategory: PAGE_CATEGORY,
         timestamp: new Date().toISOString()
       })
     });
 
-    alert(`Thanks! We'll let you know when ${notifyProduct.name} is back in stock.`);
+    alert(`Thanks! We'll let you know when ${product.name} is back in stock.`);
     closeNotifyModal();
   } catch (err) {
     console.error("Back in stock request failed:", err);
     alert("Sorry, something went wrong. Please try again.");
+  } finally {
+    notifyRequestInFlight = false;
+
+    if(submitBtn){
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    }
   }
 }
 function renderCartItems(){
@@ -1615,3 +1645,4 @@ renderCartItems();
 </script>
 </body>
 </html>
+

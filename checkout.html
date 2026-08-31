@@ -345,14 +345,35 @@ const STORAGE_KEY = "plant_shop_cart_v8";
 const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbxKVOYtyszNwsdNYX8iPZtYyYqDkxryKijLTNH73NqvjPWepLygI4UZ5jZYylBPytPF0A/exec";
 const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycbyxWlEkr4529i0CyIuuhlU_cUVj8gMO2ErjSx-qaxTJ_tzTJSrLs_4nz3XaqX3ildSiQA/exec";
 const CALENDLY_PICKUP_URL = "https://calendly.com/rootstoblooms1/pickup";
+const CALENDLY_ORIGIN = new URL(CALENDLY_PICKUP_URL).origin;
+const ORDER_PAYLOAD_VERSION = 2;
 
 let cart = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 let RAW = [];
 let deliveryFee = 0;
 let calendlyBooking = null;
+let pendingOrderRequestId = null;
 
 function getEl(id){
   return document.getElementById(id);
+}
+
+function createRequestId(prefix){
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return prefix + "_" + window.crypto.randomUUID();
+  }
+
+  return prefix + "_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+}
+
+function isCalendlyApiUri(value){
+  if (!value) return false;
+
+  try {
+    return new URL(value).origin === "https://api.calendly.com";
+  } catch {
+    return false;
+  }
 }
 
 function currency(n){
@@ -587,6 +608,13 @@ function getCartItemsText(){
   }).join("\n");
 }
 
+function getCartItemsForServer(){
+  return Object.entries(cart).map(([id, qty]) => ({
+    productId: String(id),
+    quantity: Number(qty)
+  }));
+}
+
 function buildCalendlyDateField(){
   const method = getEl("custPickupDelivery").value;
 
@@ -669,7 +697,13 @@ async function submitOrder() {
     }
   }
 
+  const orderRequestId = pendingOrderRequestId || createRequestId("order");
+  pendingOrderRequestId = orderRequestId;
+
   const payload = {
+    payloadVersion: ORDER_PAYLOAD_VERSION,
+    requestId: orderRequestId,
+    cartItems: getCartItemsForServer(),
     name: custName,
     email: custEmail,
     phone: custPhone,
@@ -712,6 +746,7 @@ async function submitOrder() {
     }
 
     localStorage.removeItem(STORAGE_KEY);
+    pendingOrderRequestId = null;
     cart = {};
     renderSummary();
 
@@ -742,11 +777,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.addEventListener("message", function(e) {
+  if (e.origin !== CALENDLY_ORIGIN) return;
   if (!e.data || e.data.event !== "calendly.event_scheduled") return;
+  if (getEl("custPickupDelivery").value !== "Pickup") return;
+
+  const eventUri = e.data?.payload?.event?.uri || "";
+  const inviteeUri = e.data?.payload?.invitee?.uri || "";
+
+  if (!isCalendlyApiUri(eventUri) && !isCalendlyApiUri(inviteeUri)) return;
 
   calendlyBooking = {
-    eventUri: e.data?.payload?.event?.uri || "",
-    inviteeUri: e.data?.payload?.invitee?.uri || "",
+    eventUri,
+    inviteeUri,
     scheduledText: "Booked via Calendly - see event URI",
     capturedAt: new Date().toISOString()
   };
@@ -757,3 +799,4 @@ window.addEventListener("message", function(e) {
 </script>
 </body>
 </html>
+
